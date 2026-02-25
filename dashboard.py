@@ -151,30 +151,49 @@ def stats():
     conn = get_db_connection()
     stats_data = {}
     
-    # 1. Basic Counts
-    stats_data['total_analyzed'] = conn.execute('SELECT COUNT(*) FROM problems').fetchone()[0]
+    # Helper for exclusion logic
+    def is_excluded_problem(year_val, filename):
+        try:
+            y_int = int(year_val)
+        except:
+            return False
+        n = unicodedata.normalize('NFC', filename)
+        if y_int >= 2022:
+            return bool(re.search(r'[미기](2[3-9]|30)', n))
+        elif 2017 <= y_int <= 2021:
+            m = re.search(r'가_?(\d{1,2})', n)
+            return bool(m and 1 <= int(m.group(1)) <= 30)
+        elif y_int <= 2016:
+            m = re.search(r'B_?(\d{1,2})', n)
+            return bool(m and 1 <= int(m.group(1)) <= 30)
+        return False
     
-    # 2. PDF File Counts and Yearly Progress
+    # 1. PDF File Counts and Yearly Progress (Filtered)
     pdf_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PDF_Ref')
     yearly_pdfs = {}
     total_pdfs = 0
     if os.path.exists(pdf_dir):
         for f in os.listdir(pdf_dir):
             if f.endswith('.pdf'):
-                total_pdfs += 1
-                # filename format: YYYY.MM... or YYYY수능...
                 m = re.match(r'^(\d{4})', f)
                 if m:
                     year = m.group(1)
-                    yearly_pdfs[year] = yearly_pdfs.get(year, 0) + 1
+                    if not is_excluded_problem(year, f):
+                        total_pdfs += 1
+                        yearly_pdfs[year] = yearly_pdfs.get(year, 0) + 1
     
     stats_data['total_pdfs'] = total_pdfs
     
-    # 3. Yearly Analysis Status
+    # 2. Analyzed Problems counting (Filtered)
+    all_problems = conn.execute('SELECT problem_id, year FROM problems').fetchall()
+    analyzed_filtered = [p for p in all_problems if not is_excluded_problem(p['year'], p['problem_id'])]
+    stats_data['total_analyzed'] = len(analyzed_filtered)
+    
+    # 3. Yearly Analysis Status (Filtered)
     yearly_analyzed = {}
-    rows = conn.execute('SELECT year, COUNT(*) as cnt FROM problems GROUP BY year').fetchall()
-    for row in rows:
-        yearly_analyzed[str(row['year'])] = row['cnt']
+    for p in analyzed_filtered:
+        y_str = str(p['year'])
+        yearly_analyzed[y_str] = yearly_analyzed.get(y_str, 0) + 1
         
     # Combine into a sorted list
     progress_list = []
