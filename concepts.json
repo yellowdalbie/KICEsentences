@@ -1,0 +1,874 @@
+[
+    {
+        "id": "CPT-MID-NUM-001",
+        "curriculum_unit": "중학교 수학 - 수와 연산",
+        "standard_name": "소인수분해의 뜻을 알고, 자연수를 소인수분해 할 수 있다.",
+        "definition": "",
+        "keywords": "[\"소인수분해\", \"자연수\"]",
+        "ref_code": "[9수01-01]"
+    },
+    {
+        "id": "CPT-MID-NUM-002",
+        "curriculum_unit": "중학교 수학 - 수와 연산",
+        "standard_name": "소인수분해를 이용하여 최대공약수와 최소공배수를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"최대공약수\", \"최소공배수\"]",
+        "ref_code": "[9수01-02]"
+    },
+    {
+        "id": "CPT-MID-NUM-003",
+        "curriculum_unit": "중학교 수학 - 수와 연산",
+        "standard_name": "다양한 상황을 이용하여 음수의 필요성을 인식하고, 양수와 음수, 정수와 유리수의 관계를 이해한다.",
+        "definition": "",
+        "keywords": "[\"음수\", \"양수\", \"정수\", \"유리수\"]",
+        "ref_code": "[9수01-03]"
+    },
+    {
+        "id": "CPT-MID-REL-001",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "방정식과 그 해의 뜻을 알고, 등식의 성질을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"방정식\", \"해\", \"등식의 성질\"]",
+        "ref_code": "[9수02-03]"
+    },
+    {
+        "id": "CPT-MID-REL-002",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "일차방정식을 풀 수 있고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"일차방정식\", \"문제해결\"]",
+        "ref_code": "[9수02-04]"
+    },
+    {
+        "id": "CPT-MID-REL-003",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "순서쌍과 좌표를 이해하고, 그 편리함을 인식할 수 있다.",
+        "definition": "",
+        "keywords": "[\"순서쌍\", \"좌표\"]",
+        "ref_code": "[9수02-05]"
+    },
+    {
+        "id": "CPT-MID-REL-004",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "다양한 상황을 그래프로 나타내고, 주어진 그래프를 해석할 수 있다.",
+        "definition": "",
+        "keywords": "[\"그래프\", \"해석\"]",
+        "ref_code": "[9수02-06]"
+    },
+    {
+        "id": "CPT-MID-REL-005",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "정비례, 반비례 관계를 이해하고, 그 관계를 표, 식, 그래프로 나타낼 수 있다.",
+        "definition": "",
+        "keywords": "[\"정비례\", \"반비례\", \"표\", \"식\", \"그래프\"]",
+        "ref_code": "[9수02-07]"
+    },
+    {
+        "id": "CPT-MID-REL-006",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "지수법칙을 이해하고, 이를 이용하여 식을 간단히 할 수 있다.",
+        "definition": "",
+        "keywords": "[\"지수법칙\", \"식의 계산\"]",
+        "ref_code": "[9수02-08]"
+    },
+    {
+        "id": "CPT-MID-REL-007",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "다항식의 덧셈과 뺄셈의 원리를 이해하고, 그 계산을 할 수 있다.",
+        "definition": "",
+        "keywords": "[\"다항식\", \"덧셈과 뺄셈\"]",
+        "ref_code": "[9수02-09]"
+    },
+    {
+        "id": "CPT-MID-REL-008",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "‘(단항식)×(다항식)’, ‘(다항식)÷(단항식)’과 같은 곱셈과 나눗셈의 원리를 이해하고, 그 계산을 할 수 있다.",
+        "definition": "",
+        "keywords": "[\"다항식\", \"단항식\", \"곱셈과 나눗셈\"]",
+        "ref_code": "[9수02-10]"
+    },
+    {
+        "id": "CPT-MID-REL-009",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "부등식과 그 해의 뜻을 알고, 부등식의 성질을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"부등식\", \"해\", \"부등식의 성질\"]",
+        "ref_code": "[9수02-11]"
+    },
+    {
+        "id": "CPT-MID-REL-010",
+        "curriculum_unit": "중학교 수학 - 변화와 관계",
+        "standard_name": "일차부등식을 풀 수 있고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"일차부등식\", \"문제해결\"]",
+        "ref_code": "[9수02-12]"
+    },
+    {
+        "id": "CPT-MID-GEO-001",
+        "curriculum_unit": "중학교 수학 - 도형과 측정",
+        "standard_name": "점, 선, 면, 각을 이해하고, 실생활 상황과 연결하여 점, 직선, 평면의 위치 관계를 탐구한다.",
+        "definition": "",
+        "keywords": "[\"도형의 기초\", \"위치 관계\"]",
+        "ref_code": "[9수03-01]"
+    },
+    {
+        "id": "CPT-MID-STA-001",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "중앙값, 최빈값의 뜻을 알고, 자료의 특성에 따라 적절한 대푯값을 선택하여 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"대푯값\", \"중앙값\", \"최빈값\"]",
+        "ref_code": "[9수04-01]"
+    },
+    {
+        "id": "CPT-MID-STA-002",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "자료를 줄기와 잎 그림, 도수분포표, 히스토그램, 도수분포다각형으로 나타내고 해석할 수 있다.",
+        "definition": "",
+        "keywords": "[\"줄기와 잎 그림\", \"도수분포표\", \"히스토그램\", \"도수분포다각형\"]",
+        "ref_code": "[9수04-02]"
+    },
+    {
+        "id": "CPT-MID-STA-003",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "상대도수를 구하고, 상대도수의 분포를 표나 그래프로 나타내고 해석할 수 있다.",
+        "definition": "",
+        "keywords": "[\"상대도수\", \"분포\", \"표\", \"그래프\"]",
+        "ref_code": "[9수04-03]"
+    },
+    {
+        "id": "CPT-MID-STA-004",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "통계적 탐구 문제를 설정하고, 공학 도구를 이용하여 자료를 수집하여 분석하고, 그 결과를 해석할 수 있다.",
+        "definition": "",
+        "keywords": "[\"통계적 탐구\", \"자료 수집\", \"공학 도구\"]",
+        "ref_code": "[9수04-04]"
+    },
+    {
+        "id": "CPT-MID-STA-005",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "경우의 수를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"경우의 수\"]",
+        "ref_code": "[9수04-05]"
+    },
+    {
+        "id": "CPT-MID-STA-006",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "확률의 개념과 그 기본 성질을 이해하고, 확률을 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"확률의 개념\", \"확률의 기본 성질\"]",
+        "ref_code": "[9수04-06]"
+    },
+    {
+        "id": "CPT-MID-STA-007",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "분산과 표준편차를 구하고 자료의 분포를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"분산\", \"표준편차\", \"자료의 분포\"]",
+        "ref_code": "[9수04-07]"
+    },
+    {
+        "id": "CPT-MID-STA-008",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "공학 도구를 이용하여 자료를 상자그림으로 나타내고 분포를 비교할 수 있다.",
+        "definition": "",
+        "keywords": "[\"상자그림\", \"분포 비교\", \"공학 도구\"]",
+        "ref_code": "[9수04-08]"
+    },
+    {
+        "id": "CPT-MID-STA-009",
+        "curriculum_unit": "중학교 수학 - 자료와 가능성",
+        "standard_name": "자료를 산점도로 나타내고 상관관계를 말할 수 있다.",
+        "definition": "",
+        "keywords": "[\"산점도\", \"상관관계\"]",
+        "ref_code": "[9수04-09]"
+    },
+    {
+        "id": "CPT-CM1-POL-001",
+        "curriculum_unit": "공통수학1 - 다항식",
+        "standard_name": "다항식의 사칙연산의 원리를 설명하고, 그 계산을 할 수 있다.",
+        "definition": "",
+        "keywords": "[\"다항식\", \"사칙연산\"]",
+        "ref_code": "[10공수1-01-01]"
+    },
+    {
+        "id": "CPT-CM1-POL-002",
+        "curriculum_unit": "공통수학1 - 다항식",
+        "standard_name": "항등식의 성질과 나머지정리를 이해하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"항등식\", \"나머지정리\"]",
+        "ref_code": "[10공수1-01-02]"
+    },
+    {
+        "id": "CPT-CM1-POL-003",
+        "curriculum_unit": "공통수학1 - 다항식",
+        "standard_name": "다항식의 인수분해를 할 수 있다.",
+        "definition": "",
+        "keywords": "[\"인수분해\"]",
+        "ref_code": "[10공수1-01-03]"
+    },
+    {
+        "id": "CPT-CM1-EQU-001",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "복소수의 뜻과 성질을 설명하고, 사칙연산을 수행할 수 있다.",
+        "definition": "",
+        "keywords": "[\"복소수\", \"사칙연산\"]",
+        "ref_code": "[10공수1-02-01]"
+    },
+    {
+        "id": "CPT-CM1-EQU-002",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "이차방정식의 실근과 허근을 이해하고, 판별식을 이용하여 이차방정식의 근을 판별할 수 있다.",
+        "definition": "",
+        "keywords": "[\"이차방정식\", \"실근\", \"허근\", \"판별식\"]",
+        "ref_code": "[10공수1-02-02]"
+    },
+    {
+        "id": "CPT-CM1-EQU-003",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "이차방정식의 근과 계수의 관계를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"근과 계수의 관계\"]",
+        "ref_code": "[10공수1-02-03]"
+    },
+    {
+        "id": "CPT-CM1-EQU-004",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "이차방정식과 이차함수를 연결하여 그 관계를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"이차방정식\", \"이차함수\"]",
+        "ref_code": "[10공수1-02-04]"
+    },
+    {
+        "id": "CPT-CM1-EQU-005",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "이차함수의 그래프와 직선의 위치 관계를 판단할 수 있다.",
+        "definition": "",
+        "keywords": "[\"이차함수의 그래프\", \"직선의 위치 관계\"]",
+        "ref_code": "[10공수1-02-05]"
+    },
+    {
+        "id": "CPT-CM1-EQU-006",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "이차함수의 최대, 최소를 탐구하고, 이를 실생활과 연결하여 유용성을 인식할 수 있다.",
+        "definition": "",
+        "keywords": "[\"최대\", \"최소\", \"실생활 연결\"]",
+        "ref_code": "[10공수1-02-06]"
+    },
+    {
+        "id": "CPT-CM1-EQU-007",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "간단한 삼차방정식과 사차방정식을 풀 수 있다.",
+        "definition": "",
+        "keywords": "[\"삼차방정식\", \"사차방정식\"]",
+        "ref_code": "[10공수1-02-07]"
+    },
+    {
+        "id": "CPT-CM1-EQU-008",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "미지수가 2개인 연립이차방정식을 풀 수 있다.",
+        "definition": "",
+        "keywords": "[\"연립이차방정식\"]",
+        "ref_code": "[10공수1-02-08]"
+    },
+    {
+        "id": "CPT-CM1-EQU-009",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "미지수가 1개인 연립일차부등식을 풀 수 있다.",
+        "definition": "",
+        "keywords": "[\"연립일차부등식\"]",
+        "ref_code": "[10공수1-02-09]"
+    },
+    {
+        "id": "CPT-CM1-EQU-010",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "절댓값을 포함한 일차부등식을 풀 수 있다.",
+        "definition": "",
+        "keywords": "[\"절댓값\", \"일차부등식\"]",
+        "ref_code": "[10공수1-02-10]"
+    },
+    {
+        "id": "CPT-CM1-EQU-011",
+        "curriculum_unit": "공통수학1 - 방정식과 부등식",
+        "standard_name": "이차부등식과 이차함수를 연결하여 그 관계를 설명하고, 이차부등식과 연립이차부등식을 풀 수 있다.",
+        "definition": "",
+        "keywords": "[\"이차부등식\", \"연립이차부등식\"]",
+        "ref_code": "[10공수1-02-11]"
+    },
+    {
+        "id": "CPT-CM1-CNT-001",
+        "curriculum_unit": "공통수학1 - 경우의 수",
+        "standard_name": "합의 법칙과 곱의 법칙을 이해하고, 적절한 전략을 사용하여 경우의 수와 관련된 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"합의 법칙\", \"곱의 법칙\", \"경우의 수\"]",
+        "ref_code": "[10공수1-03-01]"
+    },
+    {
+        "id": "CPT-CM1-CNT-002",
+        "curriculum_unit": "공통수학1 - 경우의 수",
+        "standard_name": "순열의 개념을 이해하고, 순열의 수를 구하는 방법을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"순열\"]",
+        "ref_code": "[10공수1-03-02]"
+    },
+    {
+        "id": "CPT-CM1-CNT-003",
+        "curriculum_unit": "공통수학1 - 경우의 수",
+        "standard_name": "조합의 개념을 이해하고, 조합의 수를 구하는 방법을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"조합\"]",
+        "ref_code": "[10공수1-03-03]"
+    },
+    {
+        "id": "CPT-CM2-GEO-001",
+        "curriculum_unit": "공통수학2 - 도형의 방정식",
+        "standard_name": "선분의 내분을 이해하고, 내분점의 좌표를 계산할 수 있다.",
+        "definition": "",
+        "keywords": "[\"선분의 내분\", \"내분점\"]",
+        "ref_code": "[10공수2-01-01]"
+    },
+    {
+        "id": "CPT-CM2-GEO-002",
+        "curriculum_unit": "공통수학2 - 도형의 방정식",
+        "standard_name": "두 직선의 평행 조건과 수직 조건을 탐구하고 이해한다.",
+        "definition": "",
+        "keywords": "[\"평행 조건\", \"수직 조건\"]",
+        "ref_code": "[10공수2-01-02]"
+    },
+    {
+        "id": "CPT-CM2-GEO-003",
+        "curriculum_unit": "공통수학2 - 도형의 방정식",
+        "standard_name": "점과 직선 사이의 거리를 구하고, 관련된 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"점과 직선 사이의 거리\"]",
+        "ref_code": "[10공수2-01-03]"
+    },
+    {
+        "id": "CPT-CM2-GEO-004",
+        "curriculum_unit": "공통수학2 - 도형의 방정식",
+        "standard_name": "원의 방정식을 구하고, 그래프를 그릴 수 있다.",
+        "definition": "",
+        "keywords": "[\"원의 방정식\", \"그래프\"]",
+        "ref_code": "[10공수2-01-04]"
+    },
+    {
+        "id": "CPT-CM2-GEO-005",
+        "curriculum_unit": "공통수학2 - 도형의 방정식",
+        "standard_name": "좌표평면에서 원과 직선의 위치 관계를 판단하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"위치 관계\", \"원과 직선\"]",
+        "ref_code": "[10공수2-01-05]"
+    },
+    {
+        "id": "CPT-CM2-GEO-006",
+        "curriculum_unit": "공통수학2 - 도형의 방정식",
+        "standard_name": "평행이동을 탐구하고, 실생활과 연결하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"평행이동\"]",
+        "ref_code": "[10공수2-01-06]"
+    },
+    {
+        "id": "CPT-CM2-GEO-007",
+        "curriculum_unit": "공통수학2 - 도형의 방정식",
+        "standard_name": "원점, $x$축, $y$축, 직선 $y=x$에 대한 대칭이동을 탐구하고, 실생활과 연결하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"대칭이동\"]",
+        "ref_code": "[10공수2-01-07]"
+    },
+    {
+        "id": "CPT-CM2-SET-001",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "집합의 개념을 이해하고, 집합을 표현할 수 있다.",
+        "definition": "",
+        "keywords": "[\"집합의 개념\", \"집합의 표현\"]",
+        "ref_code": "[10공수2-02-01]"
+    },
+    {
+        "id": "CPT-CM2-SET-002",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "두 집합 사이의 포함관계를 판단할 수 있다.",
+        "definition": "",
+        "keywords": "[\"포함관계\"]",
+        "ref_code": "[10공수2-02-02]"
+    },
+    {
+        "id": "CPT-CM2-SET-003",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "집합의 연산을 수행하고, 벤 다이어그램을 이용하여 나타낼 수 있다.",
+        "definition": "",
+        "keywords": "[\"집합의 연산\", \"벤 다이어그램\"]",
+        "ref_code": "[10공수2-02-03]"
+    },
+    {
+        "id": "CPT-CM2-SET-004",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "명제와 조건의 뜻을 알고, ‘모든’, ‘어떤’을 포함한 명제를 이해하고 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"명제\", \"조건\", \"모든\", \"어떤\"]",
+        "ref_code": "[10공수2-02-04]"
+    },
+    {
+        "id": "CPT-CM2-SET-005",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "명제의 역과 대우를 이해하고 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"역\", \"대우\"]",
+        "ref_code": "[10공수2-02-05]"
+    },
+    {
+        "id": "CPT-CM2-SET-006",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "충분조건과 필요조건을 이해하고 판단할 수 있다.",
+        "definition": "",
+        "keywords": "[\"충분조건\", \"필요조건\"]",
+        "ref_code": "[10공수2-02-06]"
+    },
+    {
+        "id": "CPT-CM2-SET-007",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "대우를 이용한 증명법과 귀류법을 이해하고 관련된 명제를 증명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"증명법\", \"대우\", \"귀류법\"]",
+        "ref_code": "[10공수2-02-07]"
+    },
+    {
+        "id": "CPT-CM2-SET-008",
+        "curriculum_unit": "공통수학2 - 집합과 명제",
+        "standard_name": "절대부등식의 뜻을 알고, 간단한 절대부등식을 증명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"절대부등식\"]",
+        "ref_code": "[10공수2-02-08]"
+    },
+    {
+        "id": "CPT-CM2-FUN-001",
+        "curriculum_unit": "공통수학2 - 함수와 그래프",
+        "standard_name": "함수의 개념을 설명하고, 그 그래프를 이해한다.",
+        "definition": "",
+        "keywords": "[\"함수의 개념\", \"함수의 그래프\"]",
+        "ref_code": "[10공수2-03-01]"
+    },
+    {
+        "id": "CPT-CM2-FUN-002",
+        "curriculum_unit": "공통수학2 - 함수와 그래프",
+        "standard_name": "함수의 합성을 설명하고, 합성함수를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"합성함수\"]",
+        "ref_code": "[10공수2-03-02]"
+    },
+    {
+        "id": "CPT-CM2-FUN-003",
+        "curriculum_unit": "공통수학2 - 함수와 그래프",
+        "standard_name": "역함수의 개념을 설명하고, 역함수를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"역함수\"]",
+        "ref_code": "[10공수2-03-03]"
+    },
+    {
+        "id": "CPT-CM2-FUN-004",
+        "curriculum_unit": "공통수학2 - 함수와 그래프",
+        "standard_name": "유리함수 $y = \\frac{cx+d}{ax+b}$의 그래프를 그릴 수 있고, 그 그래프의 성질을 탐구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"유리함수\", \"그래프의 성질\"]",
+        "ref_code": "[10공수2-03-04]"
+    },
+    {
+        "id": "CPT-CM2-FUN-005",
+        "curriculum_unit": "공통수학2 - 함수와 그래프",
+        "standard_name": "무리함수 $y = \\sqrt{ax+b} + c$의 그래프를 그릴 수 있고, 그 그래프의 성질을 탐구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"무리함수\", \"그래프의 성질\"]",
+        "ref_code": "[10공수2-03-05]"
+    },
+    {
+        "id": "CPT-ALG-EXP-001",
+        "curriculum_unit": "대수 - 지수함수와 로그함수",
+        "standard_name": "거듭제곱과 거듭제곱근의 뜻을 알고, 그 성질을 이용하여 계산할 수 있다.",
+        "definition": "",
+        "keywords": "[\"거듭제곱\", \"거듭제곱근\"]",
+        "ref_code": "[12대수01-01]"
+    },
+    {
+        "id": "CPT-ALG-EXP-002",
+        "curriculum_unit": "대수 - 지수함수와 로그함수",
+        "standard_name": "지수가 유리수, 실수까지 확장될 수 있음을 이해하고, 이를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"지수의 확장\", \"유리수 지수\", \"실수 지수\"]",
+        "ref_code": "[12대수01-02]"
+    },
+    {
+        "id": "CPT-ALG-EXP-003",
+        "curriculum_unit": "대수 - 지수함수와 로그함수",
+        "standard_name": "지수법칙을 이해하고, 이를 이용하여 식을 간단히 나타낼 수 있다.",
+        "definition": "",
+        "keywords": "[\"지수법칙의 활용\", \"밑의 조건\"]",
+        "ref_code": "[12대수01-03]"
+    },
+    {
+        "id": "CPT-ALG-EXP-004",
+        "curriculum_unit": "대수 - 지수함수와 로그함수",
+        "standard_name": "로그의 뜻을 알고, 그 성질을 이용하여 계산할 수 있다.",
+        "definition": "",
+        "keywords": "[\"로그의 뜻\", \"로그의 성질\"]",
+        "ref_code": "[12대수01-04]"
+    },
+    {
+        "id": "CPT-ALG-TRI-001",
+        "curriculum_unit": "대수 - 삼각함수",
+        "standard_name": "일반각과 호도법의 뜻을 알고, 그 관계를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"일반각\", \"호도법\"]",
+        "ref_code": "[12대수02-01]"
+    },
+    {
+        "id": "CPT-ALG-TRI-002",
+        "curriculum_unit": "대수 - 삼각함수",
+        "standard_name": "삼각함수의 개념을 이해하여 사인함수, 코사인함수, 탄젠트함수의 그래프를 그리고, 그 성질을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"삼각함수\", \"그래프\", \"주기성\"]",
+        "ref_code": "[12대수02-02]"
+    },
+    {
+        "id": "CPT-ALG-TRI-003",
+        "curriculum_unit": "대수 - 삼각함수",
+        "standard_name": "사인법칙과 코사인법칙을 이해하고, 실생활 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"사인법칙\", \"코사인법칙\"]",
+        "ref_code": "[12대수02-03]"
+    },
+    {
+        "id": "CPT-ALG-SEQ-001",
+        "curriculum_unit": "대수 - 수열",
+        "standard_name": "수열의 뜻을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"수열\"]",
+        "ref_code": "[12대수03-01]"
+    },
+    {
+        "id": "CPT-ALG-SEQ-002",
+        "curriculum_unit": "대수 - 수열",
+        "standard_name": "등차수열의 뜻을 알고, 일반항, 첫째항부터 제$n$항까지의 합을 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"등차수열\", \"일반항\", \"수열의 합\"]",
+        "ref_code": "[12대수03-02]"
+    },
+    {
+        "id": "CPT-ALG-SEQ-003",
+        "curriculum_unit": "대수 - 수열",
+        "standard_name": "등비수열의 뜻을 알고, 일반항, 첫째항부터 제$n$항까지의 합을 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"등비수열\", \"일반항\", \"수열의 합\"]",
+        "ref_code": "[12대수03-03]"
+    },
+    {
+        "id": "CPT-ALG-SEQ-004",
+        "curriculum_unit": "대수 - 수열",
+        "standard_name": "$\\sum$의 뜻과 성질을 이해하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"시그마\", \"합의 기호\"]",
+        "ref_code": "[12대수03-04]"
+    },
+    {
+        "id": "CPT-ALG-SEQ-005",
+        "curriculum_unit": "대수 - 수열",
+        "standard_name": "여러 가지 수열의 첫째항부터 제$n$항까지의 합을 구하는 방법을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"여러 가지 수열\", \"수열의 합\"]",
+        "ref_code": "[12대수03-05]"
+    },
+    {
+        "id": "CPT-ALG-SEQ-006",
+        "curriculum_unit": "대수 - 수열",
+        "standard_name": "수열의 귀납적 정의를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"귀납적 정의\"]",
+        "ref_code": "[12대수03-06]"
+    },
+    {
+        "id": "CPT-CA1-LIM-001",
+        "curriculum_unit": "미적분Ⅰ - 함수의 극한과 연속",
+        "standard_name": "함수의 극한의 뜻을 알고, 이를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"함수의 극한\"]",
+        "ref_code": "[12미적Ⅰ-01-01]"
+    },
+    {
+        "id": "CPT-CA1-LIM-002",
+        "curriculum_unit": "미적분Ⅰ - 함수의 극한과 연속",
+        "standard_name": "함수의 극한에 대한 성질을 이해하고, 함수의 극한값을 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"극한의 성질\", \"극한값\"]",
+        "ref_code": "[12미적Ⅰ-01-02]"
+    },
+    {
+        "id": "CPT-CA1-LIM-003",
+        "curriculum_unit": "미적분Ⅰ - 함수의 극한과 연속",
+        "standard_name": "함수의 연속을 극한으로 탐구하고 이해한다.",
+        "definition": "",
+        "keywords": "[\"함수의 연속\"]",
+        "ref_code": "[12미적Ⅰ-01-03]"
+    },
+    {
+        "id": "CPT-CA1-LIM-004",
+        "curriculum_unit": "미적분Ⅰ - 함수의 극한과 연속",
+        "standard_name": "연속함수의 성질을 이해하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"연속함수의 성질\"]",
+        "ref_code": "[12미적Ⅰ-01-04]"
+    },
+    {
+        "id": "CPT-CA1-DIF-001",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "미분계수를 이해하고, 이를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"미분계수\", \"순간변화율\"]",
+        "ref_code": "[12미적Ⅰ-02-01]"
+    },
+    {
+        "id": "CPT-CA1-DIF-002",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "함수의 미분가능성과 연속성의 관계를 설명하고, 이를 활용할 수 있다.",
+        "definition": "",
+        "keywords": "[\"미분가능성\", \"연속성\"]",
+        "ref_code": "[12미적Ⅰ-02-02]"
+    },
+    {
+        "id": "CPT-CA1-DIF-003",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "함수 $y = x^n$ ($n$은 양의 정수)의 도함수를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"도함수\"]",
+        "ref_code": "[12미적Ⅰ-02-03]"
+    },
+    {
+        "id": "CPT-CA1-DIF-004",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "함수의 실수배, 합, 차, 곱의 미분법을 알고, 다항함수의 도함수를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"미분법\", \"다항함수\"]",
+        "ref_code": "[12미적Ⅰ-02-04]"
+    },
+    {
+        "id": "CPT-CA1-DIF-005",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "미분계수와 접선의 기울기의 관계를 이해하고, 접선의 방정식을 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"접선의 기울기\", \"접선의 방정식\"]",
+        "ref_code": "[12미적Ⅰ-02-05]"
+    },
+    {
+        "id": "CPT-CA1-DIF-006",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "함수에 대한 평균값 정리를 설명하고, 이를 활용할 수 있다.",
+        "definition": "",
+        "keywords": "[\"평균값 정리\"]",
+        "ref_code": "[12미적Ⅰ-02-06]"
+    },
+    {
+        "id": "CPT-CA1-DIF-007",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "함수의 증가와 감소, 극대와 극소를 판정하고 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"증가와 감소\", \"극대와 극소\"]",
+        "ref_code": "[12미적Ⅰ-02-07]"
+    },
+    {
+        "id": "CPT-CA1-DIF-008",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "함수의 그래프의 개형을 그릴 수 있다.",
+        "definition": "",
+        "keywords": "[\"그래프의 개형\"]",
+        "ref_code": "[12미적Ⅰ-02-08]"
+    },
+    {
+        "id": "CPT-CA1-DIF-009",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "방정식과 부등식에 대한 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"방정식과 부등식\", \"문제해결\"]",
+        "ref_code": "[12미적Ⅰ-02-09]"
+    },
+    {
+        "id": "CPT-CA1-DIF-010",
+        "curriculum_unit": "미적분Ⅰ - 미분",
+        "standard_name": "미분을 속도와 가속도에 대한 문제에 활용하고, 그 유용성을 인식할 수 있다.",
+        "definition": "",
+        "keywords": "[\"속도\", \"가속도\"]",
+        "ref_code": "[12미적Ⅰ-02-10]"
+    },
+    {
+        "id": "CPT-CA1-INT-001",
+        "curriculum_unit": "미적분Ⅰ - 적분",
+        "standard_name": "부정적분의 뜻을 알고, 이를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"부정적분\"]",
+        "ref_code": "[12미적Ⅰ-03-01]"
+    },
+    {
+        "id": "CPT-CA1-INT-002",
+        "curriculum_unit": "미적분Ⅰ - 적분",
+        "standard_name": "함수의 실수배, 합, 차의 부정적분을 알고, 다항함수의 부정적분을 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"부정적분의 계산\", \"다항함수\"]",
+        "ref_code": "[12미적Ⅰ-03-02]"
+    },
+    {
+        "id": "CPT-CA1-INT-003",
+        "curriculum_unit": "미적분Ⅰ - 적분",
+        "standard_name": "정적분의 개념을 탐구하고, 그 성질을 이해한다.",
+        "definition": "",
+        "keywords": "[\"정적분의 개념\", \"정적분의 성질\"]",
+        "ref_code": "[12미적Ⅰ-03-03]"
+    },
+    {
+        "id": "CPT-CA1-INT-004",
+        "curriculum_unit": "미적분Ⅰ - 적분",
+        "standard_name": "부정적분과 정적분의 관계를 이해하고, 다항함수의 정적분을 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"부정적분과 정적분의 관계\"]",
+        "ref_code": "[12미적Ⅰ-03-04]"
+    },
+    {
+        "id": "CPT-CA1-INT-005",
+        "curriculum_unit": "미적분Ⅰ - 적분",
+        "standard_name": "곡선으로 둘러싸인 도형의 넓이에 대한 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"도형의 넓이\"]",
+        "ref_code": "[12미적Ⅰ-03-05]"
+    },
+    {
+        "id": "CPT-CA1-INT-006",
+        "curriculum_unit": "미적분Ⅰ - 적분",
+        "standard_name": "적분을 속도와 거리에 대한 문제에 활용하고, 그 유용성을 인식할 수 있다.",
+        "definition": "",
+        "keywords": "[\"속도\", \"거리\"]",
+        "ref_code": "[12미적Ⅰ-03-06]"
+    },
+    {
+        "id": "CPT-STA-CNT-001",
+        "curriculum_unit": "확률과 통계 - 경우의 수",
+        "standard_name": "중복순열, 같은 것이 있는 순열을 이해하고, 그 순열의 수를 구하는 방법을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"중복순열\", \"같은 것이 있는 순열\"]",
+        "ref_code": "[12확통01-01]"
+    },
+    {
+        "id": "CPT-STA-CNT-002",
+        "curriculum_unit": "확률과 통계 - 경우의 수",
+        "standard_name": "중복조합을 이해하고, 중복조합의 수를 구하는 방법을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"중복조합\"]",
+        "ref_code": "[12확통01-02]"
+    },
+    {
+        "id": "CPT-STA-CNT-003",
+        "curriculum_unit": "확률과 통계 - 경우의 수",
+        "standard_name": "이항정리를 이해하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"이항정리\"]",
+        "ref_code": "[12확통01-03]"
+    },
+    {
+        "id": "CPT-STA-PRO-001",
+        "curriculum_unit": "확률과 통계 - 확률",
+        "standard_name": "확률의 개념을 이해하고 기본 성질을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"수학적 확률\", \"통계적 확률\", \"확률의 기본 성질\"]",
+        "ref_code": "[12확통02-01]"
+    },
+    {
+        "id": "CPT-STA-PRO-002",
+        "curriculum_unit": "확률과 통계 - 확률",
+        "standard_name": "확률의 덧셈정리를 이해하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"확률의 덧셈정리\"]",
+        "ref_code": "[12확통02-02]"
+    },
+    {
+        "id": "CPT-STA-PRO-003",
+        "curriculum_unit": "확률과 통계 - 확률",
+        "standard_name": "여사건의 확률을 이해하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"여사건의 확률\"]",
+        "ref_code": "[12확통02-03]"
+    },
+    {
+        "id": "CPT-STA-PRO-004",
+        "curriculum_unit": "확률과 통계 - 확률",
+        "standard_name": "조건부확률을 이해하고, 이를 실생활과 연결하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"조건부확률\"]",
+        "ref_code": "[12확통02-04]"
+    },
+    {
+        "id": "CPT-STA-PRO-005",
+        "curriculum_unit": "확률과 통계 - 확률",
+        "standard_name": "사건의 독립과 종속을 이해하고, 이를 판단할 수 있다.",
+        "definition": "",
+        "keywords": "[\"독립\", \"종속\"]",
+        "ref_code": "[12확통02-05]"
+    },
+    {
+        "id": "CPT-STA-PRO-006",
+        "curriculum_unit": "확률과 통계 - 확률",
+        "standard_name": "확률의 곱셈정리를 이해하고, 이를 활용하여 문제를 해결할 수 있다.",
+        "definition": "",
+        "keywords": "[\"확률의 곱셈정리\"]",
+        "ref_code": "[12확통02-06]"
+    },
+    {
+        "id": "CPT-STA-STA-001",
+        "curriculum_unit": "확률과 통계 - 통계",
+        "standard_name": "확률변수와 확률분포의 뜻을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"확률변수\", \"확률분포\"]",
+        "ref_code": "[12확통03-01]"
+    },
+    {
+        "id": "CPT-STA-STA-002",
+        "curriculum_unit": "확률과 통계 - 통계",
+        "standard_name": "이산확률변수의 기댓값(평균)과 표준편차를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"기댓값\", \"표준편차\", \"이산확률변수\"]",
+        "ref_code": "[12확통03-02]"
+    },
+    {
+        "id": "CPT-STA-STA-003",
+        "curriculum_unit": "확률과 통계 - 통계",
+        "standard_name": "이항분포의 뜻과 성질을 이해하고, 평균과 표준편차를 구할 수 있다.",
+        "definition": "",
+        "keywords": "[\"이항분포\"]",
+        "ref_code": "[12확통03-03]"
+    },
+    {
+        "id": "CPT-STA-STA-004",
+        "curriculum_unit": "확률과 통계 - 통계",
+        "standard_name": "정규분포의 뜻과 성질을 이해하고, 이항분포와의 관계를 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"정규분포\", \"이항분포와의 관계\"]",
+        "ref_code": "[12확통03-04]"
+    },
+    {
+        "id": "CPT-STA-STA-005",
+        "curriculum_unit": "확률과 통계 - 통계",
+        "standard_name": "모집단과 표본의 뜻을 알고, 표본추출의 방법을 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"모집단\", \"표본\", \"표본추출\"]",
+        "ref_code": "[12확통03-05]"
+    },
+    {
+        "id": "CPT-STA-STA-006",
+        "curriculum_unit": "확률과 통계 - 통계",
+        "standard_name": "표본평균과 모평균, 표본비율과 모비율의 관계를 이해하고 설명할 수 있다.",
+        "definition": "",
+        "keywords": "[\"표본평균\", \"모평균\", \"표본비율\", \"모비율\"]",
+        "ref_code": "[12확통03-06]"
+    },
+    {
+        "id": "CPT-STA-STA-007",
+        "curriculum_unit": "확률과 통계 - 통계",
+        "standard_name": "공학 도구를 이용하여 모평균 및 모비율을 추정하고 그 결과를 해석할 수 있다.",
+        "definition": "",
+        "keywords": "[\"모평균 추정\", \"모비율 추정\", \"공학 도구 활용\"]",
+        "ref_code": "[12확통03-07]"
+    }
+]

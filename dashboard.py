@@ -1,0 +1,818 @@
+import sqlite3
+import json
+import re
+import os
+import unicodedata
+import numpy as np
+import pypdfium2 as pdfium
+from flask import Flask, render_template, jsonify, request, send_from_directory, send_file
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+
+app = Flask(__name__)
+DB_FILE = 'kice_database.sqlite'
+THUMBNAIL_DIR = os.path.join('static', 'thumbnails')
+VECTORS_FILE = 'kice_step_vectors.npz'
+os.makedirs(THUMBNAIL_DIR, exist_ok=True)
+
+# ── 텍스트 임베딩 모델 및 벡터 인덱스 로드 ──────────────────────
+print("[로딩 중] 한국어 문장 임베딩 모델...")
+model = SentenceTransformer('dragonkue/BGE-m3-ko')
+_vec_data = None
+
+def load_vector_index():
+    global _vec_data
+    if os.path.exists(VECTORS_FILE):
+        data = np.load(VECTORS_FILE, allow_pickle=True)
+        _vec_data = {
+            'step_ids':    data['step_ids'],
+            'vectors':     data['vectors'],
+            'concept_ids': data['concept_ids'],
+            'problem_ids': data['problem_ids'],
+            'step_numbers':data['step_numbers'],
+            'step_texts':  data['step_texts'],
+        }
+        print(f"[벡터 인덱스 로드됨] {len(_vec_data['step_ids'])}개 스텝")
+    else:
+        print(f"[경고] {VECTORS_FILE} 없음. build_vectors.py를 실행하세요.")
+
+load_vector_index()
+
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/pdf/<path:filename>')
+def serve_pdf(filename):
+    return send_from_directory('PDF_Ref', filename)
+
+@app.route('/thumbnail/<problem_id>')
+def serve_thumbnail(problem_id):
+    thumb_path = os.path.join(THUMBNAIL_DIR, f'{problem_id}.png')
+    if not os.path.exists(thumb_path):
+        pdf_path = os.path.join('PDF_Ref', f'{problem_id}.pdf')
+        if not os.path.exists(pdf_path):
+            return '', 404
+        pdf = pdfium.PdfDocument(pdf_path)
+        page = pdf[0]
+        # Render at 2x scale for sharpness: width ~480px at 2x = 960px native
+        bitmap = page.render(scale=2.5)
+        pil_image = bitmap.to_pil()
+        pil_image.save(thumb_path, 'PNG', optimize=True)
+        pdf.close()
+    return send_file(thumb_path, mimetype='image/png')
+
+
+@app.route('/api/similar_steps/<int:step_id>')
+def similar_steps(step_id):
+    if _vec_data is None:
+        return jsonify({'error': '벡터 인덱스가 로드되지 않았습니다. build_vectors.py를 실행하세요.'}), 503
+
+    top_n = int(request.args.get('top_n', 10))
+    step_ids = _vec_data['step_ids']
+
+    # 쿼리 스텝 인덱스 찾기
+    matches = np.where(step_ids == step_id)[0]
+    if len(matches) == 0:
+        return jsonify({'error': f'step_id {step_id} 를 벡터 인덱스에서 찾을 수 없습니다.'}), 404
+    q_idx = matches[0]
+
+    q_vector = _vec_data['vectors'][q_idx:q_idx+1]  # (1, D)
+    q_concept = _vec_data['concept_ids'][q_idx]
+
+    # 코사인 유사도 계산 (벡터가 정규화되어 있으므로 내적 = 코사인)
+    cos_sims = cosine_similarity(q_vector, _vec_data['vectors'])[0]  # (N,)
+
+    # concept_id 일치 보너스 (0.0 or 0.5)
+    concept_bonus = np.array([
+        0.5 if (c == q_concept and q_concept != '') else 0.0
+        for c in _vec_data['concept_ids']
+    ], dtype=np.float32)
+
+    # 하이브리드 점수 = 0.5 * cos_sim + 0.5 * concept_bonus (bonus는 0 또는 0.5이므로 총합 0~1 범위)
+    hybrid_scores = 0.5 * cos_sims + concept_bonus
+
+    # 자기 자신 제외 후 상위 top_n 정렬
+    hybrid_scores[q_idx] = -1.0
+    top_indices = np.argsort(hybrid_scores)[::-1][:top_n]
+
+    # DB에서 추가 메타데이터 조회
+    conn = get_db_connection()
+    results = []
+    for idx in top_indices:
+        sid = int(step_ids[idx])
+        row = conn.execute('''
+            SELECT s.step_id, s.problem_id, s.step_number, s.step_title, s.action_concept_id,
+                   c.standard_name, c.ref_code
+            FROM steps s
+            LEFT JOIN concepts c ON s.action_concept_id = c.id
+            WHERE s.step_id = ?
+        ''', (sid,)).fetchone()
+        if row:
+            results.append({
+                'step_id': row['step_id'],
+                'problem_id': row['problem_id'],
+                'step_number': row['step_number'],
+                'step_title': row['step_title'],
+                'action_concept_id': row['action_concept_id'],
+                'standard_name': row['standard_name'],
+                'ref_code': row['ref_code'],
+                'cos_similarity': round(float(cos_sims[idx]), 4),
+                'hybrid_score': round(float(hybrid_scores[idx]), 4),
+                'same_concept': bool(_vec_data['concept_ids'][idx] == q_concept and q_concept != ''),
+            })
+    conn.close()
+
+    query_row = conn = get_db_connection()
+    q_info = get_db_connection().execute(
+        'SELECT step_title, action_concept_id, problem_id, step_number FROM steps WHERE step_id=?',
+        (step_id,)
+    ).fetchone()
+    return jsonify({
+        'query': {
+            'step_id': step_id,
+            'step_title': q_info['step_title'] if q_info else '',
+            'action_concept_id': q_info['action_concept_id'] if q_info else '',
+            'problem_id': q_info['problem_id'] if q_info else '',
+            'step_number': q_info['step_number'] if q_info else 0,
+        },
+        'results': results
+    })
+
+
+@app.route('/api/stats')
+def stats():
+    conn = get_db_connection()
+    stats_data = {}
+    
+    # 1. Basic Counts
+    stats_data['total_analyzed'] = conn.execute('SELECT COUNT(*) FROM problems').fetchone()[0]
+    
+    # 2. PDF File Counts and Yearly Progress
+    pdf_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PDF_Ref')
+    yearly_pdfs = {}
+    total_pdfs = 0
+    if os.path.exists(pdf_dir):
+        for f in os.listdir(pdf_dir):
+            if f.endswith('.pdf'):
+                total_pdfs += 1
+                # filename format: YYYY.MM... or YYYY수능...
+                m = re.match(r'^(\d{4})', f)
+                if m:
+                    year = m.group(1)
+                    yearly_pdfs[year] = yearly_pdfs.get(year, 0) + 1
+    
+    stats_data['total_pdfs'] = total_pdfs
+    
+    # 3. Yearly Analysis Status
+    yearly_analyzed = {}
+    rows = conn.execute('SELECT year, COUNT(*) as cnt FROM problems GROUP BY year').fetchall()
+    for row in rows:
+        yearly_analyzed[str(row['year'])] = row['cnt']
+        
+    # Combine into a sorted list
+    progress_list = []
+    # Use all years found in either PDFs or DB
+    all_years = sorted(list(set(yearly_pdfs.keys()) | set(yearly_analyzed.keys())), reverse=True)
+    for y in all_years:
+        total = yearly_pdfs.get(y, 0)
+        analyzed = yearly_analyzed.get(y, 0)
+        percent = round((analyzed / total * 100), 1) if total > 0 else 0
+        progress_list.append({
+            'year': y,
+            'total': total,
+            'analyzed': analyzed,
+            'percent': percent
+        })
+    
+    stats_data['yearly_progress'] = progress_list
+    
+    # 4. Top Concepts and Pairs (Existing)
+    stats_data['top_concepts'] = [dict(row) for row in conn.execute('''
+        SELECT c.id, c.standard_name, c.ref_code, COUNT(*) as cnt 
+        FROM steps s
+        JOIN concepts c ON s.action_concept_id = c.id
+        GROUP BY c.id ORDER BY cnt DESC LIMIT 5
+    ''').fetchall()]
+    
+    stats_data['top_pairs'] = [dict(row) for row in conn.execute('''
+        SELECT t.normalized_text as trigger_cat, c.standard_name, c.ref_code, COUNT(*) as cnt
+        FROM triggers t
+        JOIN step_triggers st ON t.trigger_id = st.trigger_id
+        JOIN steps s ON st.step_id = s.step_id
+        LEFT JOIN concepts c ON s.action_concept_id = c.id
+        WHERE t.normalized_text != "" AND t.normalized_text != "[미분류 기타 조건]"
+        GROUP BY t.normalized_text, s.action_concept_id
+        ORDER BY cnt DESC LIMIT 7
+    ''').fetchall()]
+    
+    conn.close()
+    return jsonify(stats_data)
+
+@app.route('/api/search')
+def search():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify({"results": []})
+        
+    conn = get_db_connection()
+    is_exact_code = query.startswith('CPT-') or (len(query) > 3 and query[0].isdigit() and ('모' in query or '수능' in query))
+
+    if is_exact_code or _vec_data is None:
+        # Fallback to pure DB LIKE search for Concept IDs or Problem IDs
+        results = [dict(row) for row in conn.execute('''
+            WITH matched_problems AS (
+                SELECT DISTINCT p.problem_id
+                FROM problems p
+                JOIN steps s ON p.problem_id = s.problem_id
+                LEFT JOIN step_triggers st ON s.step_id = st.step_id
+                LEFT JOIN triggers t ON st.trigger_id = t.trigger_id
+                LEFT JOIN concepts c ON s.action_concept_id = c.id
+                WHERE t.trigger_text LIKE ? OR t.normalized_text LIKE ? OR c.standard_name LIKE ? OR s.action_concept_id LIKE ? OR c.ref_code LIKE ? OR s.step_title LIKE ? OR p.problem_id LIKE ?
+            )
+            SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text,
+                   (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
+                   COALESCE(s.step_title, '') AS trigger_text, 
+                   s.step_title,
+                   '' AS normalized_text,
+                   s.action_concept_id, 
+                   c.standard_name, 
+                   c.ref_code
+            FROM steps s
+            JOIN matched_problems mp ON s.problem_id = mp.problem_id
+            LEFT JOIN concepts c ON s.action_concept_id = c.id
+            ORDER BY s.problem_id DESC, s.step_number ASC
+        ''', (f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%')).fetchall()]
+        conn.close()
+        return jsonify({"results": results})
+    
+    # Semantic Search Flow
+    q_vector = model.encode([query])[0]
+    q_vector_norm = q_vector / np.linalg.norm(q_vector)
+    
+    # Calculate cosine similarity against all step vectors
+    cos_sims = np.dot(_vec_data['vectors'], q_vector_norm)
+    
+    # Get indices sorted by similarity
+    top_indices = np.argsort(cos_sims)[::-1]
+    
+    top_unique_probs = []
+    seen_probs = set()
+    prob_scores = {}
+    
+    for idx in top_indices:
+        prob_id = str(_vec_data['problem_ids'][idx])
+        score = round(float(cos_sims[idx]), 4)
+        if prob_id not in seen_probs:
+            seen_probs.add(prob_id)
+            top_unique_probs.append(prob_id)
+            prob_scores[prob_id] = score
+        if len(top_unique_probs) >= 20: 
+            break
+            
+    if not top_unique_probs:
+        conn.close()
+        return jsonify({"results": []})
+        
+    placeholder = ','.join('?' for _ in top_unique_probs)
+    rows = conn.execute(f'''
+        SELECT s.step_id, s.problem_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text,
+               c.standard_name, c.ref_code,
+               (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps
+        FROM steps s
+        LEFT JOIN concepts c ON s.action_concept_id = c.id
+        WHERE s.problem_id IN ({placeholder})
+    ''', top_unique_probs).fetchall()
+    
+    results = []
+    for row in rows:
+        res_dict = dict(row)
+        res_dict['trigger_text'] = row['step_title'] or ''
+        
+        pid = row['problem_id']
+        res_dict['cos_similarity'] = prob_scores.get(pid, 0.0)
+        res_dict['hybrid_score'] = prob_scores.get(pid, 0.0)
+        res_dict['same_concept'] = False
+        results.append(res_dict)
+        
+    results.sort(key=lambda r: (-r['cos_similarity'], r['step_number']))
+    
+    conn.close()
+    return jsonify({"results": results})
+
+
+@app.route('/api/steps_by_problems')
+def steps_by_problems():
+    """Return all steps for a given list of problem_ids (comma-separated).
+    Used by the similar-steps main view to show all steps per problem."""
+    prob_ids_str = request.args.get('ids', '')
+    if not prob_ids_str:
+        return jsonify({'results': []})
+
+    prob_ids = [p.strip() for p in prob_ids_str.split(',') if p.strip()]
+    if not prob_ids:
+        return jsonify({'results': []})
+
+    placeholders = ','.join('?' * len(prob_ids))
+    conn = get_db_connection()
+    rows = [dict(r) for r in conn.execute(f'''
+        SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text,
+               (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
+               COALESCE(s.step_title, '') AS trigger_text,
+               s.step_title,
+               s.action_concept_id,
+               c.standard_name,
+               c.ref_code
+        FROM steps s
+        LEFT JOIN concepts c ON s.action_concept_id = c.id
+        WHERE s.problem_id IN ({placeholders})
+        ORDER BY s.step_number ASC
+    ''', prob_ids).fetchall()]
+    conn.close()
+
+    # Re-order rows so problem_ids appear in the original given order
+    order = {pid: i for i, pid in enumerate(prob_ids)}
+    rows.sort(key=lambda r: (order.get(r['problem_id'], 999), r['step_number']))
+    return jsonify({'results': rows})
+
+@app.route('/api/steps_by_concept')
+def steps_by_concept():
+    """concept_id(CPT-...)가 적용된 문항들의 모든 스텝을 반환.
+    해당 성취기준을 가진 스텝만이 아니라, 그 문항의 전체 스텝을 반환한다."""
+    concept_id = request.args.get('concept_id', '').strip()
+    if not concept_id:
+        return jsonify({'results': []})
+
+    conn = get_db_connection()
+    rows = conn.execute('''
+        WITH matched_problems AS (
+            SELECT DISTINCT problem_id FROM steps WHERE action_concept_id = ?
+        )
+        SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text,
+               (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
+               COALESCE(s.step_title, '') AS trigger_text,
+               s.step_title,
+               s.action_concept_id,
+               c.standard_name,
+               c.ref_code
+        FROM steps s
+        JOIN matched_problems mp ON s.problem_id = mp.problem_id
+        LEFT JOIN concepts c ON s.action_concept_id = c.id
+        ORDER BY s.problem_id DESC, s.step_number ASC
+    ''', (concept_id,)).fetchall()
+    conn.close()
+
+    return jsonify({'results': [dict(r) for r in rows]})
+
+@app.route('/api/update_step_concept', methods=['PATCH'])
+def update_step_concept():
+    """step_id의 action_concept_id를 new_concept_id로 변경하고 Sol MD 파일도 업데이트."""
+    data = request.get_json()
+    step_id = data.get('step_id')
+    new_concept_id = data.get('new_concept_id')  # CPT-... 형식의 내부 id
+
+    if not step_id or not new_concept_id:
+        return jsonify({'error': 'step_id와 new_concept_id가 필요합니다.'}), 400
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    conn = get_db_connection()
+
+    try:
+        # 현재 스텝 정보 조회
+        row = conn.execute(
+            'SELECT problem_id, step_number, action_concept_id FROM steps WHERE step_id = ?',
+            (step_id,)
+        ).fetchone()
+        if not row:
+            return jsonify({'error': f'step_id {step_id}를 찾을 수 없습니다.'}), 404
+
+        problem_id = row['problem_id']
+        step_number = row['step_number']
+        old_concept_id = row['action_concept_id']
+
+        # 1. DB 업데이트
+        conn.execute(
+            'UPDATE steps SET action_concept_id = ? WHERE step_id = ?',
+            (new_concept_id, step_id)
+        )
+        conn.commit()
+
+        # 2. Sol MD 파일 찾기: Sol/{year}/{problem_id}.md
+        #    연도는 problem_id 앞 4자리 숫자 (예: 2025.6모_01 → 2025)
+        import glob
+        year_match = re.match(r'^(\d{4})', problem_id)
+        sol_path = None
+        if year_match:
+            year = year_match.group(1)
+            candidate = os.path.join(base_dir, 'Sol', year, f'{problem_id}.md')
+            if os.path.exists(candidate):
+                sol_path = candidate
+
+        # 연도 폴더 구조가 없을 경우 루트도 탐색
+        if not sol_path:
+            candidate = os.path.join(base_dir, 'Sol', f'{problem_id}.md')
+            if os.path.exists(candidate):
+                sol_path = candidate
+
+        file_updated = False
+        if sol_path:
+            with open(sol_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # [Step N] 헤더를 찾고 그 이후 첫 번째 Action 라인의 [CPT-...] 교체
+            # 패턴: ## [Step {step_number}] 헤더 다음 블록에서 - **Action**: [...] CPT-ID 부분만
+            step_header_pattern = re.compile(
+                r'(##\s+\[Step\s+' + str(step_number) + r'\][^\n]*\n'   # ## [Step N] 헤더
+                r'(?:(?!##\s+\[Step\s+\d+\]).)*?)'                       # 다음 ## [Step 까지 아닌 내용
+                r'(- \*\*Action\*\*:\s*\[)'                               # - **Action**: [ 캡처
+                r'[A-Z0-9\-]+'                                            # 현재 concept id
+                r'(\])',                                                   # ] 캡처
+                re.DOTALL
+            )
+
+            new_content, n_subs = step_header_pattern.subn(
+                r'\g<1>\g<2>' + new_concept_id + r'\g<3>',
+                content,
+                count=1
+            )
+
+            if n_subs > 0:
+                with open(sol_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                file_updated = True
+
+        return jsonify({
+            'success': True,
+            'step_id': step_id,
+            'problem_id': problem_id,
+            'step_number': step_number,
+            'old_concept_id': old_concept_id,
+            'new_concept_id': new_concept_id,
+            'file_updated': file_updated,
+            'sol_path': sol_path
+        })
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+
+@app.route('/api/concepts_tree')
+
+def concepts_tree():
+    try:
+        with open('concepts.json', 'r', encoding='utf-8') as f:
+            concepts = json.load(f)
+            
+        tree = {}
+        for c in concepts:
+            ref = c.get('ref_code', '')
+            if not ref: continue
+            
+            unit_full = c.get('curriculum_unit', '')
+            if ' - ' in unit_full:
+                parts = unit_full.split(' - ')
+                raw_subj = parts[0].strip()
+                unit_name = parts[-1].strip()
+            else:
+                raw_subj = '기타'
+                unit_name = unit_full
+                
+            # Map raw subjects to display names
+            if raw_subj.startswith('중학교 수학'):
+                subject = '중학교 수학'
+            elif raw_subj.startswith('공통수학'):
+                subject = '공통수학'
+            elif raw_subj == '대수':
+                subject = '대수'
+            elif raw_subj == '미적분Ⅰ':
+                subject = '미적분I'
+            elif raw_subj == '확률과 통계':
+                subject = '확률과 통계'
+            else:
+                subject = raw_subj
+                
+            # Extract chapter number from ref_code if possible (e.g., [12대수01-02] -> 01)
+            m = re.search(r'\[.+?(\d{2})-\d{2}\]', ref)
+            chapter = m.group(1) if m else '00'
+                
+            combined_unit = f"{chapter}. {unit_name}"
+            
+            if subject not in tree:
+                tree[subject] = {}
+            if combined_unit not in tree[subject]:
+                tree[subject][combined_unit] = []
+                
+            tree[subject][combined_unit].append({
+                'id': c['id'],
+                'ref_code': ref,
+                'standard_name': c['standard_name']
+            })
+            
+        return jsonify(tree)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+import ast
+import operator
+import shlex
+
+def parse_and_evaluate_query(query, text, file_path):
+    # This is a robust but simplified boolean evaluator.
+    # To fully support arbitrary AND/OR/NOT/Grouping robustly without writing a full compiler frontend,
+    # we can use a tokenizing approach and recursively evaluate.
+    # For now, let's implement a capable subset:
+    # 1. path: filter
+    # 2. /regex/ filter
+    # 3. "exact match"
+    # 4. -NOT
+    # 5. OR (|)
+    # 6. implicit AND
+    
+    # Extract path filter
+    path_filter = None
+    path_match = re.search(r'path:(\S+)', query)
+    if path_match:
+        path_filter = path_match.group(1)
+        query = query.replace(path_match.group(0), '')
+        if path_filter.lower() not in file_path.lower():
+            return False, []
+
+    # Tokenize the remaining query
+    try:
+        # User might use quotes for exact match
+        tokens = shlex.split(query)
+    except ValueError:
+        # Fallback if quotes are unbalanced
+        tokens = query.split()
+        
+    if not tokens:
+        return (True, []) if path_filter else (False, [])
+
+    # We will collect 'highlights' (words/patterns that matched)
+    highlights = set()
+
+    # Simple evaluation:
+    # If a token starts with '-', it must NOT be in text.
+    # If tokens are joined by OR (or |), at least one must be in text.
+    # Otherwise, all other (AND) tokens must be in text.
+    
+    # Group by ORs.
+    # Actually, a proper boolean evaluator is complex. Let's do a simplified one:
+    # Split by 'OR' or '|' into AND-groups.
+    # "A B OR C -D" -> Group 1: ["A", "B"], Group 2: ["C", "-D"]
+    # At least one AND-group must fully match.
+    
+    raw_groups = query.replace(' | ', ' OR ').split(' OR ')
+    
+    matched_any_group = False
+    
+    for r_group in raw_groups:
+        try:
+            g_tokens = shlex.split(r_group)
+        except ValueError:
+            g_tokens = r_group.split()
+            
+        group_match = True
+        group_highlights = set()
+        
+        for token in g_tokens:
+            is_not = token.startswith('-')
+            term = token[1:] if is_not else token
+            
+            # Check for regex /.../
+            is_regex = False
+            if term.startswith('/') and term.endswith('/') and len(term) > 2:
+                is_regex = True
+                pattern = term[1:-1]
+            
+            term_found = False
+            
+            if is_regex:
+                try:
+                    matches = list(re.finditer(pattern, text))
+                    if matches:
+                        term_found = True
+                        for m in matches:
+                            group_highlights.add(m.group(0))
+                except re.error:
+                    pass # Invalid regex, ignore or treat as not found
+            else:
+                # Exact match or normal word
+                if term in text:
+                    term_found = True
+                    group_highlights.add(term)
+                    
+            if is_not:
+                if term_found:
+                    group_match = False
+                    break
+            else:
+                if not term_found:
+                    group_match = False
+                    break
+                    
+        if group_match and g_tokens:
+            matched_any_group = True
+            highlights.update(group_highlights)
+            # We don't break early because we want to collect all possible highlights from OR groups if they also match
+            
+    if matched_any_group or (not tokens and path_filter):
+        return True, list(highlights)
+    return False, []
+
+def strip_frontmatter(text):
+    """YAML front matter(--- ... ---)와 Obsidian 이미지 링크(![[...]])를 제거하고
+    실제 문제 본문만 반환합니다."""
+    lines = text.splitlines(keepends=True)
+    result_lines = []
+    in_frontmatter = False
+    frontmatter_done = False
+    dashes_seen = 0
+
+    for line in lines:
+        stripped = line.strip()
+        # YAML front matter: 파일 첫 줄이 --- 이면 블록 시작
+        if not frontmatter_done:
+            if stripped == '---':
+                dashes_seen += 1
+                in_frontmatter = not in_frontmatter
+                if dashes_seen == 2:          # 닫는 --- 통과
+                    frontmatter_done = True
+                continue                       # --- 라인 자체는 제외
+            elif in_frontmatter:
+                continue                       # front matter 내부 키-값 제외
+            else:
+                frontmatter_done = True        # --- 가 없으면 front matter 없는 파일
+
+        # Obsidian 이미지 링크: ![[파일명.pdf]] 형태 제외
+        if stripped.startswith('![[') and stripped.endswith(']]'):
+            continue
+
+        result_lines.append(line)
+
+    return ''.join(result_lines)
+
+def extract_snippet(text, highlights, surround=50):
+    if not highlights:
+        return text[:100] + "..."
+        
+    # Find the earliest occurrence of any highlight
+    earliest_idx = len(text)
+    best_hl = ""
+    for hl in highlights:
+        idx = text.find(hl)
+        if idx != -1 and idx < earliest_idx:
+            earliest_idx = idx
+            best_hl = hl
+            
+    if earliest_idx == len(text):
+        return text[:100] + "..."
+        
+    start = max(0, earliest_idx - surround)
+    end = min(len(text), earliest_idx + len(best_hl) + surround)
+    
+    snippet = text[start:end]
+    if start > 0:
+        snippet = "..." + snippet
+    if end < len(text):
+        snippet = snippet + "..."
+        
+    # Apply <mark> tags
+    for hl in highlights:
+        # Simple string replace for highlighting.
+        # Note: this might break if highlights overlap or contain HTML.
+        snippet = snippet.replace(hl, f"<mark>{hl}</mark>")
+        
+    return snippet
+
+@app.route('/api/search_expression', methods=['GET'])
+def search_expression():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify({"count": 0, "results": []})
+        
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MD_Ref')
+    if not os.path.exists(base_dir):
+        return jsonify({"error": "MD_Ref directory not found"}), 404
+
+    matched_files = []
+
+    for root, dirs, files in os.walk(base_dir):
+        for file in files:
+            if not file.endswith('.md'):
+                continue
+
+            problem_id_str = unicodedata.normalize('NFC', file.replace('.md', ''))
+            file_path = os.path.join(root, file)
+            rel_path = os.path.relpath(file_path, base_dir)
+
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    raw_content = f.read()
+            except Exception:
+                continue
+
+            # 메타데이터(front matter, 이미지 링크) 제거 후 실제 문제 본문만 검색
+            searchable_content = strip_frontmatter(raw_content)
+
+            is_match, highlights = parse_and_evaluate_query(query, searchable_content, rel_path)
+
+            if is_match:
+                snippet = extract_snippet(searchable_content, highlights)
+                matched_files.append({
+                    "problem_id": problem_id_str,
+                    "file_path": rel_path,
+                    "snippet": snippet,
+                    "title": problem_id_str,
+                    "highlights": highlights
+                })
+
+    return jsonify({
+        "count": len(matched_files),
+        "results": matched_files
+    })
+
+import markdown
+
+@app.route('/docs/search_rules')
+def serve_search_rules():
+    rules_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Docs', 'search_rules.md')
+    if os.path.exists(rules_path):
+        with open(rules_path, 'r', encoding='utf-8') as f:
+            md_content = f.read()
+            html_content = markdown.markdown(md_content, extensions=['fenced_code'])
+            
+            full_html = f'''
+            <!DOCTYPE html>
+            <html lang="ko">
+            <head>
+                <meta charset="UTF-8">
+                <title>KICE 검색 규칙 가이드</title>
+                <style>
+                    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; padding: 2rem; max-width: 800px; margin: 0 auto; color: #333; }}
+                    code {{ background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; color: #ef4444; }}
+                    pre code {{ background: none; color: inherit; }}
+                    pre {{ background: #f8fafc; padding: 1rem; border-radius: 8px; overflow-x: auto; }}
+                    h1, h2, h3 {{ color: #0f172a; margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }}
+                    a {{ color: #3b82f6; text-decoration: none; }}
+                    a:hover {{ text-decoration: underline; }}
+                    li {{ margin-bottom: 0.5rem; }}
+                </style>
+            </head>
+            <body>
+                {html_content}
+            </body>
+            </html>
+            '''
+            return full_html
+    return "문서를 찾을 수 없습니다.", 404
+
+@app.route('/api/problem_steps', methods=['GET'])
+def problem_steps():
+    pid = request.args.get('pid', '').strip()
+    pid = unicodedata.normalize('NFC', pid)
+    if not pid:
+        return jsonify({"error": "Missing pid parameter"}), 400
+        
+    conn = get_db_connection()
+    try:
+        rows = conn.execute('''
+            SELECT s.step_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text,
+                   c.standard_name, c.ref_code
+            FROM steps s
+            LEFT JOIN concepts c ON s.action_concept_id = c.id
+            WHERE s.problem_id = ?
+            ORDER BY s.step_number ASC
+        ''', (pid,)).fetchall()
+        
+        steps = []
+        for row in rows:
+            steps.append({
+                'step_id': row['step_id'],
+                'step_number': row['step_number'],
+                'step_title': row['step_title'],
+                'explanation_text': row['explanation_text'],
+                'action_concept_id': row['action_concept_id'],
+                'standard_name': row['standard_name'],
+                'ref_code': row['ref_code']
+            })
+            
+        return jsonify({'problem_id': pid, 'steps': steps})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+if __name__ == '__main__':
+    # Run the Flask app on port 5050 to avoid conflicts
+    app.run(port=5050, debug=False)

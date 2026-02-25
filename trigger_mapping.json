@@ -1,0 +1,2237 @@
+[
+    {
+        "trigger_id": 1,
+        "trigger_text": "[도함수의 식 제시] $g(x)=(x+1)f(x)$이고 $f(1)=2$, $f'(1)=4$",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 2,
+        "trigger_text": "[로그 식의 연산 조건] $\\log_4\\frac{2}{3}+\\log_4 24$",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 3,
+        "trigger_text": "[두 곡선 함수식] $y=3x^2-x$와 직선 $y=5x$",
+        "normalized_text": "[두 곡선 함수식]"
+    },
+    {
+        "trigger_id": 4,
+        "trigger_text": "[두 곡선 사이 넓이 조건] 교점 $x=0$, $x=2$, 위쪽 곡선 $y=5x$",
+        "normalized_text": "[두 곡선 사이 넓이 조건]"
+    },
+    {
+        "trigger_id": 5,
+        "trigger_text": "[함수의 연속 조건] $|f(x)|$가 실수 전체에서 연속, $x=a$에서 $f$가 불연속",
+        "normalized_text": "[함수의 연속 조건]"
+    },
+    {
+        "trigger_id": 6,
+        "trigger_text": "[연속 검증 조건] $a=\\frac{1}{2}$에서 $|f(x)|$ 전체 연속 여부",
+        "normalized_text": "[연속 검증 조건]"
+    },
+    {
+        "trigger_id": 7,
+        "trigger_text": "[함수 증가 조건] $f(x)=x^3+ax^2-(a^2-8a)x+3$이 실수 전체에서 증가",
+        "normalized_text": "[함수 증가 조건]"
+    },
+    {
+        "trigger_id": 8,
+        "trigger_text": "[판별식 조건] $D/4=a^2+3(a^2-8a)\\leq0$",
+        "normalized_text": "[판별식 조건]"
+    },
+    {
+        "trigger_id": 9,
+        "trigger_text": "[도함수의 식 제시] $f'(x)=3x^2-2x$이고 $f(1)=1$ (도함수와 초기값 제시)",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 10,
+        "trigger_text": "[구하고자 하는 함숫값] $f(2)$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 11,
+        "trigger_text": "[지수함수 평행이동 조건] $y=2^x$를 $y$축 방향으로 $m$만큼 이동한 그래프가 $(-1,2)$ 통과",
+        "normalized_text": "[지수함수 평행이동 조건]"
+    },
+    {
+        "trigger_id": 12,
+        "trigger_text": "[두 곡선 위치 관계 조건] $y=\\left(\\frac{2}{3}\\right)^{x+3}+1$, $y=\\left(\\frac{2}{3}\\right)^{x+1}+\\frac{8}{3}$, 직선 $y=2x+k$와 각 점 P, Q, $\\overline{PQ}=\\sqrt{5}$",
+        "normalized_text": "[두 곡선 위치 관계 조건]"
+    },
+    {
+        "trigger_id": 13,
+        "trigger_text": "[추가 관계식 조건] $q=p+1$이고 P가 첫 번째 곡선, Q가 두 번째 곡선 위",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 14,
+        "trigger_text": "[수열 합 조건] $\\sum_{k=1}^{10}a_k-\\sum_{k=1}^{7}\\frac{a_k}{2}=56$, $\\sum_{k=1}^{10}2a_k-\\sum_{k=1}^{8}a_k=100$",
+        "normalized_text": "[수열 합 조건]"
+    },
+    {
+        "trigger_id": 15,
+        "trigger_text": "[점화식 조건 쌍의 합산] (1)$\\times2$와 (2)의 차",
+        "normalized_text": "[점화식 조건 쌍의 합산]"
+    },
+    {
+        "trigger_id": 16,
+        "trigger_text": "[제3사분면의 각] $\\pi<\\theta<\\frac{3}{2}\\pi$이고 $\\tan\\theta=\\frac{12}{5}$",
+        "normalized_text": "[제3사분면의 각]"
+    },
+    {
+        "trigger_id": 17,
+        "trigger_text": "[최종 구하는 값] $\\sin\\theta+\\cos\\theta$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 18,
+        "trigger_text": "[정적분 대칭 구간 조건] $\\int_{-1}^{1}(x^3+a)dx=4$",
+        "normalized_text": "[정적분 대칭 구간 조건]"
+    },
+    {
+        "trigger_id": 19,
+        "trigger_text": "[두 곡선 사이 넓이 조건] $y=x^2-5x$와 $y=x$, 직선 $x=k$가 넓이 이등분",
+        "normalized_text": "[두 곡선 사이 넓이 조건]"
+    },
+    {
+        "trigger_id": 20,
+        "trigger_text": "[구하고자 하는 함숫값] $k$: $3k^2-\\frac{k^3}{3}=18$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 21,
+        "trigger_text": "[등차수열 조건] $a_3=7$, $a_2+a_5=16$",
+        "normalized_text": "[등차수열 조건]"
+    },
+    {
+        "trigger_id": 22,
+        "trigger_text": "[구하고자 하는 함숫값] $a_{10}$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 23,
+        "trigger_text": "[다항함수의 극값 조건] $f(x)=x^3-3x+12$가 $x=a$에서 극소",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 24,
+        "trigger_text": "[구하고자 하는 함숫값] $a+f(a)$, $a=1$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 25,
+        "trigger_text": "[등차수열의 조건식 제시] 첫째항 $a_1=2$, $a_6=2(S_3-S_2)$",
+        "normalized_text": "[등차수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 26,
+        "trigger_text": "[구하고자 하는 합] $S_{10}$",
+        "normalized_text": "[구하고자 하는 합]"
+    },
+    {
+        "trigger_id": 27,
+        "trigger_text": "[도함수의 식 제시] $f'(x)=3x^2-kx+1$이고 $f(0)=1$",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 28,
+        "trigger_text": "[추가 관계식 조건] $f(2)=1$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 29,
+        "trigger_text": "[도함수의 식 제시] $f'(x)=3x^2+2x$이고 $f(0)=2$",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 30,
+        "trigger_text": "[구하고자 하는 함숫값] $f(1)$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 31,
+        "trigger_text": "[거듭제곱근 연산 제시] $\\frac{1}{\\sqrt[4]{3}} \\times 3^{-\\frac{7}{4}}$",
+        "normalized_text": "[거듭제곱근 연산 제시]"
+    },
+    {
+        "trigger_id": 32,
+        "trigger_text": "[삼각함수 부호 조건] $\\pi<\\theta<\\frac{3}{2}\\pi$이고 $\\tan\\theta-\\frac{6}{\\tan\\theta}=1$",
+        "normalized_text": "[삼각함수 부호 조건]"
+    },
+    {
+        "trigger_id": 33,
+        "trigger_text": "[삼각함수 각변환 조건] $\\tan\\theta=3$이고 3사분면",
+        "normalized_text": "[삼각함수 각변환 조건]"
+    },
+    {
+        "trigger_id": 34,
+        "trigger_text": "[다항함수의 극값 조건] $f(x)=2x^3+3x^2-12x+1$의 극댓값 $M$, 극솟값 $m$",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 35,
+        "trigger_text": "[다항함수의 극값 조건] $x=-2$에서 극대, $x=1$에서 극소",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 36,
+        "trigger_text": "[등비수열의 항의 조합 조건] 모든 항 양수, $a_2=36$, $a_7=\\frac{1}{3}a_5$",
+        "normalized_text": "[등비수열의 항의 조합 조건]"
+    },
+    {
+        "trigger_id": 37,
+        "trigger_text": "[추가 관계식 조건] $a_2=ar=36$이고 $r=\\frac{1}{\\sqrt{3}}$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 38,
+        "trigger_text": "[극값 조건] $f(x)=x^4+kx+10$이 $x=1$에서 극값",
+        "normalized_text": "[극값 조건]"
+    },
+    {
+        "trigger_id": 39,
+        "trigger_text": "[접선의 방정식 조건] 원점을 지나고 $y=-x^3-x^2+x$에 접하는 직선",
+        "normalized_text": "[접선의 방정식 조건]"
+    },
+    {
+        "trigger_id": 40,
+        "trigger_text": "[구하고자 하는 합] 모든 접선 기울기의 합",
+        "normalized_text": "[구하고자 하는 합]"
+    },
+    {
+        "trigger_id": 41,
+        "trigger_text": "[구간별 분기된 연속 함수] $f(x)=\\begin{cases}-2x+6&(x<a)\\\\2x-a&(x\\geq a)\\end{cases}$이고 $[f(x)]^2$이 실수 전체에서 연속",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 42,
+        "trigger_text": "[방정식의 실근 개수 조건] $(2a-6)^2=a^2$의 모든 실근",
+        "normalized_text": "[방정식의 실근 개수 조건]"
+    },
+    {
+        "trigger_id": 43,
+        "trigger_text": "[등차수열의 조건식 제시] $a_2=6$, $a_4+a_6=36$",
+        "normalized_text": "[등차수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 44,
+        "trigger_text": "[함수의 연속 조건] $f(x)=\\begin{cases}2x+a&(x\\leq-1)\\\\x^2-5x-a&(x>-1)\\end{cases}$이 실수 전체에서 연속",
+        "normalized_text": "[함수의 연속 조건]"
+    },
+    {
+        "trigger_id": 45,
+        "trigger_text": "[구하고자 하는 함숫값] $a=4$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 46,
+        "trigger_text": "[도함수의 식 제시] $v(t)=3t^2-4t+k$, $x(0)=0$, $x(1)=-3$",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 47,
+        "trigger_text": "[구하고자 하는 함숫값] $t=1$에서 $t=3$까지 위치 변화량",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 48,
+        "trigger_text": "[로그 식의 연산 조건] $\\log_2(x+2y)=3$, $\\log_2 x+\\log_2 y=1$",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 49,
+        "trigger_text": "[구하고자 하는 함숫값] $x^2+4y^2$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 50,
+        "trigger_text": "[삼각함수 방정식 조건] $6\\sin\\frac{\\pi}{12}x=3$ ($0\\leq x\\leq12$)",
+        "normalized_text": "[삼각함수 방정식 조건]"
+    },
+    {
+        "trigger_id": 51,
+        "trigger_text": "[두 점 사이 거리 조건] A$(2,3)$, B$(10,3)$",
+        "normalized_text": "[두 점 사이 거리 조건]"
+    },
+    {
+        "trigger_id": 52,
+        "trigger_text": "[귀납적으로 정의된 수열의 점화식] $a_{n+1}=\\frac{1}{a_n}$ (홀수), $8a_n$ (짝수), $a_{12}=\\frac{1}{2}$",
+        "normalized_text": "[귀납적으로 정의된 수열의 점화식]"
+    },
+    {
+        "trigger_id": 53,
+        "trigger_text": "[최종 구하는 값] $a_1+a_4$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 54,
+        "trigger_text": "[다항함수 식 제시] $f(x)=x^3+3x^2+x-1$",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 55,
+        "trigger_text": "[로그 역수 변환 조건] $\\frac{1}{\\log_{15}2}$",
+        "normalized_text": "[로그 역수 변환 조건]"
+    },
+    {
+        "trigger_id": 56,
+        "trigger_text": "[로그 식의 연산 조건] $\\log_2 120 - \\log_2 15$",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 57,
+        "trigger_text": "[방정식의 실근 개수 조건] $2x^3-3x^2-12x+k=0$이 서로 다른 세 실근",
+        "normalized_text": "[방정식의 실근 개수 조건]"
+    },
+    {
+        "trigger_id": 58,
+        "trigger_text": "[특정 구간에서 부등식이 항상 성립할 조건] $h(x)=-k$가 세 실근 갖는 조건",
+        "normalized_text": "[특정 구간에서 부등식이 항상 성립할 조건]"
+    },
+    {
+        "trigger_id": 59,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^{n}\\frac{a_{k+1}-a_k}{a_k a_{k+1}}=\\frac{1}{n}$, $a_1=-4$",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 60,
+        "trigger_text": "[추가 관계식 조건] $-\\frac{1}{4}-\\frac{1}{a_{n+1}}=\\frac{1}{n}$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 61,
+        "trigger_text": "[밑이 같은 수의 곱셈꼴] $(2^{\\sqrt{3}}\\times4)^{\\sqrt{3}-2}=(2^{\\sqrt{3}+2})^{\\sqrt{3}-2}$",
+        "normalized_text": "[밑이 같은 수의 곱셈꼴]"
+    },
+    {
+        "trigger_id": 62,
+        "trigger_text": "[도함수의 식 제시] $f'(x)=8x^3-12x^2+7$이고 $f(0)=3$",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 63,
+        "trigger_text": "[등비수열의 조건식 제시] $a_1=2$, $a_2 a_4=36$",
+        "normalized_text": "[등비수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 64,
+        "trigger_text": "[최종 구하는 값] $\\frac{a_7}{a_3}$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 65,
+        "trigger_text": "[귀납적으로 정의된 수열의 점화식] $a_1=1$, $a_{n+1}=\\begin{cases}2a_n&(a_n<7)\\\\a_n-7&(a_n\\geq7)\\end{cases}$",
+        "normalized_text": "[귀납적으로 정의된 수열의 점화식]"
+    },
+    {
+        "trigger_id": 66,
+        "trigger_text": "[구하고자 하는 합] $\\sum_{k=1}^{8}a_k$",
+        "normalized_text": "[구하고자 하는 합]"
+    },
+    {
+        "trigger_id": 67,
+        "trigger_text": "[다항함수 식 제시] $f(x)=2x^3+4x+5$",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 68,
+        "trigger_text": "[구하고자 하는 함숫값] $f'(1)$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 69,
+        "trigger_text": "[함수의 그래프가 주어지고 좌극한·극한 기호 제시] $\\lim_{x\\to-1-}f(x)$, $\\lim_{x\\to2}f(x)$",
+        "normalized_text": "[함수의 그래프가 주어지고 좌극한·극한 기호 제시]"
+    },
+    {
+        "trigger_id": 70,
+        "trigger_text": "[두 극한값의 합산]",
+        "normalized_text": "[두 극한값의 합산]"
+    },
+    {
+        "trigger_id": 71,
+        "trigger_text": "[삼각함수 항등식 변환] $\\frac{\\pi}{2}<\\theta<\\pi$이고 $\\frac{\\sin\\theta}{1-\\sin\\theta}-\\frac{\\sin\\theta}{1+\\sin\\theta}=4$",
+        "normalized_text": "[삼각함수 항등식 변환]"
+    },
+    {
+        "trigger_id": 72,
+        "trigger_text": "[제2사분면의 각] $\\frac{\\pi}{2}<\\theta<\\pi$이고 $\\tan^2\\theta=2$",
+        "normalized_text": "[제2사분면의 각]"
+    },
+    {
+        "trigger_id": 73,
+        "trigger_text": "[로그 식의 연산 조건] $\\log_2 100 - 2\\log_2 5$",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 74,
+        "trigger_text": "[지수 연산 조건] $\\frac{3^{\\sqrt{5}+1}}{3^{\\sqrt{5}-1}}$",
+        "normalized_text": "[지수 연산 조건]"
+    },
+    {
+        "trigger_id": 75,
+        "trigger_text": "[도함수의 식 제시] $v(t)=-4t^3+12t^2$이고 $t=k$에서 가속도가 12",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 76,
+        "trigger_text": "[운동 방향 전환 조건] $k=1$이므로 $t=3$에서 $t=4$까지, $v(t)=-4t^2(t-3)$의 부호 변화",
+        "normalized_text": "[운동 방향 전환 조건]"
+    },
+    {
+        "trigger_id": 77,
+        "trigger_text": "[다항함수식] $f(x)=x^3-6x^2+5x$, $x$: 0→4의 평균변화율",
+        "normalized_text": "[다항함수식]"
+    },
+    {
+        "trigger_id": 78,
+        "trigger_text": "[추가 관계식 조건] $f'(a)=-3$이고 $0<a<4$인 모든 실수 $a$의 곱이 $\\frac{q}{p}$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 79,
+        "trigger_text": "[삼각함수 부호 조건] $\\frac{\\pi}{2}<\\theta<\\pi$이고 $\\sin\\theta\\cos\\theta=-\\frac{12}{25}$",
+        "normalized_text": "[삼각함수 부호 조건]"
+    },
+    {
+        "trigger_id": 80,
+        "trigger_text": "[삼각함수 각변환 조건] $\\frac{\\pi}{2}<\\theta<\\pi$ (2사분면)",
+        "normalized_text": "[삼각함수 각변환 조건]"
+    },
+    {
+        "trigger_id": 81,
+        "trigger_text": "[함수의 그래프가 주어지고 좌극한·우극한 기호 제시] $\\lim_{x\\to0-}f(x)$와 $\\lim_{x\\to2+}f(x)$",
+        "normalized_text": "[함수의 그래프가 주어지고 좌극한·우극한 기호 제시]"
+    },
+    {
+        "trigger_id": 82,
+        "trigger_text": "[특정 점에서의 미분계수 극한식] $\\lim_{x\\to0}\\frac{f(x)}{x}=1$, $\\lim_{x\\to1}\\frac{f(x)}{x-1}=1$",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 83,
+        "trigger_text": "[추가 관계식 조건] $\\lim_{x\\to1}\\frac{f(x)}{x-1}=\\lim_{x\\to1}x\\cdot g(x)=g(1)=1$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 84,
+        "trigger_text": "[두 개의 시그마 식이 주어짐] $\\sum_{k=1}^{10}(a_k+2b_k)=45$, $\\sum_{k=1}^{10}(a_k-b_k)=3$",
+        "normalized_text": "[두 개의 시그마 식이 주어짐]"
+    },
+    {
+        "trigger_id": 85,
+        "trigger_text": "[추가 관계식 조건] $\\sum_{k=1}^{10} b_k=14$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 86,
+        "trigger_text": "[함수의 극한값 조건] $\\lim_{x\\to0^-}f(x)$와 $\\lim_{x\\to1^+}f(x)$",
+        "normalized_text": "[함수의 극한값 조건]"
+    },
+    {
+        "trigger_id": 87,
+        "trigger_text": "[두 극한값의 차이 조건] $\\lim_{x\\to0^-}f(x)-\\lim_{x\\to1^+}f(x)$",
+        "normalized_text": "[두 극한값의 차이 조건]"
+    },
+    {
+        "trigger_id": 88,
+        "trigger_text": "[두 다항함수 곱 형태의 미분] $g(x)=(x^2+3)f(x)$이고 $f(1)=2$, $f'(1)=1$",
+        "normalized_text": "[두 다항함수 곱 형태의 미분]"
+    },
+    {
+        "trigger_id": 89,
+        "trigger_text": "[구하고자 하는 함숫값] $g'(1)$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 90,
+        "trigger_text": "[밑이 같은 수의 곱셈꼴] $2^{\\sqrt{3}} \\times 2^{2-\\sqrt{3}}$",
+        "normalized_text": "[밑이 같은 수의 곱셈꼴]"
+    },
+    {
+        "trigger_id": 91,
+        "trigger_text": "$\\cos\\left(\\frac{\\pi}{2}+\\theta\\right) = -\\frac{1}{5}$ (각의 변환이 필요한 삼각함수 식)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 92,
+        "trigger_text": "[구하고자 하는 식: $\\frac{\\sin \\theta}{1-\\cos^2 \\theta}$]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 93,
+        "trigger_text": "$x=0$을 기준으로 구간별로 다르게 정의된 함수 $f(x)$가 주어지고, 함수 $(f(x)+a)^2$ 이 실수 전체에서 연속",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 94,
+        "trigger_text": "[함수 $f(x)$ 식]",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 95,
+        "trigger_text": "[운동 방향 전환 조건] 구간별로 나뉜 속도 함수 $v(t)$, \"운동 방향이 두 번째로 바뀔 때\"",
+        "normalized_text": "[운동 방향 전환 조건]"
+    },
+    {
+        "trigger_id": 96,
+        "trigger_text": "[점 $P$의 위치 $x(t_2)=1$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 97,
+        "trigger_text": "[원점 출발]",
+        "normalized_text": "[원점 출발]"
+    },
+    {
+        "trigger_id": 98,
+        "trigger_text": "[최종 위치 방정식을 풀어 상수 k 값 결정]",
+        "normalized_text": "[최종 위치 방정식을 풀어 상수 k 값 결정]"
+    },
+    {
+        "trigger_id": 99,
+        "trigger_text": "밑이 다른(2와 4) 로그 방정식 $\\log_{2}(x-3)=\\log_{4}(3x-5)$",
+        "normalized_text": "[밑이 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 100,
+        "trigger_text": "[진수를 비교하여 이차방정식 풀이]",
+        "normalized_text": "[진수를 비교하여 이차방정식 풀이]"
+    },
+    {
+        "trigger_id": 101,
+        "trigger_text": "함수의 그래프가 주어지고 좌극한 $\\lim_{x \\to 0-} f(x)$ 과 우극한 $\\lim_{x \\to 1+} f(x)$ 기호 제시",
+        "normalized_text": "[특정 점에서의 극한값 기호]"
+    },
+    {
+        "trigger_id": 102,
+        "trigger_text": "[두 극한값의 연산]",
+        "normalized_text": "[두 극한값의 연산]"
+    },
+    {
+        "trigger_id": 103,
+        "trigger_text": "$\\lim_{h \\to 0} \\frac{f(2+h)-f(2)}{h}$ (미분계수의 정의와 일치하는 극한식)",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 104,
+        "trigger_text": "[문제 조건: 다항함수 $f(x)=x^3-8x+7$]",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 105,
+        "trigger_text": "등비수열 $\\left\\{a_n\\right\\}$ 이고 첫째항과 공비가 모두 양수 $k$, 분수항 $\\frac{a_4}{a_2} + \\frac{a_2}{a_1} = 30$ 의 식 제시",
+        "normalized_text": "[등비수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 106,
+        "trigger_text": "[양수 조건이 있는 이차방정식 풀이] $k^2+k-30=0$, $k>0$",
+        "normalized_text": "[양수 조건이 있는 이차방정식 풀이]"
+    },
+    {
+        "trigger_id": 107,
+        "trigger_text": "[거듭제곱근의 나눗셈] $\\frac{\\sqrt[4]{32}}{\\sqrt[8]{4}}$",
+        "normalized_text": "[거듭제곱근의 나눗셈]"
+    },
+    {
+        "trigger_id": 108,
+        "trigger_text": "[지수법칙을 이용한 나눗셈 계산]",
+        "normalized_text": "[지수법칙을 이용한 나눗셈 계산]"
+    },
+    {
+        "trigger_id": 109,
+        "trigger_text": "정적분으로 정의된 함수 $\\int_{0}^{x} f(t) d t = 3x^3 + 2x$",
+        "normalized_text": "[정적분으로 정의된 함수 제시]"
+    },
+    {
+        "trigger_id": 110,
+        "trigger_text": "[문제 조건: 구하고자 하는 값 $f(1)$]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 111,
+        "trigger_text": "[등비수열의 항의 조합 조건] $a_6 = 16, 2a_8 - 3a_7 = 32$",
+        "normalized_text": "[등비수열의 항의 조합 조건]"
+    },
+    {
+        "trigger_id": 112,
+        "trigger_text": "[이차방정식의 해와 조건을 이용한 공비 확정]",
+        "normalized_text": "[이차방정식의 해와 조건을 이용한 공비 확정]"
+    },
+    {
+        "trigger_id": 113,
+        "trigger_text": "[등비수열의 성질을 이용한 목표 항의 값 계산]",
+        "normalized_text": "[등비수열의 성질을 이용한 목표 항의 값 계산]"
+    },
+    {
+        "trigger_id": 114,
+        "trigger_text": "[내부에 연산이 포함된 시그마 기호식] $\\sum_{k=1}^{9}(ak^2 - 10k) = 120$",
+        "normalized_text": "[내부에 연산이 포함된 시그마 기호식]"
+    },
+    {
+        "trigger_id": 115,
+        "trigger_text": "[자연수의 거듭제곱의 합 공식 적용]",
+        "normalized_text": "[자연수의 거듭제곱의 합 공식 적용]"
+    },
+    {
+        "trigger_id": 116,
+        "trigger_text": "[1차 방정식을 풀어 상수 a의 값 도출]",
+        "normalized_text": "[1차 방정식을 풀어 상수 a의 값 도출]"
+    },
+    {
+        "trigger_id": 117,
+        "trigger_text": "두 다항식의 곱으로 이루어진 함수 $f(x)=(x+1)(x^2+x-5)$ 의 미분",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 118,
+        "trigger_text": "[문제 조건: $f'(2)$ 의 값]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 119,
+        "trigger_text": "도함수의 식 $f'(x)=9x^2+4x$ 이 주어짐",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 120,
+        "trigger_text": "[다항식으로 이루어진 합의 기호] $\\sum_{k=1}^{5}(a_k+1)=9$",
+        "normalized_text": "[다항식으로 이루어진 합의 기호]"
+    },
+    {
+        "trigger_id": 121,
+        "trigger_text": "[합의 기호 성질 분석] 구하고자 하는 값 $\\sum_{k=1}^{6} a_k$",
+        "normalized_text": "[합의 기호 성질 분석]"
+    },
+    {
+        "trigger_id": 122,
+        "trigger_text": "[문제 조건: $a_6 = 4$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 123,
+        "trigger_text": "삼차방정식 $x^3-3x^2-9x+k=0$ 의 서로 다른 실근의 개수가 2개라는 조건",
+        "normalized_text": "[방정식의 실근 개수 조건]"
+    },
+    {
+        "trigger_id": 124,
+        "trigger_text": "[극값이 $0$이어야 한다는 제약]",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 125,
+        "trigger_text": "$a = 2 \\log \\frac{1}{\\sqrt{10}} + \\log_2 20$ (다른 밑을 가진 로그의 합 형태)",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 126,
+        "trigger_text": "[조건: $b = \\log_{10} 2$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 127,
+        "trigger_text": "[구하고자 하는 값 $a \\times b$]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 128,
+        "trigger_text": "수열 점화식 $a_n + a_{n+4} = 12$, 목표 합 $\\sum_{n=1}^{16} a_n$",
+        "normalized_text": "[귀납적으로 정의된 수열의 점화식]"
+    },
+    {
+        "trigger_id": 129,
+        "trigger_text": "[점화식 조건 쌍의 합산] $a_n + a_{n+4} = 12$ (8쌍)",
+        "normalized_text": "[점화식 조건 쌍의 합산]"
+    },
+    {
+        "trigger_id": 130,
+        "trigger_text": "[도함수의 식] $f'(x)=6x^2+2$",
+        "normalized_text": "[도함수의 식]"
+    },
+    {
+        "trigger_id": 131,
+        "trigger_text": "[초기 조건을 이용한 적분 상수 도출]",
+        "normalized_text": "[초기 조건을 이용한 적분 상수 도출]"
+    },
+    {
+        "trigger_id": 132,
+        "trigger_text": "[각변환이 필요한 삼각함수 조건] $\\sin\\left(\\theta-\\frac{\\pi}{2}\\right) = \\frac{3}{5}$",
+        "normalized_text": "[각변환이 필요한 삼각함수 조건]"
+    },
+    {
+        "trigger_id": 133,
+        "trigger_text": "[제3사분면의 각] $\\pi < \\theta < \\frac{3}{2}\\pi$",
+        "normalized_text": "[제3사분면의 각]"
+    },
+    {
+        "trigger_id": 134,
+        "trigger_text": "[삼각함수 성질을 이용한 사인 부호와 크기 최종 계산]",
+        "normalized_text": "[삼각함수 성질을 이용한 사인 부호와 크기 최종 계산]"
+    },
+    {
+        "trigger_id": 135,
+        "trigger_text": "$\\int_{-2}^{a} f(x) d x = \\int_{-2}^{0} f(x) d x$ (적분의 아래끝이 같은 형태의 등식)",
+        "normalized_text": "[적분 구간이 동일한 두 정적분식]"
+    },
+    {
+        "trigger_id": 136,
+        "trigger_text": "[문제 조건: $f(x)=3x^2-16x-20$ 및 양수 $a$]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 137,
+        "trigger_text": "양수 $a$, 함수 $f(x)=2x^3-3ax^2-12a^2x$ 에 대하여 극댓값이 주어짐",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 138,
+        "trigger_text": "[극댓값 조건을 이용한 미지수 결정] 극댓값 $\\frac{7}{27}$",
+        "normalized_text": "[극댓값 조건을 이용한 미지수 결정]"
+    },
+    {
+        "trigger_id": 139,
+        "trigger_text": "밑이 다른(2와 $\\frac{1}{2}$) 로그 방정식 $\\log_{2}(x+1)-5=\\log_{\\frac{1}{2}}(x-3)$",
+        "normalized_text": "[밑이 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 140,
+        "trigger_text": "[로그의 성질을 이용해 식을 결합하고 이차방정식 풀이]",
+        "normalized_text": "[로그의 성질을 이용해 식을 결합하고 이차방정식 풀이]"
+    },
+    {
+        "trigger_id": 141,
+        "trigger_text": "[미분계수의 정의와 일치하는 극한식] $\\lim_{h \\to 0} \\frac{f(2+h)-f(2)}{h}$",
+        "normalized_text": "[미분계수의 정의와 일치하는 극한식]"
+    },
+    {
+        "trigger_id": 142,
+        "trigger_text": "[다항함수식] $f(x)=x^2+x+2$",
+        "normalized_text": "[다항함수식]"
+    },
+    {
+        "trigger_id": 143,
+        "trigger_text": "[미분계수 값 계산]",
+        "normalized_text": "[미분계수 값 계산]"
+    },
+    {
+        "trigger_id": 144,
+        "trigger_text": "두 다항식의 곱으로 이루어진 함수 $f(x)=(x^2-1)(x^2+2x+2)$ 의 미분",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 145,
+        "trigger_text": "[문제 조건: $f'(1)$ 구하기]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 146,
+        "trigger_text": "[두 개의 시그마 식이 주어짐] $\\sum_{k=1}^{10} k a_k = 36$ 및 $\\sum_{k=1}^{9} k a_{k+1} = 7$",
+        "normalized_text": "[두 개의 시그마 식이 주어짐]"
+    },
+    {
+        "trigger_id": 147,
+        "trigger_text": "[합의 기호 성질 분석] $\\sum_{k=1}^{10} k a_k = 36$",
+        "normalized_text": "[합의 기호 성질 분석]"
+    },
+    {
+        "trigger_id": 148,
+        "trigger_text": "[두 시그마 식의 차를 이용하여 목표 값 도출]",
+        "normalized_text": "[두 시그마 식의 차를 이용하여 목표 값 도출]"
+    },
+    {
+        "trigger_id": 149,
+        "trigger_text": "[로그의 곱 연산 조건] 두 수 $\\log_2 a$ 와 $\\log_a 8$ 의 곱이 $k$",
+        "normalized_text": "[로그의 곱 연산 조건]"
+    },
+    {
+        "trigger_id": 150,
+        "trigger_text": "[로그의 합 조건을 이용한 치환 방정식 도출 및 풀이]",
+        "normalized_text": "[로그의 합 조건을 이용한 치환 방정식 도출 및 풀이]"
+    },
+    {
+        "trigger_id": 151,
+        "trigger_text": "[제약 조건을 이용한 해의 필터링 및 최종 값 계산]",
+        "normalized_text": "[제약 조건을 이용한 해의 필터링 및 최종 값 계산]"
+    },
+    {
+        "trigger_id": 152,
+        "trigger_text": "[밑이 같은 수의 나눗셈꼴] $\\left(\\frac{5}{\\sqrt[3]{25}}\\right)^{\\frac{3}{2}}$",
+        "normalized_text": "[밑이 같은 수의 나눗셈꼴]"
+    },
+    {
+        "trigger_id": 153,
+        "trigger_text": "[거듭제곱의 지수법칙 적용]",
+        "normalized_text": "[거듭제곱의 지수법칙 적용]"
+    },
+    {
+        "trigger_id": 154,
+        "trigger_text": "함수의 그래프가 주어지고 우극한 $\\lim_{x \\to 0+} f(x)$ 과 좌극한 $\\lim_{x \\to 1-} f(x)$ 기호 제시",
+        "normalized_text": "[특정 점에서의 극한값 기호]"
+    },
+    {
+        "trigger_id": 155,
+        "trigger_text": "[극값의 발생 $x$좌표에 대한 조건 제시] 함수 $f(x)=x^3+ax^2-9x+b$ 가 $x=1$ 에서 극소",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 156,
+        "trigger_text": "[극댓값 조건] $f(-3)=28$",
+        "normalized_text": "[극댓값 조건]"
+    },
+    {
+        "trigger_id": 157,
+        "trigger_text": "[구하고자 하는 합] $a+b$",
+        "normalized_text": "[구하고자 하는 합]"
+    },
+    {
+        "trigger_id": 158,
+        "trigger_text": "$5 \\int_{0}^{1} f(x) d x - \\int_{0}^{1}(5 x+f(x)) d x$ (적분 구간이 $[0, 1]$로 동일한 정적분의 뺄셈)",
+        "normalized_text": "[적분 구간이 동일한 두 정적분식]"
+    },
+    {
+        "trigger_id": 159,
+        "trigger_text": "[문제 조건: 함수 $f(x)=x^2+x$]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 160,
+        "trigger_text": "[미분계수의 정의와 일치하는 극한식] $\\lim_{h \\to 0} \\frac{f(1+h)-f(1)}{h}$",
+        "normalized_text": "[미분계수의 정의와 일치하는 극한식]"
+    },
+    {
+        "trigger_id": 161,
+        "trigger_text": "[다항함수식] $f(x)=x^3+3x^2-5$",
+        "normalized_text": "[다항함수식]"
+    },
+    {
+        "trigger_id": 162,
+        "trigger_text": "[미분계수 산출]",
+        "normalized_text": "[미분계수 산출]"
+    },
+    {
+        "trigger_id": 163,
+        "trigger_text": "[밑이 다른 로그 방정식] $\\log_{3}(x+2)-\\log_{\\frac{1}{3}}(x-4)=3$",
+        "normalized_text": "[밑이 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 164,
+        "trigger_text": "[로그의 성질을 이용해 식을 결합하고 다항방정식으로 변환]",
+        "normalized_text": "[로그의 성질을 이용해 식을 결합하고 다항방정식으로 변환]"
+    },
+    {
+        "trigger_id": 165,
+        "trigger_text": "[이차방정식 풀이 및 진수 조건에 의한 해의 필터링]",
+        "normalized_text": "[이차방정식 풀이 및 진수 조건에 의한 해의 필터링]"
+    },
+    {
+        "trigger_id": 166,
+        "trigger_text": "$x=-2$ 를 기준으로 다르게 정의된 함수 $f(x)$ 가 주어지고, 실수 전체에서 연속",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 167,
+        "trigger_text": "[구해야 하는 값: 상수 $a$]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 168,
+        "trigger_text": "[각변환이 필요한 삼각함수 조건] $\\cos(\\pi+\\theta) = \\frac{2\\sqrt{5}}{5}$",
+        "normalized_text": "[각변환이 필요한 삼각함수 조건]"
+    },
+    {
+        "trigger_id": 169,
+        "trigger_text": "[제2사분면의 각] $\\frac{\\pi}{2} < \\theta < \\pi$",
+        "normalized_text": "[제2사분면의 각]"
+    },
+    {
+        "trigger_id": 170,
+        "trigger_text": "[구하고자 하는 값 $\\sin \\theta + \\cos \\theta$]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 171,
+        "trigger_text": "두 다항식의 곱으로 이루어진 함수 $f(x)=(x^2+1)(3x^2-x)$ 의 미분",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 172,
+        "trigger_text": "[문제 조건: $f'(1)$ 의 값]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 173,
+        "trigger_text": "[도함수의 식] $f'(x)=6x^2+2x+1$",
+        "normalized_text": "[도함수의 식]"
+    },
+    {
+        "trigger_id": 174,
+        "trigger_text": "$x=4$ 를 기준으로 다르게 정의된 함수 $f(x)$ 가 주어지고, 실수 전체에서 연속",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 175,
+        "trigger_text": "[구해야 하는 값: 모든 $a$ 의 곱]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 176,
+        "trigger_text": "$\\sqrt[3]{5} \\times 25^{\\frac{1}{3}}$ (거듭제곱근의 곱셈)",
+        "normalized_text": "[거듭제곱근 연산 제시]"
+    },
+    {
+        "trigger_id": 177,
+        "trigger_text": "[지수법칙을 이용한 곱셈 계산]",
+        "normalized_text": "[지수법칙을 이용한 곱셈 계산]"
+    },
+    {
+        "trigger_id": 178,
+        "trigger_text": "[등비수열의 항의 곱 조건] $a_2 a_3 = 2, a_4 = 4$",
+        "normalized_text": "[등비수열의 항의 곱 조건]"
+    },
+    {
+        "trigger_id": 179,
+        "trigger_text": "[연립방정식을 풀어 첫째항과 공비 도출]",
+        "normalized_text": "[연립방정식을 풀어 첫째항과 공비 도출]"
+    },
+    {
+        "trigger_id": 180,
+        "trigger_text": "[구고자 하는 특정 항의 계산]",
+        "normalized_text": "[구고자 하는 특정 항의 계산]"
+    },
+    {
+        "trigger_id": 181,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^{10}(2a_k+3) = 60$ (합의 기호 $\\sum$ 안의 식이 수열의 실수배와 상수의 합)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 182,
+        "trigger_text": "[추가 관계식 조건] $2\\sum_{k=1}^{10} a_k = 30$ (구하고자 하는 $\\sum a_k$에 대한 방정식)",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 183,
+        "trigger_text": "[로그 식의 연산 조건] $y = \\log_2(x-a)$의 점근선($x=a$)이 $y=\\log_2\\frac{x}{4}$, $y=\\log_{\\frac{1}{2}}x$와 만나는 두 점 A, B",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 184,
+        "trigger_text": "[추가 관계식 조건] 문제 조건 $\\overline{\\mathrm{AB}} = 4$ 및 $a > 2$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 185,
+        "trigger_text": "[도함수의 식 제시] 도함수의 식 $f'(x) = 8x^3 - 1$이 주어짐",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 186,
+        "trigger_text": "[특정 x값 대입 조건] 문제 조건 $f(0) = 3$",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 187,
+        "trigger_text": "[삼각함수의 각변환 조건] $\\sin(-\\theta) = \\frac{1}{7}\\cos\\theta$ (각변환이 필요한 삼각함수 등식 조건)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 188,
+        "trigger_text": "[삼각함수 부호 조건] 문제 조건 $\\cos\\theta < 0$ (부호 판단을 위한 조건)",
+        "normalized_text": "[삼각함수 부호 조건]"
+    },
+    {
+        "trigger_id": 189,
+        "trigger_text": "[합성수/분수 밑의 거듭제곱 제시] $2^{x-6} \\leq \\left(\\frac{1}{4}\\right)^x$ (서로 다른 밑을 가진 지수 부등식)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 190,
+        "trigger_text": "[최종 구하는 값] 구하고자 하는 값: $x \\leq 2$를 만족하는 모든 자연수 $x$의 합",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 191,
+        "trigger_text": "[특정 점에서의 미분계수 극한식] $\\lim_{h \\rightarrow 0} \\frac{f(3+h)-f(3)}{h}$ (미분계수의 정의와 일치하는 극한식)",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 192,
+        "trigger_text": "[다항함수 식 제시] $f(x) = x^2 - 2x + 3$",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 193,
+        "trigger_text": "[도함수의 식 제시] 도함수의 식 $f'(x) = 3x(x-2) = 3x^2 - 6x$가 주어짐",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 194,
+        "trigger_text": "[특정 x값 대입 조건] 문제 조건 $f(1) = 6$",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 195,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^{n} \\frac{1}{(2k-1)a_k} = n^2+2n$ (합으로 수열을 귀납적으로 정의하는 조건)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 196,
+        "trigger_text": "[최종 구하는 값] 구하고자 하는 값 $\\sum_{n=1}^{10} a_n$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 197,
+        "trigger_text": "[삼각함수 최댓값 조건] $f(x) = a\\sin bx + 8 - a$에서 조건 (가) 모든 실수 $x$에 대해 $f(x) \\geq 0$ ($a$, $b$는 자연수)",
+        "normalized_text": "[삼각함수 최댓값 조건]"
+    },
+    {
+        "trigger_id": 198,
+        "trigger_text": "[삼각함수 주기 조건] $a=4$이면 $f(x) = 4\\sin bx$이고, $0 \\leq x < 2\\pi$에서 $f(x) = 0$의 근이 4개",
+        "normalized_text": "[삼각함수 주기 조건]"
+    },
+    {
+        "trigger_id": 199,
+        "trigger_text": "[특정 점에서의 극한값 기호] $\\lim_{x \\to -2+} f(x)$ (특정 점에서의 우극한 기호)",
+        "normalized_text": "[특정 점에서의 극한값 기호]"
+    },
+    {
+        "trigger_id": 200,
+        "trigger_text": "[특정 점에서의 극한값 기호] $\\lim_{x \\to 1-} f(x)$ (특정 점에서의 좌극한 기호)",
+        "normalized_text": "[특정 점에서의 극한값 기호]"
+    },
+    {
+        "trigger_id": 201,
+        "trigger_text": "[거듭제곱근 연산 제시] $\\sqrt[3]{24} \\times 3^{\\frac{2}{3}}$ (세제곱근과 유리수 지수의 곱)",
+        "normalized_text": "[거듭제곱근 연산 제시]"
+    },
+    {
+        "trigger_id": 202,
+        "trigger_text": "[합성수/분수 밑의 거듭제곱 제시] $3^{\\frac{1}{3}} \\times 3^{\\frac{2}{3}}$ (밑이 같은 두 유리수 지수의 곱)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 203,
+        "trigger_text": "[거듭제곱근 연산 제시] $3^{1-\\sqrt{5}} \\times 3^{1+\\sqrt{5}}$ (밑이 같은 두 거듭제곱의 곱)",
+        "normalized_text": "[거듭제곱근 연산 제시]"
+    },
+    {
+        "trigger_id": 204,
+        "trigger_text": "[구간별 분기된 연속 함수] $f(x) = \\begin{cases} 3x-a & (x<2) \\\\ x^2+a & (x \\geq 2) \\end{cases}$가 실수 전체에서 연속",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 205,
+        "trigger_text": "[추가 관계식 조건] $6-a = 4+a$ (상수 $a$에 대한 방정식)",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 206,
+        "trigger_text": "[두 곡선 위치 관계 조건] $y = 2x^2-1$과 $y = x^3-x^2+k$가 만나는 점의 개수가 2",
+        "normalized_text": "[두 곡선 위치 관계 조건]"
+    },
+    {
+        "trigger_id": 207,
+        "trigger_text": "[다항함수의 극값 조건] $h(x) = x^3-3x^2$의 극대(0), 극소($-4$) 확인 후 교점 수 = 2 조건 적용",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 208,
+        "trigger_text": "[다항함수의 극값 조건] $f(x) = ax^3 + bx + a$가 $x=1$에서 극소 (극값의 발생 $x$좌표 제시)",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 209,
+        "trigger_text": "[다항함수의 극값 조건] 극솟값이 $-2$라는 조건",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 210,
+        "trigger_text": "[등비수열의 조건식 제시] $\\frac{a_3 a_8}{a_6} = 12$, $a_5 + a_7 = 36$ (모든 항이 양수인 등비수열)",
+        "normalized_text": "[등비수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 211,
+        "trigger_text": "[추가 관계식 조건] $a_5 = 12$, $a_5 + a_7 = 36$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 212,
+        "trigger_text": "[삼각함수의 각변환 조건] $\\sin(-\\theta) = \\frac{1}{3}$ (각변환이 필요한 삼각함수 등식)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 213,
+        "trigger_text": "[삼각함수 부호 조건] 제4사분면 $\\frac{3}{2}\\pi < \\theta < 2\\pi$ ($\\cos\\theta > 0$)",
+        "normalized_text": "[삼각함수 부호 조건]"
+    },
+    {
+        "trigger_id": 214,
+        "trigger_text": "[특정 점에서의 미분계수 극한식] $\\lim_{x \\rightarrow 1} \\frac{f(x)-1}{x-1}$ ($f(1) = 1$이므로 미분계수 $f'(1)$과 동치인 극한식)",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 215,
+        "trigger_text": "[다항함수 식 제시] $f(x) = 2x^2 - x$",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 216,
+        "trigger_text": "[다항함수 식 제시] $f(x) = \\frac{1}{3}x^3 - 2x^2 - 12x + 4$",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 217,
+        "trigger_text": "[최종 구하는 값] 구하고자 하는 값 $\\beta - \\alpha$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 218,
+        "trigger_text": "[밑이 다른 로그 방정식] $\\log_2(x-1) = \\log_4(13+2x)$ (밑이 다른 로그 방정식)",
+        "normalized_text": "[밑이 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 219,
+        "trigger_text": "[추가 관계식 조건] 이차방정식 $(x-1)^2 = 13+2x$ 및 진수 조건 $x > 1$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 220,
+        "trigger_text": "[다항함수의 극값 조건] $f(x) = x^3+ax^2+bx+1$이 $x=-1$에서 극대, $x=3$에서 극소",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 221,
+        "trigger_text": "[최종 구하는 값] 구하고자 하는 값: 함수 $f(x)$의 극댓값",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 222,
+        "trigger_text": "[두 다항식 곱 형태의 함수 제시] $f(x) = (x+1)(x^2+3)$ (두 다항식의 곱으로 이루어진 함수)",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 223,
+        "trigger_text": "[최종 구하는 값] 문제 조건: 구하고자 하는 값 $f'(1)$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 224,
+        "trigger_text": "[등비수열의 조건식 제시] $S_4 - S_2 = 3a_4$, $a_5 = \\frac{3}{4}$ (등비수열의 합과 항에 대한 조건)",
+        "normalized_text": "[등비수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 225,
+        "trigger_text": "[추가 관계식 조건] 문제 조건 $a_5 = \\frac{3}{4}$ 및 공비 $r = \\frac{1}{2}$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 226,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^{10}(2a_k - b_k) = 34$, $\\sum_{k=1}^{10} a_k = 10$ (두 개의 시그마 식이 주어짐)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 227,
+        "trigger_text": "[최종 구하는 값] 구하고자 하는 값 $\\sum_{k=1}^{10}(a_k - b_k)$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 228,
+        "trigger_text": "[두 로그 방정식 제시] $3a + 2b = \\log_3 32$, $ab = \\log_9 2$ (두 개의 로그 관계식)",
+        "normalized_text": "[두 로그 방정식 제시]"
+    },
+    {
+        "trigger_id": 229,
+        "trigger_text": "[최종 구하는 값] 구하고자 하는 값 $\\frac{1}{3a} + \\frac{1}{2b}$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 230,
+        "trigger_text": "[합성수/분수 밑의 거듭제곱 제시] $3^{x-8} = \\left(\\frac{1}{27}\\right)^x$ (서로 다른 밑을 가진 지수 방정식)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 231,
+        "trigger_text": "[특정 점에서의 미분계수 극한식] $\\lim_{h \\rightarrow 0} \\frac{f(2+h)-f(2)}{h}$ (미분계수의 정의와 일치하는 극한식)",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 232,
+        "trigger_text": "[다항함수 식 제시] $f(x) = 2x^3 - 5x^2 + 3$",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 233,
+        "trigger_text": "[특정 각의 삼각함수 값 제시] $\\cos\\theta = \\frac{\\sqrt{6}}{3}$ (각의 코사인 값이 제시됨)",
+        "normalized_text": "[특정 각의 삼각함수 값 제시]"
+    },
+    {
+        "trigger_id": 234,
+        "trigger_text": "[삼각함수 부호 조건] 제4사분면 조건 $\\frac{3}{2}\\pi < \\theta < 2\\pi$ ($\\sin\\theta < 0$, $\\cos\\theta > 0$)",
+        "normalized_text": "[삼각함수 부호 조건]"
+    },
+    {
+        "trigger_id": 235,
+        "trigger_text": "[두 다항식 곱 형태의 함수 제시] $g(x) = (x^3+1)f(x)$ (다항식과 다항함수의 곱으로 이루어진 함수)",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 236,
+        "trigger_text": "[특정 x값 대입 조건] 문제 조건 $f(1)=2$, $f'(1)=3$과 $x=1$ 대입",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 237,
+        "trigger_text": "[두 다항식 곱 형태의 함수 제시] $f(x) = (x^2+1)(x^2+ax+3)$ (두 다항식의 곱)",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 238,
+        "trigger_text": "[특정 x값 대입 조건] 문제 조건 $f'(1) = 32$",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 239,
+        "trigger_text": "[로그 식의 연산 조건] 수직선 위 두 점 $\\mathrm{P}(\\log_5 3)$, $\\mathrm{Q}(\\log_5 12)$에 대해 선분 PQ를 $m:(1-m)$으로 내분하는 점의 좌표가 $1$",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 240,
+        "trigger_text": "[최종 구하는 값] 구하고자 하는 값 $4^m$ (단, $m = \\log_4\\frac{5}{3}$)",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 241,
+        "trigger_text": "[삼각함수의 각변환 조건] $f(x) = \\sin\\frac{\\pi}{4}x$이고 $f(2+x)f(2-x)$ (각변환이 필요한 삼각함수 곱)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 242,
+        "trigger_text": "[특정 구간에서 부등식이 항상 성립할 조건] $\\cos^2\\frac{\\pi x}{4} < \\frac{1}{4}$ ($0 < x < 16$에서 이를 만족하는 자연수 $x$)",
+        "normalized_text": "[특정 구간에서 부등식이 항상 성립할 조건]"
+    },
+    {
+        "trigger_id": 243,
+        "trigger_text": "[도함수의 식 제시] 도함수의 식 $f'(x) = 6x^2 - 2f(1)x$ (미지의 상수 $f(1)$을 포함한 도함수)",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 244,
+        "trigger_text": "[특정 x값 대입 조건] $x=1$ 대입으로 $f(1)$에 대한 방정식 수립",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 245,
+        "trigger_text": "[거듭제곱근 연산 제시] $\\sqrt[3]{27}$ (세제곱근을 거듭제곱으로 변환)",
+        "normalized_text": "[거듭제곱근 연산 제시]"
+    },
+    {
+        "trigger_id": 246,
+        "trigger_text": "[합성수/분수 밑의 거듭제곱 제시] $4^{-\\frac{1}{2}}$ (음의 유리수 지수를 역수로 변환)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 247,
+        "trigger_text": "[구간별 분기된 연속 함수] 실수 전체에서 연속인 함수 $f(x)$가 $\\lim_{x \\to 1} f(x) = 4 - f(1)$ 조건을 만족",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 248,
+        "trigger_text": "[추가 관계식 조건] 방정식 $2f(1) = 4$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 249,
+        "trigger_text": "[두 곡선 위치 관계 조건] $y = 3x^3 - 7x^2$과 $y = -x^2$으로 둘러싸인 부분의 넓이",
+        "normalized_text": "[두 곡선 위치 관계 조건]"
+    },
+    {
+        "trigger_id": 250,
+        "trigger_text": "[두 곡선 사이 넓이 조건] 교점 $x=0$, $x=2$ 사이의 넓이 계산",
+        "normalized_text": "[두 곡선 사이 넓이 조건]"
+    },
+    {
+        "trigger_id": 251,
+        "trigger_text": "[추가 관계식 조건] 삼차함수 $f(x)$가 $xf(x) - f(x) = 3x^4 - 3x$를 만족",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 252,
+        "trigger_text": "[적분 구간이 동일한 두 정적분식] $\\int_{-2}^{2} f(x) dx$ ($[-2, 2]$ 대칭 구간의 정적분)",
+        "normalized_text": "[적분 구간이 동일한 두 정적분식]"
+    },
+    {
+        "trigger_id": 253,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^{10} a_k = \\sum_{k=1}^{10}(2b_k-1)$, $\\sum_{k=1}^{10}(3a_k+b_k) = 33$ (두 개의 시그마 조건)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 254,
+        "trigger_text": "[추가 관계식 조건] 연립방정식 $A = 2B-10$, $3A+B = 33$ (두 미지수에 대한 연립방정식)",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 255,
+        "trigger_text": "[삼각함수의 각변환 조건] $\\sin\\frac{\\pi}{7} = \\cos\\left(\\frac{\\pi}{2} - \\frac{\\pi}{7}\\right) = \\cos\\frac{5\\pi}{14}$ (각변환으로 동일 삼각함수로 통일)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 256,
+        "trigger_text": "[삼각함수 주기 조건] $0 \\leq x \\leq 2\\pi$ 범위에서 $\\cos x \\leq \\cos\\frac{5\\pi}{14}$의 해 범위",
+        "normalized_text": "[삼각함수 주기 조건]"
+    },
+    {
+        "trigger_id": 257,
+        "trigger_text": "[합성수/분수 밑의 거듭제곱 제시] $\\left(\\frac{2^{\\sqrt{3}}}{2}\\right)^{\\sqrt{3}+1}$ (무리수 지수의 거듭제곱)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 258,
+        "trigger_text": "[두 다항식 곱 형태의 함수 제시] $g(x)=x^2 f(x)$ (두 함수의 곱 형태)",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 259,
+        "trigger_text": "[최종 구하는 값] $g'(2)$ (단, $f(2)=1$, $f'(2)=3$)",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 260,
+        "trigger_text": "[등차수열의 조건식 제시] $a_1=2a_5$, $a_8+a_{12}=-6$ (두 등차 조건)",
+        "normalized_text": "[등차수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 261,
+        "trigger_text": "[최종 구하는 값] $a_2$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 262,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^{10}(4k+a)=250$ (선형 점화 시그마)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 263,
+        "trigger_text": "[추가 관계식 조건] $f(1)=3$, $f'(x) \\geq 5$ ($1<x<5$) (함숫값과 도함수 부등식 조건)",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 264,
+        "trigger_text": "[구간별 분기된 연속 함수] $f(x)=\\begin{cases}-2x+a & (x\\leq a) \\\\ ax-6 & (x>a)\\end{cases}$가 실수 전체에서 연속",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 265,
+        "trigger_text": "[최종 구하는 값] 모든 상수 $a$의 값의 합",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 266,
+        "trigger_text": "[다항함수의 극값 조건] $f(x)=x^4+ax^2+b$가 $x=1$에서 극소 (짝함수 형태의 극값 조건)",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 267,
+        "trigger_text": "[추가 관계식 조건] 극댓값이 $4$ (극대점 $x=0$에서의 함숫값)",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 268,
+        "trigger_text": "[특정 구간에서 부등식이 항상 성립할 조건] $f(x) \\geq g(x)$ ($x \\geq 0$) ($f(x)=x^3-x+6$, $g(x)=x^2+a$)",
+        "normalized_text": "[특정 구간에서 부등식이 항상 성립할 조건]"
+    },
+    {
+        "trigger_id": 269,
+        "trigger_text": "[최종 구하는 값] 실수 $a$의 최댓값",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 270,
+        "trigger_text": "[합성수/분수 밑의 거듭제곱 제시] $\\left(\\frac{4}{2^{\\sqrt{2}}}\\right)^{2+\\sqrt{2}}$ (무리수 지수의 거듭제곱)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 271,
+        "trigger_text": "[삼각함수의 각변환 조건] $\\cos\\!\\left(\\frac{\\pi}{2}+\\theta\\right)=\\frac{\\sqrt{5}}{5}$, $\\tan\\theta < 0$ (각변환 후 사분면 결정)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 272,
+        "trigger_text": "[최종 구하는 값] $\\cos\\theta$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 273,
+        "trigger_text": "[로그 식의 연산 조건] $\\log_2(x+2)+\\log_2(x-2)=5$ (같은 밑의 로그 합)",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 274,
+        "trigger_text": "[추가 관계식 조건] $x^2=36$ 및 진수 양수 조건 $x>2$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 275,
+        "trigger_text": "[구간별 분기된 연속 함수] $|f(x)|$가 실수 전체에서 연속 (접합점 $x=-1$에서의 조건)",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 276,
+        "trigger_text": "[추가 관계식 조건] $x=3$에서 $|f(x)|$ 연속 조건",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 277,
+        "trigger_text": "[특정 점에서의 미분계수 극한식] $\\lim_{h \\rightarrow 0} \\frac{f(2+h)-f(2)}{h}$ ($f(x)=x^3+9$의 $x=2$에서 미분계수)",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 278,
+        "trigger_text": "[삼각함수 부호 조건] $\\frac{\\pi}{2}<\\theta<\\pi$이고 $\\cos^2\\theta=\\frac{4}{9}$ (2사분면 각에서 삼각함수 값 결정)",
+        "normalized_text": "[삼각함수 부호 조건]"
+    },
+    {
+        "trigger_id": 279,
+        "trigger_text": "[최종 구하는 값] $\\sin^2\\theta + \\cos\\theta$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 280,
+        "trigger_text": "[도함수의 식 제시] $f'(x)=8x^3+6x^2$이고 $f(0)=-1$ (도함수와 초기값 제시)",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 281,
+        "trigger_text": "[최종 구하는 값] $f(-2)$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 282,
+        "trigger_text": "[다항함수의 극값 조건] $f(x)=-\\sin 2x$가 $[0,\\pi]$에서 최댓값을 갖는 $x=a$, 최솟값을 갖는 $x=b$",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 283,
+        "trigger_text": "[최종 구하는 값] 두 점 $(a, f(a))$, $(b, f(b))$를 지나는 직선의 기울기",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 284,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^5(3a_k+5)=55$, $\\sum_{k=1}^5(a_k+b_k)=32$ (두 개의 시그마 조건)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 285,
+        "trigger_text": "[추가 관계식 조건] $\\sum_{k=1}^5(a_k+b_k)=32$, $\\sum a_k=10$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 286,
+        "trigger_text": "[곡선과 직선의 접함 통과 조건] 점 $(0,4)$에서 곡선 $y=x^3-x+2$에 그은 접선",
+        "normalized_text": "[곡선과 직선의 접함 통과 조건]"
+    },
+    {
+        "trigger_id": 287,
+        "trigger_text": "[최종 구하는 값] 접선의 $x$절편",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 288,
+        "trigger_text": "[특정 구간에서 부등식이 항상 성립할 조건] $f(x)=\\cos\\frac{\\pi x}{6}$와 직선 $y=k$의 교점 $x$좌표 차 $= 8$ ($0 \\leq x \\leq 12$)",
+        "normalized_text": "[특정 구간에서 부등식이 항상 성립할 조건]"
+    },
+    {
+        "trigger_id": 289,
+        "trigger_text": "[최종 구하는 값] $|\\beta_1-\\beta_2|$ ($g(x)=-3\\cos\\frac{\\pi x}{6}-1=\\frac{1}{2}$)",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 290,
+        "trigger_text": "[방정식의 실근 개수 조건] $3x^4-4x^3-12x^2+k=0$이 서로 다른 4개의 실근 (극값 분석으로 $k$ 범위 결정)",
+        "normalized_text": "[방정식의 실근 개수 조건]"
+    },
+    {
+        "trigger_id": 291,
+        "trigger_text": "[특정 구간에서 부등식이 항상 성립할 조건] $h(x)=k$가 4개의 서로 다른 실근을 가질 조건",
+        "normalized_text": "[특정 구간에서 부등식이 항상 성립할 조건]"
+    },
+    {
+        "trigger_id": 292,
+        "trigger_text": "[특정 점에서의 좌극한 기호] $\\lim_{x \\rightarrow 0^-} f(x)$ (그래프에서 $x=0$ 좌극한 확인)",
+        "normalized_text": "[특정 점에서의 좌극한 기호]"
+    },
+    {
+        "trigger_id": 293,
+        "trigger_text": "[특정 점에서의 우극한 기호] $\\lim_{x \\rightarrow 1^+} f(x)$ (그래프에서 $x=1$ 우극한 확인)",
+        "normalized_text": "[특정 점에서의 우극한 기호]"
+    },
+    {
+        "trigger_id": 294,
+        "trigger_text": "[곡선 위의 한 점 제시] 곡선 $y=x^3-4x+5$ 위의 점 $(1,2)$ (접선 기울기 계산)",
+        "normalized_text": "[곡선 위의 한 점 제시]"
+    },
+    {
+        "trigger_id": 295,
+        "trigger_text": "[곡선과 직선의 접함 통과 조건] 직선 $y=-x+3$이 $y=x^4+3x+a$에 접함",
+        "normalized_text": "[곡선과 직선의 접함 통과 조건]"
+    },
+    {
+        "trigger_id": 296,
+        "trigger_text": "[시그마 기호식 조건] $\\sum_{k=1}^5 a_k=10$이고 $\\sum_{k=1}^5 ca_k = 65 + \\sum_{k=1}^5 c$ (상수 $c$에 대한 시그마 조건)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 297,
+        "trigger_text": "[등비수열의 조건식 제시] $a_1=\\frac{1}{4}$, $a_2+a_3=\\frac{3}{2}$ (초항과 합 조건)",
+        "normalized_text": "[등비수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 298,
+        "trigger_text": "[최종 구하는 값] $a_6 + a_7$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 299,
+        "trigger_text": "[방정식의 실근 개수 조건] $2x^3-6x^2+k=0$의 서로 다른 양의 실근이 2개 (양의 실근 개수 조건)",
+        "normalized_text": "[방정식의 실근 개수 조건]"
+    },
+    {
+        "trigger_id": 300,
+        "trigger_text": "[특정 구간에서 부등식이 항상 성립할 조건] $h(x)=k$가 양의 실근을 정확히 2개 갖는 조건",
+        "normalized_text": "[특정 구간에서 부등식이 항상 성립할 조건]"
+    },
+    {
+        "trigger_id": 301,
+        "trigger_text": "[거듭제곱근 연산 제시] $(-\\sqrt{2})^4 \\times 8^{-\\frac{2}{3}}$ (음수의 짝수 거듭제곱과 분수 지수의 곱)",
+        "normalized_text": "[거듭제곱근 연산 제시]"
+    },
+    {
+        "trigger_id": 302,
+        "trigger_text": "[삼각함수 최댓값 조건] $f(x)=a-\\sqrt{3}\\tan 2x$가 $[-\\frac{\\pi}{6}, b]$에서 최댓값 $7$, 최솟값 $3$",
+        "normalized_text": "[삼각함수 최댓값 조건]"
+    },
+    {
+        "trigger_id": 303,
+        "trigger_text": "[추가 관계식 조건] 최솟값 $f(b)=3$ (단, $-\\frac{\\pi}{6} \\leq b < \\frac{\\pi}{4}$)",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 304,
+        "trigger_text": "[귀납적으로 정의된 수열의 점화식] $S_n=\\frac{1}{n(n+1)}$ ($n \\geq 2$에서 $a_n = S_n - S_{n-1}$)",
+        "normalized_text": "[귀납적으로 정의된 수열의 점화식]"
+    },
+    {
+        "trigger_id": 305,
+        "trigger_text": "[최종 구하는 값] $\\sum_{k=1}^{10}(S_k-a_k)$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 306,
+        "trigger_text": "[도함수의 식 제시] $f'(x)=6x^2-4x+3$이고 $f(1)=5$ (도함수와 특정 값 제시)",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 307,
+        "trigger_text": "[최종 구하는 값] $f(2)$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 308,
+        "trigger_text": "[특정 점에서의 극한값 기호] $\\lim_{x \\rightarrow \\infty} \\frac{\\sqrt{x^2-2}+3x}{x+5}$ (무한대에서의 극한)",
+        "normalized_text": "[특정 점에서의 극한값 기호]"
+    },
+    {
+        "trigger_id": 309,
+        "trigger_text": "[삼각함수의 각변환 조건] $\\sin(\\pi-\\theta)=\\frac{5}{13}$, $\\cos\\theta<0$ (각변환 후 사분면 결정)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 310,
+        "trigger_text": "[최종 구하는 값] $\\tan\\theta$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 311,
+        "trigger_text": "[밑이 다른 로그 방정식] $\\log_2(3x+2)=2+\\log_2(x-2)$ (같은 밑 로그 방정식)",
+        "normalized_text": "[밑이 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 312,
+        "trigger_text": "[추가 관계식 조건] $3x+2=4(x-2)$ 및 진수 조건 $x>2$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 313,
+        "trigger_text": "[다항함수의 극값 조건] $f(x)=2x^3-9x^2+ax+5$가 $x=1$에서 극대 (상수 $a$ 결정)",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 314,
+        "trigger_text": "[최종 구하는 값] $a+b$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 315,
+        "trigger_text": "[특정 점에서의 미분계수 극한식] $\\lim_{x \\rightarrow 2} \\frac{f(x)-f(2)}{x-2}$ ($f(x)=2x^2+5$의 $x=2$에서 미분계수)",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 316,
+        "trigger_text": "[도함수의 식 제시] $f'(x)=4x^3-2x$이고 $f(0)=3$ (도함수와 초기값 제시)",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 317,
+        "trigger_text": "[등차수열의 조건식 제시] 첫째항 $= $ 공차 $d$, $\\sum_{k=1}^{15}\\frac{1}{\\sqrt{a_k}+\\sqrt{a_{k+1}}}=2$",
+        "normalized_text": "[등차수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 318,
+        "trigger_text": "[최종 구하는 값] $a_4$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 319,
+        "trigger_text": "[다항함수의 극값 조건] $f(x)=x^3-3x^2+k$의 극댓값이 $9$ (상수 $k$ 결정)",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 320,
+        "trigger_text": "[최종 구하는 값] 극솟값",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 321,
+        "trigger_text": "[밑이 다른 로그 방정식] $\\log_3(x-4)=\\log_9(x+2)$ (밑이 $3$과 $9$로 다른 방정식)",
+        "normalized_text": "[밑이 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 322,
+        "trigger_text": "[추가 관계식 조건] $x^2-9x+14=0$ 및 진수 조건 $x>4$",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 323,
+        "trigger_text": "[등비수열의 조건식 제시] $a_2+a_4=30$, $a_4+a_6=\\frac{15}{2}$ (공비 양수 조건)",
+        "normalized_text": "[등비수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 324,
+        "trigger_text": "[최종 구하는 값] $a_1$",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 325,
+        "trigger_text": "미분계수의 정의와 일치하는 극한식 $\\lim_{h \\to 0} \\frac{f(4+h) - f(4)}{h}$",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 326,
+        "trigger_text": "[문제 조건: 다항함수 $f(x)=x^2-4x+2$]",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 327,
+        "trigger_text": "[중복순열 조건] $a, b, c$ 3개 중 중복 허락하여 4개를 택해 일렬로 나열",
+        "normalized_text": "[중복순열 조건]"
+    },
+    {
+        "trigger_id": 328,
+        "trigger_text": "두 다항식의 곱으로 이루어진 함수 $f(x)=(x+2)(2x^2-x-2)$",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 329,
+        "trigger_text": "[문제 조건: $x=1$ 대입]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 330,
+        "trigger_text": "[이산확률변수 분포 조건] 정사면체(1,2,2,3) 두 개를 던져 두 수의 차 $X$",
+        "normalized_text": "[이산확률변수 분포 조건]"
+    },
+    {
+        "trigger_id": 331,
+        "trigger_text": "[이산확률변수 분산 조건] $\\mathrm{V}(X)=\\mathrm{E}(X^2)-[\\mathrm{E}(X)]^2$",
+        "normalized_text": "[이산확률변수 분산 조건]"
+    },
+    {
+        "trigger_id": 332,
+        "trigger_text": "[각의 변환이 필요한 삼각함수식] $\\cos(\\theta-\\pi) = \\frac{3}{5}$",
+        "normalized_text": "[각의 변환이 필요한 삼각함수식]"
+    },
+    {
+        "trigger_id": 333,
+        "trigger_text": "[부호 조건] $\\tan \\theta < 0$",
+        "normalized_text": "[부호 조건]"
+    },
+    {
+        "trigger_id": 334,
+        "trigger_text": "[삼각함수의 성질을 이용한 사인 크기 최종 계산]",
+        "normalized_text": "[삼각함수의 성질을 이용한 사인 크기 최종 계산]"
+    },
+    {
+        "trigger_id": 335,
+        "trigger_text": "수열의 귀납적 정의 식 $a_{n+1}=na_n+2$ 및 초기항 $a_1=1$",
+        "normalized_text": "[귀납적으로 정의된 수열의 점화식]"
+    },
+    {
+        "trigger_id": 336,
+        "trigger_text": "[문제 조건: 구하고자 하는 항 $a_3$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 337,
+        "trigger_text": "밑이 소수가 아닌 합성수인 거듭제곱 ($9^{\\frac{1}{4}}$)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 338,
+        "trigger_text": "[문제 조건: $\\times 3^{-\\frac{1}{2}}$] (밑이 같은 두 유리수 지수의 곱)",
+        "normalized_text": "[밑이 동일한 지수식의 곱]"
+    },
+    {
+        "trigger_id": 339,
+        "trigger_text": "[접선의 기울기 분석을 위한 곡선 위 점] 곡선 $y=x^3-5x^2+6x$ 위의 한 점 $(3,0)$",
+        "normalized_text": "[접선의 기울기 분석을 위한 곡선 위 점]"
+    },
+    {
+        "trigger_id": 340,
+        "trigger_text": "[접선의 기울기와 점을 이용한 접선의 방정식 설정]",
+        "normalized_text": "[접선의 기울기와 점을 이용한 접선의 방정식 설정]"
+    },
+    {
+        "trigger_id": 341,
+        "trigger_text": "[접선이 특정 점을 지날 조건 계산]",
+        "normalized_text": "[접선이 특정 점을 지날 조건 계산]"
+    },
+    {
+        "trigger_id": 342,
+        "trigger_text": "[신뢰구간 조건] $\\sigma=2\\sqrt{2}$, $n=128$, 신뢰도 $95\\%$",
+        "normalized_text": "[신뢰구간 조건]"
+    },
+    {
+        "trigger_id": 343,
+        "trigger_text": "[구하고자 하는 함숫값] $c=1.96\\times\\frac{1}{4}$",
+        "normalized_text": "[구하고자 하는 함숫값]"
+    },
+    {
+        "trigger_id": 344,
+        "trigger_text": "도함수의 식 $f'(x)=3x^2+2x+1$이 주어짐",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 345,
+        "trigger_text": "[문제 조건: $f(1)=6$]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 346,
+        "trigger_text": "[문제 조건: 구하고자 하는 값 $f(2)$]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 347,
+        "trigger_text": "[수열의 실수배와 뺄셈으로 이루어진 시그마 식] $\\sum_{k=1}^{6} (2a_k - 1) = 30$",
+        "normalized_text": "[수열의 실수배와 뺄셈으로 이루어진 시그마 식]"
+    },
+    {
+        "trigger_id": 348,
+        "trigger_text": "[상수 수열의 합 계산]",
+        "normalized_text": "[상수 수열의 합 계산]"
+    },
+    {
+        "trigger_id": 349,
+        "trigger_text": "[값을 대입하여 일차방정식 풀이]",
+        "normalized_text": "[값을 대입하여 일차방정식 풀이]"
+    },
+    {
+        "trigger_id": 350,
+        "trigger_text": "함수 $f(x)$가 $x=1$을 기준으로 나뉘어 정의되어 있고 \"실수 전체에서 연속\"이라는 조건",
+        "normalized_text": "[구간별 분기된 연속 함수]"
+    },
+    {
+        "trigger_id": 351,
+        "trigger_text": "[경계점에서의 극한값 계산 및 미지수 도출]",
+        "normalized_text": "[경계점에서의 극한값 계산 및 미지수 도출]"
+    },
+    {
+        "trigger_id": 352,
+        "trigger_text": "[밑이 서로 다른 로그 방정식] 밑이 $\\sqrt{2}$와 $2$인 두 로그의 덧셈 식",
+        "normalized_text": "[밑이 서로 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 353,
+        "trigger_text": "[연립일차방정식 풀이를 통한 로그 값 도출]",
+        "normalized_text": "[연립일차방정식 풀이를 통한 로그 값 도출]"
+    },
+    {
+        "trigger_id": 354,
+        "trigger_text": "[로그의 정의를 이용한 진수의 곱 계산]",
+        "normalized_text": "[로그의 정의를 이용한 진수의 곱 계산]"
+    },
+    {
+        "trigger_id": 355,
+        "trigger_text": "[다항함수의 정적분 식] $\\int_{0}^{2} (6x^2 - 2x + 1) dx$",
+        "normalized_text": "[다항함수의 정적분 식]"
+    },
+    {
+        "trigger_id": 356,
+        "trigger_text": "[적분 구간] $[0, 2]$",
+        "normalized_text": "[적분 구간]"
+    },
+    {
+        "trigger_id": 357,
+        "trigger_text": "등차수열에 대한 두 개의 조건식 $a_3=6$ 과 $2a_5-a_4=15$",
+        "normalized_text": "[등차수열의 조건식 제시]"
+    },
+    {
+        "trigger_id": 358,
+        "trigger_text": "[연립방정식을 통한 초항과 공차 계산]",
+        "normalized_text": "[연립방정식을 통한 초항과 공차 계산]"
+    },
+    {
+        "trigger_id": 359,
+        "trigger_text": "[문제 조건: 구하고자 하는 항 $a_{11}$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 360,
+        "trigger_text": "[경우 분류 조건] 남학생 5명, 여학생 3명에서 남학생 4명 이상 포함 5명 선택",
+        "normalized_text": "[경우 분류 조건]"
+    },
+    {
+        "trigger_id": 361,
+        "trigger_text": "[원형 순열 조건] 5명을 원형 탁자에 배열",
+        "normalized_text": "[원형 순열 조건]"
+    },
+    {
+        "trigger_id": 362,
+        "trigger_text": "[확률 덧셈 조건] 흰 공 5개(1~5), 검은 공 5개(2~6)에서 2개 꺼낼 때 같은 색 또는 같은 수",
+        "normalized_text": "[확률 덧셈 조건]"
+    },
+    {
+        "trigger_id": 363,
+        "trigger_text": "[구하고자 하는 확률] 전체 45, 조건 만족 24",
+        "normalized_text": "[구하고자 하는 확률]"
+    },
+    {
+        "trigger_id": 364,
+        "trigger_text": "밑이 소수가 아닌 합성수인 거듭제곱 ($4^{\\frac{1}{4}}$)",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 365,
+        "trigger_text": "[문제 조건: $\\times 2^{\\frac{1}{2}}$] (밑이 같은 두 유리수 지수의 곱)",
+        "normalized_text": "[밑이 동일한 지수식의 곱]"
+    },
+    {
+        "trigger_id": 366,
+        "trigger_text": "[같은 것이 있는 순열 조건] $a, a, a, a, b, c$ 6개를 모두 일렬로 나열",
+        "normalized_text": "[같은 것이 있는 순열 조건]"
+    },
+    {
+        "trigger_id": 367,
+        "trigger_text": "[조건부 확률 조건] $\\mathrm{P}(A)=\\frac{2}{5}$, $\\mathrm{P}(B|A)=\\frac{1}{4}$",
+        "normalized_text": "[조건부 확률 조건]"
+    },
+    {
+        "trigger_id": 368,
+        "trigger_text": "[전사건 조건] $\\mathrm{P}(A\\cup B)=1$",
+        "normalized_text": "[전사건 조건]"
+    },
+    {
+        "trigger_id": 369,
+        "trigger_text": "[부정적분으로 정의된 함수] 함수 $f(x)$와 $2f(x)+1$의 각 부정적분이 $F(x), G(x)$임",
+        "normalized_text": "[부정적분으로 정의된 함수]"
+    },
+    {
+        "trigger_id": 370,
+        "trigger_text": "[문제 조건] $G(3) = 2F(3)$",
+        "normalized_text": "[문제 조건]"
+    },
+    {
+        "trigger_id": 371,
+        "trigger_text": "[구하고자 하는 값] $G(5) - 2F(5)$",
+        "normalized_text": "[구하고자 하는 값]"
+    },
+    {
+        "trigger_id": 372,
+        "trigger_text": "[함수의 연속 조건] $x=3$을 기준으로 구간별로 다르게 정의된 함수가 실수 전체집합에서 연속",
+        "normalized_text": "[함수의 연속 조건]"
+    },
+    {
+        "trigger_id": 373,
+        "trigger_text": "[좌극한 및 우극한 값 도출]",
+        "normalized_text": "[좌극한 및 우극한 값 도출]"
+    },
+    {
+        "trigger_id": 374,
+        "trigger_text": "[일차방정식을 풀어 미지수 값 도출]",
+        "normalized_text": "[일차방정식을 풀어 미지수 값 도출]"
+    },
+    {
+        "trigger_id": 375,
+        "trigger_text": "함수 $f(x)=2x^3-3ax^2+5a$가 주어지고 '극솟값'이 언급됨 (다항함수의 극값 확인)",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 376,
+        "trigger_text": "[문제 조건: 극솟값이 $a$]",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 377,
+        "trigger_text": "[문제 조건: 함수 $f(x)$의 극댓값을 구하시오]",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 378,
+        "trigger_text": "[여사건 확률 조건] 양 끝 두 수의 곱이 짝수인 사건의 여사건: 양 끝 모두 홀수",
+        "normalized_text": "[여사건 확률 조건]"
+    },
+    {
+        "trigger_id": 379,
+        "trigger_text": "[여사건 보완 조건] 양 끝 곱이 짝수일 확률",
+        "normalized_text": "[여사건 보완 조건]"
+    },
+    {
+        "trigger_id": 380,
+        "trigger_text": "닫힌 구간 $[-2, 2]$ 에서 부등식이 항상 성립하기 위한 조건 (가운데 함수 $g(x)=2x^3+3x^2-12x-8$ 의 최대/최소 파악 필요)",
+        "normalized_text": "[특정 구간에서 부등식이 항상 성립할 조건]"
+    },
+    {
+        "trigger_id": 381,
+        "trigger_text": "[구간 양 끝점 $x \\in \\{-2, 2\\}$]",
+        "normalized_text": "[구간 경계점 조사]"
+    },
+    {
+        "trigger_id": 382,
+        "trigger_text": "[문제 조건: 부등식 $-k \\le f(x) \\le k$ 가 항상 성립]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 383,
+        "trigger_text": "[이산확률변수 분포 조건] $\\mathrm{P}(X=x)=\\frac{|2x-1|}{12}$ ($x=0,1,2,3$), $\\mathrm{P}(X=4)=a$",
+        "normalized_text": "[이산확률변수 분포 조건]"
+    },
+    {
+        "trigger_id": 384,
+        "trigger_text": "[이산확률변수 분산 조건] $\\mathrm{V}\\!\\left(\\frac{1}{a}X\\right)=\\frac{1}{a^2}\\mathrm{V}(X)$, $a=\\frac{1}{6}$이므로 $\\frac{1}{a^2}=36$",
+        "normalized_text": "[이산확률변수 분산 조건]"
+    },
+    {
+        "trigger_id": 385,
+        "trigger_text": "직선 $y=5$가 곡선 $f(x)=x^3 + 3ax^2 - 9a^2x + 4$에 접한다는 조건 ($a>0$)",
+        "normalized_text": "[곡선과 직선의 접함 통과 조건]"
+    },
+    {
+        "trigger_id": 386,
+        "trigger_text": "[접선의 방정식 $y=5$ 상수함수 제약]",
+        "normalized_text": "[곡선과 직선의 접함 통과 조건]"
+    },
+    {
+        "trigger_id": 387,
+        "trigger_text": "[실수배와 덧셈으로 이루어진 시그마 식] $\\sum_{k=1}^{7} (2a_k + 1)$",
+        "normalized_text": "[실수배와 덧셈으로 이루어진 시그마 식]"
+    },
+    {
+        "trigger_id": 388,
+        "trigger_text": "[상수항의 시그마 합] $\\sum_{k=1}^{7} 1$",
+        "normalized_text": "[상수항의 시그마 합]"
+    },
+    {
+        "trigger_id": 389,
+        "trigger_text": "[문제 조건] $\\sum_{k=1}^{7} a_k = 8$",
+        "normalized_text": "[문제 조건]"
+    },
+    {
+        "trigger_id": 390,
+        "trigger_text": "도함수의 식 $f'(x)=3x^2+4x$가 주어짐",
+        "normalized_text": "[도함수의 식 제시]"
+    },
+    {
+        "trigger_id": 391,
+        "trigger_text": "[문제 조건: $f(0)=3$]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 392,
+        "trigger_text": "다항식과 미지의 함수 $f(x)$가 곱해진 형태의 함수 $g(x) = 5x^2 + xf(x)$ 의 미분",
+        "normalized_text": "[두 함수 곱 형태의 미분]"
+    },
+    {
+        "trigger_id": 393,
+        "trigger_text": "[문제 조건: $x=3, f(3)=2, f'(3)=1$]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 394,
+        "trigger_text": "[중복순열 조건] $a, b, c, d$ 4개 중 중복 허락하여 3개를 택해 일렬로 나열",
+        "normalized_text": "[중복순열 조건]"
+    },
+    {
+        "trigger_id": 395,
+        "trigger_text": "[이항정리 전개 조건] $(2x-1)^5(x+1)$에서 $x^3$ 계수",
+        "normalized_text": "[이항정리 전개 조건]"
+    },
+    {
+        "trigger_id": 396,
+        "trigger_text": "[계수 합산 조건] $(80x^3-40x^2+\\cdots)(x+1)$에서 $x^3$ 계수",
+        "normalized_text": "[계수 합산 조건]"
+    },
+    {
+        "trigger_id": 397,
+        "trigger_text": "밑이 다른(5와 25) 로그 방정식 $\\log_{5}(x+1)+\\log_{5}(x-1)=\\log_{25}9$",
+        "normalized_text": "[밑이 다른 로그 방정식]"
+    },
+    {
+        "trigger_id": 398,
+        "trigger_text": "[문제 조건: 좌변 $\\log_5 (x+1) + \\log_5 (x-1)$] (밑이 5로 같은 두 로그의 덧셈)",
+        "normalized_text": "[로그 식의 연산 조건]"
+    },
+    {
+        "trigger_id": 399,
+        "trigger_text": "[이차방정식 풀이 및 진수 조건 확인]",
+        "normalized_text": "[이차방정식 풀이 및 진수 조건 확인]"
+    },
+    {
+        "trigger_id": 400,
+        "trigger_text": "$y=a \\cos bx + c$ 형태의 삼각함수의 최댓값 부여 조건 ($a>0$)",
+        "normalized_text": "[삼각함수 최댓값 조건]"
+    },
+    {
+        "trigger_id": 401,
+        "trigger_text": "$y=a \\cos bx + c$ 형태의 삼각함수의 주기 부여 조건 ($b>0$)",
+        "normalized_text": "[삼각함수 주기 조건]"
+    },
+    {
+        "trigger_id": 402,
+        "trigger_text": "[확률 대수 조건] $\\mathrm{P}(A^C)=2\\mathrm{P}(A)$",
+        "normalized_text": "[확률 대수 조건]"
+    },
+    {
+        "trigger_id": 403,
+        "trigger_text": "[배반사건 및 전사건 조건] $A$, $B$ 배반, $\\mathrm{P}(A\\cup B)=1$",
+        "normalized_text": "[배반사건 및 전사건 조건]"
+    },
+    {
+        "trigger_id": 404,
+        "trigger_text": "$\\cos(\\angle BAC) = -\\frac{3}{5}$ (각의 코사인 값이 제시됨) + [삼각형의 넓이를 구해야 함]",
+        "normalized_text": "[특정 각의 삼각함수 값 제시]"
+    },
+    {
+        "trigger_id": 405,
+        "trigger_text": "[문제 조건: 이웃한 두 변 $\\overline{AB}=5, \\overline{AC}=6$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 406,
+        "trigger_text": "[신뢰구간 조건] $\\sigma=5$, $n=36$, 신뢰도 $99\\%$",
+        "normalized_text": "[신뢰구간 조건]"
+    },
+    {
+        "trigger_id": 407,
+        "trigger_text": "[신뢰구간 하한 조건] $\\bar{x}-2.15=1.2$",
+        "normalized_text": "[신뢰구간 하한 조건]"
+    },
+    {
+        "trigger_id": 408,
+        "trigger_text": "$\\cos(\\pi-\\theta) > 0$ (각의 변환이 필요한 부등식)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 409,
+        "trigger_text": "[삼각함수의 제곱 관계를 이용한 값 도출]",
+        "normalized_text": "[삼각함수의 제곱 관계를 이용한 값 도출]"
+    },
+    {
+        "trigger_id": 410,
+        "trigger_text": "[미분계수의 정의와 일치하는 극한식] $\\lim_{h \\to 0} \\frac{f(1+h) - f(1)}{h}$",
+        "normalized_text": "[미분계수의 정의와 일치하는 극한식]"
+    },
+    {
+        "trigger_id": 411,
+        "trigger_text": "[다항함수식] $f(x)=x^2-x+1$",
+        "normalized_text": "[다항함수식]"
+    },
+    {
+        "trigger_id": 412,
+        "trigger_text": "[미분계수 산출을 위한 값 대입]",
+        "normalized_text": "[미분계수 산출을 위한 값 대입]"
+    },
+    {
+        "trigger_id": 413,
+        "trigger_text": "함수 $f(x)=3x^3-9x^2+a$가 주어지고 극댓값이 제시됨 (다항함수의 극값 확인)",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 414,
+        "trigger_text": "[문제 조건: 극댓값이 20]",
+        "normalized_text": "[다항함수의 극값 조건]"
+    },
+    {
+        "trigger_id": 415,
+        "trigger_text": "[극솟값 계산]",
+        "normalized_text": "[극솟값 계산]"
+    },
+    {
+        "trigger_id": 416,
+        "trigger_text": "[조합 경우 분류 조건] 1학년 1명, 2학년 3명, 3학년 4명 중 5명 선택 시 2학년 수 = 3학년 수",
+        "normalized_text": "[조합 경우 분류 조건]"
+    },
+    {
+        "trigger_id": 417,
+        "trigger_text": "[구하고자 하는 확률] 전체 $\\binom{8}{5}=56$, 조건 만족 18",
+        "normalized_text": "[구하고자 하는 확률]"
+    },
+    {
+        "trigger_id": 418,
+        "trigger_text": "[특정 점에서의 좌극한 기호] $\\lim_{x \\to 0-} f(x)$",
+        "normalized_text": "[특정 점에서의 좌극한 기호]"
+    },
+    {
+        "trigger_id": 419,
+        "trigger_text": "[특정 점에서의 우극한 기호] $\\lim_{x \\to 1+} f(x)$",
+        "normalized_text": "[특정 점에서의 우극한 기호]"
+    },
+    {
+        "trigger_id": 420,
+        "trigger_text": "[극한값의 합 계산]",
+        "normalized_text": "[극한값의 합 계산]"
+    },
+    {
+        "trigger_id": 421,
+        "trigger_text": "$\\sum_{k=1}^{4} (2a_k - k) = 0$ (합의 기호 $\\sum$ 안의 식이 수열의 실수배와 변수 $k$의 뺄셈으로 이루어짐)",
+        "normalized_text": "[시그마 기호식 조건]"
+    },
+    {
+        "trigger_id": 422,
+        "trigger_text": "[자연수 합 공식 적용] $\\sum_{k=1}^{4} k$",
+        "normalized_text": "[자연수 합 공식 적용]"
+    },
+    {
+        "trigger_id": 423,
+        "trigger_text": "[조건 대입으로 방정식 계산] $2\\sum a_k - 10 = 0$",
+        "normalized_text": "[조건 대입으로 방정식 계산]"
+    },
+    {
+        "trigger_id": 424,
+        "trigger_text": "$\\int_{-3}^{3}(x+1) f(x) d x=36+\\int_{-3}^{3} f(x) d x$ (적분 구간이 동일한 두 정적분)",
+        "normalized_text": "[적분 구간이 동일한 두 정적분식]"
+    },
+    {
+        "trigger_id": 425,
+        "trigger_text": "[문제 조건: $f(x)=x^2+ax$ 및 적분 구간 $[-3, 3]$]",
+        "normalized_text": "[특정 x값 대입 조건]"
+    },
+    {
+        "trigger_id": 426,
+        "trigger_text": "함수 $f(x)=4x^3-2x$의 한 부정적분이 $F(x)$라고 주어짐",
+        "normalized_text": "[함수의 부정적분 조건]"
+    },
+    {
+        "trigger_id": 427,
+        "trigger_text": "[문제 조건: $F(0)=4$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 428,
+        "trigger_text": "[문제 조건: 구하고자 하는 값 $F(2)$]",
+        "normalized_text": "[최종 구하는 값]"
+    },
+    {
+        "trigger_id": 429,
+        "trigger_text": "두 곡선 $y=x^2+3$ 과 $y=-\\frac{1}{5}x^2+3$ 으로 둘러싸인 부분의 넓이 구하기",
+        "normalized_text": "[두 곡선 사이 넓이 조건]"
+    },
+    {
+        "trigger_id": 430,
+        "trigger_text": "[두 곡선 함수식]",
+        "normalized_text": "[두 곡선 함수식]"
+    },
+    {
+        "trigger_id": 431,
+        "trigger_text": "[밑이 역수 $\\frac{1}{a}$ 형태인 거듭제곱] $\\left(\\frac{1}{5}\\right)^{\\sqrt{2}}$",
+        "normalized_text": "[합성수/분수 밑의 거듭제곱 제시]"
+    },
+    {
+        "trigger_id": 432,
+        "trigger_text": "[밑이 같은 실수 지수의 곱셈을 위한 지수의 합(차) 연산]",
+        "normalized_text": "[밑이 같은 실수 지수의 곱셈을 위한 지수의 합(차) 연산]"
+    },
+    {
+        "trigger_id": 433,
+        "trigger_text": "[지수의 무리수 소거 및 최종 값 계산]",
+        "normalized_text": "[지수의 무리수 소거 및 최종 값 계산]"
+    },
+    {
+        "trigger_id": 434,
+        "trigger_text": "수열의 귀납적 정의 식 $a_{n+1}=n^2 a_n+1$ 및 초기항 $a_1=1$",
+        "normalized_text": "[귀납적으로 정의된 수열의 점화식]"
+    },
+    {
+        "trigger_id": 435,
+        "trigger_text": "$\\log_a b = 3$ 과 $\\log_3 \\frac{b}{a} = \\frac{1}{2}$",
+        "normalized_text": "[두 로그 방정식 제시]"
+    },
+    {
+        "trigger_id": 436,
+        "trigger_text": "[연립방정식을 통한 미지수 값 도출]",
+        "normalized_text": "[연립방정식을 통한 미지수 값 도출]"
+    },
+    {
+        "trigger_id": 437,
+        "trigger_text": "[문제 조건: $\\log_9 ab$]",
+        "normalized_text": "[추가 관계식 조건]"
+    },
+    {
+        "trigger_id": 438,
+        "trigger_text": "$\\sum_{k=1}^{6}(k^2+2k)$ (합의 기호 $\\sum$ 안의 식이 다항식으로 이루어짐)",
+        "normalized_text": "[내부에 다항식이 포함된 시그마 기호식]"
+    },
+    {
+        "trigger_id": 439,
+        "trigger_text": "[자연수 거듭제곱의 합 공식 적용] $\\sum k^2$, $\\sum k$",
+        "normalized_text": "[자연수 거듭제곱의 합 공식 적용]"
+    },
+    {
+        "trigger_id": 440,
+        "trigger_text": "[최종 합산 계산] $91 + 2 \\times 21$",
+        "normalized_text": "[최종 합산 계산]"
+    },
+    {
+        "trigger_id": 441,
+        "trigger_text": "두 다항식의 곱으로 이루어진 함수 $f(x)=(x^2+2)(x^2+x-3)$",
+        "normalized_text": "[두 다항식 곱 형태의 함수 제시]"
+    },
+    {
+        "trigger_id": 442,
+        "trigger_text": "[확률 대수 조건] $\\mathrm{P}(A\\cup B)=\\frac{5}{6}$, $\\mathrm{P}(A^C\\cap B)=\\frac{1}{4}$",
+        "normalized_text": "[확률 대수 조건]"
+    },
+    {
+        "trigger_id": 443,
+        "trigger_text": "[여사건 확률 조건] $\\mathrm{P}(A^C)=1-\\mathrm{P}(A)$",
+        "normalized_text": "[여사건 확률 조건]"
+    },
+    {
+        "trigger_id": 444,
+        "trigger_text": "미분계수의 정의와 일치하는 극한식 $\\lim_{h \\to 0} \\frac{f(1+h) - f(1)}{h}$",
+        "normalized_text": "[특정 점에서의 미분계수 극한식]"
+    },
+    {
+        "trigger_id": 445,
+        "trigger_text": "[문제 조건: 다항함수 $f(x)=3x^3+4x+1$]",
+        "normalized_text": "[다항함수 식 제시]"
+    },
+    {
+        "trigger_id": 446,
+        "trigger_text": "$\\sin(\\pi - \\theta) > 0$ (각변환이 필요한 삼각함수의 부등식 조건)",
+        "normalized_text": "[삼각함수의 각변환 조건]"
+    },
+    {
+        "trigger_id": 447,
+        "trigger_text": "[문제 조건: $2\\cos \\theta = \\sin \\theta$]",
+        "normalized_text": "[추가 관계식 조건]"
+    }
+]

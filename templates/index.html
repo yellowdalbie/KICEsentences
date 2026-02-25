@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KICE DB Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- KaTeX CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\(', right: '\\)', display: false}, {left: '\\[', right: '\\]', display: true}] });"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo" style="cursor: pointer;" data-view="overview">
+                <div class="logo-icon"></div>
+                <h2>KICE 수학 검색</h2>
+            </div>
+            <!-- Sidebar Tabs -->
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab" data-tab="tab-unit">성취기준</button>
+                <button class="sidebar-tab" data-tab="tab-keyword">해설개념</button>
+                <button class="sidebar-tab active" data-tab="tab-expression">기출표현</button>
+            </div>
+
+            <!-- Tab 1: 단원 (Unit) -->
+            <div id="tab-unit" class="sidebar-tab-content">
+                <div class="obs-file-explorer" style="flex: 1; overflow-y: auto;">
+                    <div id="concept-tree" class="tree-content">
+                        <!-- Populated by JS -->
+                        <p class="placeholder-text" style="padding: 1rem 0; font-size: 0.9rem;">불러오는 중...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: 키워드 (Keyword) -->
+            <div id="tab-keyword" class="sidebar-tab-content">
+                <div class="sidebar-search">
+                    <input type="text" id="search-input" placeholder="해설 개념 검색 (예: 미분가능성)">
+                    <button id="search-btn" aria-label="검색">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Keyword Search Guide (Semantic) -->
+                <div id="keyword-search-guide"
+                    style="padding: 1rem; margin: 0.5rem 1rem; background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 8px; font-size: 0.85rem; display: block;">
+                    <div style="margin-bottom: 0.8rem;">
+                        <strong style="color: #a78bfa;">🔍 AI 유연한 검색 가이드</strong>
+                    </div>
+                    <ul style="padding-left: 1.2rem; color: var(--text-muted); margin-bottom: 0px; line-height: 1.6;">
+                        <li style="margin-bottom: 4px;"><strong>핵심 주제</strong>: <code>지수함수의 그래프</code>,
+                            <code>수열의 합</code>
+                        </li>
+                        <li style="margin-bottom: 4px;"><strong>문장형 질문</strong>: <code>삼각함수의 주기와 최대최소 구하기</code></li>
+                        <li style="margin-bottom: 4px;"><strong>특징</strong>: AI가 해설의 <strong>의미와 맥락</strong>을 분석하여 가장
+                            유사한 문항을 찾아냅니다.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Tab 3: 표현 (Expression) -->
+            <div id="tab-expression" class="sidebar-tab-content active" style="flex: 1;">
+                <div class="sidebar-search">
+                    <input type="text" id="expression-search-input" placeholder="표현 검색 (예: 최대/최소)">
+                    <button id="expression-search-btn" aria-label="표현 검색" class="expression-btn">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Expression Search Guide (Visible before search) -->
+                <div id="expression-search-guide"
+                    style="padding: 1rem; margin: 0.5rem 1rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; font-size: 0.85rem; display: block;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                        <strong style="color: #10b981;">💡 검색 규칙 가이드</strong>
+                        <a href="/docs/search_rules" id="view-search-rules-link" target="_blank"
+                            style="color: #3b82f6; text-decoration: none; font-size: 0.8rem; border-bottom: 1px dashed #3b82f6;">설명서
+                            열기 ↗</a>
+                    </div>
+                    <ul style="padding-left: 1.2rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6;">
+                        <li style="margin-bottom: 4px;"><strong>AND</strong>: <code>극댓값 미분</code> (공백)</li>
+                        <li style="margin-bottom: 4px;"><strong>OR</strong>: <code>등차 | 등비</code> (파이프)</li>
+                        <li style="margin-bottom: 4px;"><strong>NOT</strong>: <code>-삼각함수</code> (하이픈)</li>
+                        <li style="margin-bottom: 4px;"><strong>구문</strong>: <code>"두 실근"</code> (따옴표)</li>
+                        <li style="margin-bottom: 4px;"><strong>경로</strong>: <code>path:2025</code></li>
+                    </ul>
+                    <div style="color: #10b981; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.8rem;">빠른 예시 클릭!
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="quick-query-tags">
+                        <span class="quick-query-tag" data-query="극댓값 | 극솟값"
+                            style="background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem; transition: background 0.2s;">극댓값
+                            | 극솟값</span>
+                        <span class="quick-query-tag" data-query="-삼각함수"
+                            style="background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem; transition: background 0.2s;">-삼각함수</span>
+                        <span class="quick-query-tag" data-query='path:2025 "오직 하나"'
+                            style="background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem; transition: background 0.2s;">path:2025
+                            "오직 하나"</span>
+                    </div>
+                </div>
+
+                <!-- Expression Snippet List (Visible during/after search) -->
+                <div id="expression-snippet-container"
+                    style="display: none; flex: 1; flex-direction: column; overflow: hidden;">
+                    <div id="expression-count-header"
+                        style="padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; color: #10b981; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">
+                        검색 결과: 0건
+                    </div>
+                    <!-- Scrollable list -->
+                    <div id="expression-snippet-list"
+                        style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 0.6rem 1rem; padding-bottom: 2rem;">
+                        <!-- Custom JS populated cards go here -->
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- View: Expression Split-View Detail -->
+            <section id="view-expression-detail" class="view-section">
+                <!-- Detail Header -->
+
+                <div class="results-container glass"
+                    style="flex: 1; display: flex; flex-direction: column; padding: 1.5rem;">
+                    <div id="exp-detail-table-container">
+                        <table class="search-table" id="exp-detail-table" style="display:none;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%; text-align: center;">문항번호</th>
+                                    <th style="width: 55%; text-align: center;">해설 단계별 요약</th>
+                                    <th style="width: 30%; text-align: center;">성취기준</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exp-detail-tbody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                        <div id="exp-detail-loader" style="text-align: center; padding: 4rem;">
+                            <p class="placeholder-text">데이터를 불러오는 중입니다...</p>
+                        </div>
+                    </div>
+
+                    <!-- Auto-display Problem Image -->
+                    <div id="exp-detail-image-container"
+                        style="margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; display: none; flex-direction: column; align-items: center;">
+                        <img id="exp-detail-snapshot" src="" alt="문항 원본 이미지"
+                            style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);">
+                        <p id="exp-detail-image-error" class="placeholder-text"
+                            style="display: none; margin-top: 1rem;">이미지를 불러올 수 없습니다.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View 1: Overview -->
+            <section id="view-overview" class="view-section active">
+                <header class="top-header">
+                    <h1>문항 분석 현황</h1>
+                    <p class="subtitle">평가원 수학 해설 데이터베이스 분석 진척도</p>
+                </header>
+
+                <!-- KPI Widgets (Cards) -->
+                <div class="kpi-grid" style="grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+                    <div class="kpi-card glass"
+                        style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                        <h3 style="margin-bottom: 0.5rem; color: #a78bfa;">전체 분석 진척도</h3>
+                        <div class="kpi-value" id="kpi-problems" style="font-size: 2.2rem; margin: 0.5rem 0;">- / -
+                        </div>
+                        <p class="kpi-desc" id="kpi-problems-desc">총 문항 중 분석 완료된 문항 수</p>
+                    </div>
+
+                    <div class="chart-card glass" style="padding: 1.25rem;">
+                        <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">연도별 분석 현황</h3>
+                        <div id="yearly-progress-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Row 1: 2026-2022 -->
+                            <div id="yearly-row-1" style="display: flex; gap: 1rem; flex-wrap: wrap;"></div>
+                            <!-- Row 2: Others -->
+                            <div id="yearly-row-2" style="display: flex; gap: 1rem; flex-wrap: wrap;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <!-- Top Concepts List -->
+                    <div class="chart-card glass">
+                        <h3>상위 5개 개념 (Action)</h3>
+                        <ul class="ranking-list" id="top-concepts-list">
+                            <!-- Populated by JS -->
+                            <li class="skeleton-loader"></li>
+                            <li class="skeleton-loader"></li>
+                            <li class="skeleton-loader"></li>
+                        </ul>
+                    </div>
+
+                    <!-- Top Trigger-Action Pairs -->
+                    <div class="chart-card glass">
+                        <h3>상위 조건-반응 조합</h3>
+                        <p class="kpi-desc" style="margin-bottom:12px">가장 자주 등장하는 Trigger → Action 패턴</p>
+                        <ul class="ranking-list" id="top-pairs-list">
+                            <!-- Populated by JS -->
+                            <li class="skeleton-loader"></li>
+                            <li class="skeleton-loader"></li>
+                            <li class="skeleton-loader"></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Concepts Tree -->
+            <section id="view-concepts" class="view-section">
+                <div class="split-view-container">
+                    <!-- Complete Results Area -->
+                    <div class="concept-results-panel glass">
+                        <h3 id="concept-results-title">선택된 개념: 없음</h3>
+                        <p class="kpi-desc" id="concept-results-desc">좌측 분류에서 단원명을 클릭하면 해당 단원의 개념 목록이 나타나며, 개념을 선택하면 관련
+                            문항이 검색됩니다.</p>
+
+                        <div id="concept-results-content" class="results-container mt-3">
+                            <!-- Selected unit's concepts list -->
+                            <ul id="unit-concepts-list" class="concept-badge-list" style="display:none;"></ul>
+
+                            <hr class="fade-hr" id="concept-divider" style="display:none;">
+
+                            <!-- Table of problems -->
+                            <table class="search-table" id="concept-search-table" style="display:none;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%; text-align: center;">문항번호</th>
+                                        <th style="width: 55%; text-align: center;">해설 단계별 요약</th>
+                                        <th style="width: 30%; text-align: center;">성취기준</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="concept-search-tbody">
+                                </tbody>
+                            </table>
+                            <p class="placeholder-text" id="concept-search-placeholder" style="display:none;">검색 결과가
+                                없습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View 2: Search -->
+            <section id="view-search" class="view-section">
+                <div class="results-container glass" id="search-results"
+                    style="flex: 1; display: flex; flex-direction: column;">
+
+                    <!-- Search history navigation bar -->
+                    <div id="search-history-nav" style="
+                        display: none;
+                        align-items: center; gap: 0.75rem;
+                        padding: 0.6rem 1rem; margin-bottom: 0.5rem;
+                        background: rgba(139,92,246,0.08);
+                        border-radius: 8px; border: 1px solid rgba(139,92,246,0.2);
+                    ">
+                        <button id="history-back-btn" onclick="navigateHistory(-1)" style="
+                            background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3);
+                            color: #a78bfa; border-radius: 6px; width: 28px; height: 28px;
+                            cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+                        " title="이전 검색">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5"
+                                fill="none" stroke-linecap="round">
+                                <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                        </button>
+                        <span id="search-history-label" style="
+                            flex: 1; font-size: 0.83rem; color: #c4b5fd;
+                            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                            text-align: center;
+                        "></span>
+                        <button id="history-fwd-btn" onclick="navigateHistory(1)" style="
+                            background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3);
+                            color: #a78bfa; border-radius: 6px; width: 28px; height: 28px;
+                            cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+                        " title="다음 검색">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5"
+                                fill="none" stroke-linecap="round">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <p class="placeholder-text" id="search-placeholder-msg">좌측 상단 검색창에 키워드를 입력하여 KICE 네트워크를 검색하세요.</p>
+                    <!-- Search results table populated by JS -->
+                    <table class="search-table" id="main-search-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%; text-align: center;">문항번호</th>
+                                <th style="width: 55%; text-align: center;">해설 단계별 요약</th>
+                                <th style="width: 30%; text-align: center;">성취기준</th>
+                            </tr>
+                        </thead>
+                        <tbody id="search-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div><!-- /.app-container -->
+
+
+
+    <script>
+        // Tab Navigation Logic
+        const viewSections = document.querySelectorAll('.view-section');
+        const logoBtn = document.querySelector('.logo');
+        const conceptTree = document.getElementById('concept-tree');
+
+        function switchView(viewName) {
+            // Remove active classes from dynamically created subjects/folders when switching away
+            if (viewName !== 'concepts') {
+                document.querySelectorAll('.obs-nav-folder-title, .obs-nav-item').forEach(el => el.classList.remove('active'));
+            }
+
+            // Switch main sections
+            viewSections.forEach(sec => {
+                sec.classList.remove('active');
+                if (sec.id === 'view-' + viewName) sec.classList.add('active');
+            });
+        }
+
+        logoBtn.addEventListener('click', () => {
+            switchView('overview');
+        });
+
+        // App Logic: Fetch Data
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+
+                // Update KPIs
+                document.getElementById('kpi-problems').innerText = `${data.total_analyzed} / ${data.total_pdfs}`;
+                const completionRate = data.total_pdfs > 0 ? Math.round((data.total_analyzed / data.total_pdfs) * 100) : 0;
+                document.getElementById('kpi-problems-desc').innerText = `총 문항 중 ${completionRate}% 분석 완료`;
+
+                // Update Yearly Progress Charts
+                const row1 = document.getElementById('yearly-row-1');
+                const row2 = document.getElementById('yearly-row-2');
+                const container = document.getElementById('yearly-progress-container');
+
+                if (row1 && row2) {
+                    row1.innerHTML = '';
+                    row2.innerHTML = '';
+
+                    const row1Years = ['2026', '2025', '2024', '2023', '2022'];
+
+                    data.yearly_progress.forEach(item => {
+                        if (item.year === '2028') return; // Exclude 2028 as requested
+
+                        const chartItem = document.createElement('div');
+                        chartItem.style.cssText = 'flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; width: 68px;';
+
+                        const chartHtml = `
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">${item.year}</span>
+                                <div style="
+                                    width: 10px; height: 10px; 
+                                    border-radius: 50%; 
+                                    background: conic-gradient(#8b5cf6 ${item.percent}%, rgba(255,255,255,0.1) 0);
+                                    border: 1px solid rgba(139, 92, 246, 0.4);
+                                    flex-shrink: 0;
+                                "></div>
+                            </div>
+                            <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500; padding-left: 1px;">
+                                ${item.analyzed}/${item.total}
+                            </div>
+                        `;
+                        chartItem.innerHTML = chartHtml;
+
+                        if (row1Years.includes(item.year)) {
+                            row1.appendChild(chartItem);
+                        } else {
+                            row2.appendChild(chartItem);
+                        }
+                    });
+                }
+
+                // Update Top Concepts
+                const conceptsList = document.getElementById('top-concepts-list');
+                conceptsList.innerHTML = '';
+                data.top_concepts.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="ranking-item">
+                            <span class="ranking-name">${item.standard_name}</span>
+                            <span class="ranking-sub">${item.ref_code || item.id}</span>
+                        </div>
+                        <span class="ranking-count">${item.cnt}</span>
+                    `;
+                    conceptsList.appendChild(li);
+                });
+
+
+                // Update Top Pairs (Trigger → Action)
+                const pairsList = document.getElementById('top-pairs-list');
+                pairsList.innerHTML = '';
+                data.top_pairs.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="ranking-item">
+                            <span class="ranking-name">${item.trigger_cat}</span>
+                            <span class="ranking-sub">→ ${item.ref_code || ''} ${item.standard_name || ''}</span>
+                        </div>
+                        <span class="ranking-count">${item.cnt}</span>
+                    `;
+                    pairsList.appendChild(li);
+                });
+
+                // Re-render KaTeX inside the lists
+                if (window.renderMathInElement) {
+                    renderMathInElement(document.getElementById('top-pairs-list'), { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
+                }
+            } catch (error) {
+                console.error("Failed to fetch stats", error);
+            }
+        }
+
+        // Search Logic
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const searchTable = document.getElementById('main-search-table');
+        const searchTbody = document.getElementById('search-tbody');
+        const placeholderText = document.querySelector('.placeholder-text');
+
+        let searchCurrentQuery = '';
+
+        async function performSearch(queryInput) {
+            const query = typeof queryInput === 'string' ? queryInput : searchInput.value.trim();
+            if (!query) return;
+
+            // Switch to search view automatically
+            switchView('search');
+
+            // Loading state
+            const placeholderMsg = document.getElementById('search-placeholder-msg');
+            if (placeholderMsg) placeholderMsg.style.display = 'block';
+
+            placeholderMsg.innerText = 'Searching...';
+            searchTable.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/search?q=' + encodeURIComponent(query));
+                const data = await response.json();
+
+                if (data.results.length === 0) {
+                    placeholderMsg.innerText = 'No results found for "' + query + '".';
+                } else {
+                    placeholderMsg.style.display = 'none';
+                    // Group by problem_id
+                    const groups = {};
+                    data.results.forEach(row => {
+                        if (!groups[row.problem_id]) groups[row.problem_id] = [];
+                        groups[row.problem_id].push(row);
+                    });
+
+                    // Build score map if it was a semantic search
+                    const scoreMap = {};
+                    data.results.forEach(r => {
+                        if (r.cos_similarity !== undefined) {
+                            if (!scoreMap[r.problem_id] || r.hybrid_score > scoreMap[r.problem_id].hybrid_score) {
+                                scoreMap[r.problem_id] = { cos_similarity: r.cos_similarity, hybrid_score: r.hybrid_score, same_concept: r.same_concept };
+                            }
+                        }
+                    });
+
+                    // Render function
+                    const doRender = () => {
+                        renderMainTable(groups, undefined, scoreMap);
+                    };
+
+                    doRender();
+                    pushHistory(query, doRender);
+                }
+
+                // Re-render MathJax/KaTeX inside search results
+                if (window.renderMathInElement) {
+                    renderMathInElement(searchTbody, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
+                }
+            } catch (error) {
+                console.error("Search failed", error);
+                const placeholderMsg = document.getElementById('search-placeholder-msg');
+                if (placeholderMsg) {
+                    placeholderMsg.style.display = 'block';
+                    placeholderMsg.innerText = "Error searching database JS: " + String(error) + "\n" + (error.stack || '');
+                }
+            }
+        }
+
+        async function fetchConceptsTree() {
+            try {
+                const response = await fetch('/api/concepts_tree');
+                const treeData = await response.json();
+                renderConceptTree(treeData);
+            } catch (error) {
+                console.error('Failed to fetch concepts tree', error);
+                document.getElementById('concept-tree').innerHTML = '<p class="placeholder-text">트리를 불러오는데 실패했습니다.</p>';
+            }
+        }
+
+        function renderConceptTree(data) {
+            const container = document.getElementById('concept-tree');
+            container.innerHTML = '';
+
+            const subjectOrder = ['중학교 수학', '공통수학', '대수', '미적분I', '확률과 통계'];
+
+            // Sort subjects according to subjectOrder
+            const subjects = Object.keys(data).filter(s => s !== '기타').sort((a, b) => {
+                const idxA = subjectOrder.indexOf(a);
+                const idxB = subjectOrder.indexOf(b);
+                if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+                if (idxA === -1) return 1;
+                if (idxB === -1) return -1;
+                return idxA - idxB;
+            });
+
+            for (const subject of subjects) {
+                const chapters = data[subject];
+
+                const subjDiv = document.createElement('div');
+                subjDiv.className = 'obs-nav-folder';
+
+                const subjTitle = document.createElement('div');
+                subjTitle.className = 'obs-nav-folder-title';
+                subjTitle.dataset.view = 'concepts';
+                subjTitle.innerHTML = `<div class="obs-nav-toggle collapsed">▼</div><div class="obs-nav-title">${subject}</div>`;
+
+                const unitsContainer = document.createElement('div');
+                unitsContainer.className = 'obs-nav-folder-children collapsed';
+
+                const sortedUnits = Object.keys(chapters).sort();
+
+                for (const unitName of sortedUnits) {
+                    const concepts = chapters[unitName];
+
+                    const unitItem = document.createElement('div');
+                    unitItem.className = 'obs-nav-item concept-unit-item';
+                    unitItem.innerHTML = `<div class="obs-nav-title">${unitName}</div>`;
+
+                    unitItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        // highlight selected unit
+                        document.querySelectorAll('.concept-unit-item').forEach(el => el.classList.remove('active'));
+                        unitItem.classList.add('active');
+                        // Ensure we are in concepts view
+                        switchView('concepts');
+                        showUnitConcepts(unitName, concepts);
+                    });
+
+                    unitsContainer.appendChild(unitItem);
+                }
+
+                // Toggle logic for subject folder
+                subjTitle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    switchView('concepts');
+
+                    document.querySelectorAll('.obs-nav-folder-title, .obs-nav-item').forEach(el => el.classList.remove('active'));
+                    subjTitle.classList.add('active');
+
+                    unitsContainer.classList.toggle('collapsed');
+                    subjTitle.querySelector('.obs-nav-toggle').classList.toggle('collapsed');
+                });
+
+                subjDiv.appendChild(subjTitle);
+                subjDiv.appendChild(unitsContainer);
+                container.appendChild(subjDiv);
+            }
+        }
+
+        function showUnitConcepts(unitName, concepts) {
+            document.getElementById('concept-results-title').innerText = `${unitName}`;
+            document.getElementById('concept-results-desc').style.display = 'none';
+            document.getElementById('concept-divider').style.display = 'block';
+
+            const listContainer = document.getElementById('unit-concepts-list');
+            listContainer.style.display = 'flex';
+            listContainer.innerHTML = '';
+
+            concepts.forEach(concept => {
+                const li = document.createElement('li');
+                li.className = 'concept-badge';
+                li.innerHTML = `<span class="badge-ref">${concept.ref_code || ''}</span> ${concept.standard_name}`;
+
+                li.addEventListener('click', () => {
+                    document.querySelectorAll('.concept-badge').forEach(el => el.classList.remove('selected'));
+                    li.classList.add('selected');
+                    // concept.id (CPT-...) 로 DB 직접 조회 - 시맨틱 검색 아님
+                    searchConceptProblems(concept.id, concept.standard_name);
+                });
+
+                listContainer.appendChild(li);
+            });
+
+            // Clear current table results
+            document.getElementById('concept-search-table').style.display = 'none';
+            document.getElementById('concept-search-placeholder').style.display = 'none';
+        }
+
+        async function searchConceptProblems(conceptId, conceptLabel) {
+            // 로딩 표시: view-search 로 전환 후 placeholder 표시
+            switchView('search');
+            const placeholderMsg = document.getElementById('search-placeholder-msg');
+            const searchTable = document.getElementById('main-search-table');
+            if (placeholderMsg) { placeholderMsg.style.display = 'block'; placeholderMsg.innerText = '검색 중...'; }
+            searchTable.style.display = 'none';
+
+            try {
+                // /api/steps_by_concept 으로 DB 직접 조회 (시맨틱 검색 X)
+                const response = await fetch('/api/steps_by_concept?concept_id=' + encodeURIComponent(conceptId));
+                const data = await response.json();
+
+                if (data.results.length === 0) {
+                    if (placeholderMsg) { placeholderMsg.innerText = '이 성취기준이 적용된 문항이 없습니다.'; }
+                } else {
+                    if (placeholderMsg) placeholderMsg.style.display = 'none';
+
+                    // renderMainTable 에 맞게 problem_id 기준으로 그룹화
+                    const groups = {};
+                    data.results.forEach(row => {
+                        if (!groups[row.problem_id]) groups[row.problem_id] = [];
+                        groups[row.problem_id].push(row);
+                    });
+
+                    // 키워드 검색과 동일한 renderMainTable 사용 → 이미지 팝업·툴팁 자동 적용
+                    const label = conceptLabel || conceptId;
+                    const doRender = () => renderMainTable(groups);
+                    doRender();
+                    pushHistory(label, doRender);
+
+                    if (window.renderMathInElement) {
+                        renderMathInElement(document.getElementById('search-tbody'), {
+                            delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }]
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Concept search failed', error);
+                if (placeholderMsg) { placeholderMsg.style.display = 'block'; placeholderMsg.innerText = '오류 발생: ' + error; }
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        // Global Tooltip Logic
+        const globalTooltip = document.createElement('div');
+        globalTooltip.id = 'global-tooltip';
+        globalTooltip.className = 'custom-tooltip';
+        document.body.appendChild(globalTooltip);
+
+        document.addEventListener('mouseover', (e) => {
+            const trigger = e.target.closest('.tooltip-trigger');
+            if (!trigger) return;
+
+            const tooltipContent = decodeURIComponent(trigger.getAttribute('data-tooltip') || '');
+            if (!tooltipContent) return;
+
+            globalTooltip.innerHTML = tooltipContent;
+
+            // Adjust styles for image thumbnail vs normal text
+            if (tooltipContent.trim().startsWith('<img')) {
+                globalTooltip.style.padding = '0';
+                globalTooltip.style.maxWidth = 'none';
+                globalTooltip.style.width = 'max-content';
+                globalTooltip.style.overflow = 'hidden';
+            } else {
+                globalTooltip.style.padding = '1.25rem';
+                globalTooltip.style.maxWidth = '500px';
+                globalTooltip.style.width = 'max-content';
+                globalTooltip.style.overflow = 'visible';
+            }
+
+            globalTooltip.style.visibility = 'visible';
+            globalTooltip.style.opacity = '1';
+
+            // Render MathJax if present in the tooltip text
+            if (window.renderMathInElement) {
+                renderMathInElement(globalTooltip, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (globalTooltip.style.visibility !== 'visible') return;
+
+            const tooltipRect = globalTooltip.getBoundingClientRect();
+            const padding = 15;
+
+            let topPosition = e.clientY + padding;
+            let leftPosition = e.clientX;
+
+            // Prevent bottom overflow (and prefer cutting off the bottom if viewport is too small)
+            if (topPosition + tooltipRect.height > window.innerHeight) {
+                const abovePosition = e.clientY - tooltipRect.height - padding;
+                if (abovePosition > padding) {
+                    topPosition = abovePosition; // Place above if it fits perfectly
+                } else {
+                    topPosition = padding; // Pin to top edge; let bottom overflow/get cut off rather than chopping off the top
+                }
+            }
+
+            // Prevent right overflow
+            if (leftPosition + (tooltipRect.width / 2) > window.innerWidth) {
+                leftPosition = window.innerWidth - (tooltipRect.width / 2) - padding;
+            }
+
+            // Prevent left overflow
+            if (leftPosition - (tooltipRect.width / 2) < 0) {
+                leftPosition = (tooltipRect.width / 2) + padding;
+            }
+
+            globalTooltip.style.top = topPosition + 'px';
+            globalTooltip.style.left = leftPosition + 'px';
+            globalTooltip.style.position = 'fixed';
+            globalTooltip.style.transform = 'translateX(-50%)';
+            globalTooltip.style.maxHeight = (window.innerHeight - 2 * padding) + 'px';
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const trigger = e.target.closest('.tooltip-trigger');
+            if (trigger) {
+                globalTooltip.style.visibility = 'hidden';
+                globalTooltip.style.opacity = '0';
+            }
+        });
+
+        // ── 검색 히스토리 ─────────────────────────────────────
+        const searchHistory = [];   // [{label, renderFn}]
+        let historyIndex = -1;
+
+        const historyNav = document.getElementById('search-history-nav');
+        const historyLabel = document.getElementById('search-history-label');
+        const historyBackBtn = document.getElementById('history-back-btn');
+        const historyFwdBtn = document.getElementById('history-fwd-btn');
+
+        function updateHistoryNav() {
+            if (searchHistory.length <= 1) { historyNav.style.display = 'none'; return; }
+            historyNav.style.display = 'flex';
+            historyLabel.textContent = searchHistory[historyIndex]?.label || '';
+            historyBackBtn.disabled = historyIndex <= 0;
+            historyFwdBtn.disabled = historyIndex >= searchHistory.length - 1;
+            historyBackBtn.style.opacity = historyIndex <= 0 ? '0.3' : '1';
+            historyFwdBtn.style.opacity = historyIndex >= searchHistory.length - 1 ? '0.3' : '1';
+        }
+
+        function pushHistory(label, renderFn) {
+            searchHistory.splice(historyIndex + 1);
+            searchHistory.push({ label, renderFn });
+            historyIndex = searchHistory.length - 1;
+            updateHistoryNav();
+        }
+
+        function navigateHistory(dir) {
+            const next = historyIndex + dir;
+            if (next < 0 || next >= searchHistory.length) return;
+            historyIndex = next;
+            searchHistory[historyIndex].renderFn();
+            updateHistoryNav();
+        }
+
+
+
+        // ── 공통 메인 렌더링 함수 ────────────────────────────────────
+        function renderMainTable(groups, orderedProbIds, scoreMap, targetTableId = 'main-search-table', targetTbodyId = 'search-tbody') {
+            const searchTable = document.getElementById(targetTableId);
+            const searchTbody = document.getElementById(targetTbodyId);
+            searchTbody.innerHTML = '';
+
+            // If orderedProbIds isn't provided, use groups keys as-is
+            const pids = orderedProbIds || Object.keys(groups);
+            const linkSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+
+            pids.forEach(pid => {
+                let rows = groups[pid];
+                if (!rows) return;
+
+                // 역순 정렬 버그 방지를 위해 항상 step_number 오름차순으로 정렬
+                rows.sort((a, b) => parseInt(a.step_number || 0) - parseInt(b.step_number || 0));
+
+                const rowCount = rows.length;
+                const score = (scoreMap && scoreMap[pid]) ? scoreMap[pid] : null;
+
+                rows.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    const safeTrigger = row.trigger_text || '';
+                    const explanation = row.explanation_text ? row.explanation_text.replace(/"/g, '&quot;') : '해설 내용이 없습니다.';
+                    let html = '';
+
+                    const editSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+                    const fullConcept = (row.ref_code || row.action_concept_id || '') + ' ' + (row.standard_name || '');
+
+                    if (index === 0) {
+                        const pdfImg = `<img src="/thumbnail/${row.problem_id}" style="width:480px;height:auto;display:block;border-radius:4px;" alt="${row.problem_id}">`;
+                        html += `<td rowspan="${rowCount}" style="vertical-align:top;">
+                            <span class="tag tag-blue tooltip-trigger" style="cursor:pointer;" data-tooltip="${encodeURIComponent(pdfImg)}">${row.problem_id}</span>`;
+
+                        if (score && score.cos_similarity !== undefined) {
+                            const pct = Math.round((score.cos_similarity || 0) * 100);
+                            const barColor = score.same_concept
+                                ? 'linear-gradient(90deg,#7c3aed,#a78bfa)'
+                                : (pct >= 70 ? 'linear-gradient(90deg,#0d9488,#34d399)' : 'linear-gradient(90deg,#1e3a5f,#3b82f6)');
+                            const badge = score.same_concept
+                                ? `<span class="tag" style="background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed44;font-size:0.7rem;">동일개념</span>` : '';
+                            html += `<div style="margin-top:0.4rem;font-size:0.72rem;color:#64748b;display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;">
+                                        <span style="display:inline-block;height:4px;width:${Math.min(pct, 60)}px;border-radius:2px;background:${barColor};vertical-align:middle;"></span>
+                                        <span>${pct}%</span>${badge}
+                                    </div>`;
+                        }
+                        html += `</td>`;
+                    }
+
+                    html += `
+                        <td class="latex-font" style="white-space:normal;">
+                            <div class="tooltip-trigger" data-tooltip="${encodeURIComponent(explanation.replace(/\n/g, '<br>'))}"
+                                 style="display:flex;align-items:flex-start;gap:0.5rem;">
+                                ${row.step_id ? `<span class="step-title-clickable" title="유사 스텝 검색"
+                                    data-step-id="${row.step_id}"
+                                    data-step-title="${encodeURIComponent(row.step_title || safeTrigger)}"
+                                    data-concept-id="${row.action_concept_id || ''}"
+                                    style="opacity:0.45;cursor:pointer;flex-shrink:0;color:#a78bfa;margin-top:2px;"
+                                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">${linkSvg}</span>` : ''}
+                                <span style="flex:1;">${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
+                            </div>
+                        </td>
+                        <td class="concept-edit-cell tooltip-trigger"
+                            data-step-id="${row.step_id}"
+                            data-concept-id="${row.action_concept_id || ''}"
+                            data-ref-code="${row.ref_code || ''}"
+                            data-standard-name="${row.standard_name || ''}"
+                            data-tooltip="${encodeURIComponent(fullConcept)}"
+                            title="성취기준 수정">
+                            <div style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                                <span class="concept-display" style="display:inline-block;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">
+                                    ${fullConcept}
+                                </span>
+                                <span class="edit-pencil" style="opacity:0;transition:opacity 0.15s;font-size:0.75rem;color:#a78bfa;flex-shrink:0;">${editSvg}</span>
+                            </div>
+                        </td>`;
+                    tr.innerHTML = html;
+                    searchTbody.appendChild(tr);
+                });
+            });
+
+            searchTable.style.display = 'table';
+            if (window.renderMathInElement) {
+                renderMathInElement(searchTbody, { delimiters: [{ left: '$', right: '$', display: false }, { left: '$$', right: '$$', display: true }] });
+            }
+        }
+
+        // 링크 클릭 → 바로 메인 테이블에 유사도순 렌더
+        function loadSimilarInMain(stepId, displayTitle, conceptId) {
+            switchView('search');
+            const searchTable = document.getElementById('main-search-table');
+            const placeholder = document.getElementById('search-placeholder-msg');
+            placeholder.style.display = 'block';
+            placeholder.innerText = '유사 스텝 검색 중...';
+            searchTable.style.display = 'none';
+
+            fetch(`/api/similar_steps/${stepId}?top_n=50`)
+                .then(r => r.json())
+                .then(simData => {
+                    if (simData.error) { placeholder.innerText = simData.error; return; }
+
+                    const scoreMap = {};
+                    simData.results.forEach(r => {
+                        if (!scoreMap[r.problem_id] || r.hybrid_score > scoreMap[r.problem_id].hybrid_score) {
+                            scoreMap[r.problem_id] = { cos_similarity: r.cos_similarity, hybrid_score: r.hybrid_score, same_concept: r.same_concept };
+                        }
+                    });
+
+                    const orderedProbIds = [];
+                    const seen = new Set();
+                    simData.results.forEach(r => { if (!seen.has(r.problem_id)) { seen.add(r.problem_id); orderedProbIds.push(r.problem_id); } });
+                    if (orderedProbIds.length === 0) { placeholder.innerText = '결과 없음'; return; }
+
+                    fetch(`/api/steps_by_problems?ids=${encodeURIComponent(orderedProbIds.join(','))}`)
+                        .then(r => r.json())
+                        .then(allData => {
+                            placeholder.style.display = 'none';
+                            const groups = {};
+                            allData.results.forEach(row => {
+                                if (!groups[row.problem_id]) groups[row.problem_id] = [];
+                                groups[row.problem_id].push(row);
+                            });
+
+                            const doRender = () => {
+                                renderMainTable(groups, orderedProbIds, scoreMap);
+                            };
+
+                            doRender();
+                            pushHistory(displayTitle, doRender);
+                        })
+                        .catch(err => {
+                            placeholder.style.display = 'block'; placeholder.innerText = `스텝 로드 오류: ${err}`;
+                        });
+                })
+                .catch(err => { placeholder.style.display = 'block'; placeholder.innerText = `오류: ${err}`; });
+        }
+
+
+        // step-title 클릭 → 바로 유사도 결과를 메인 테이블에 (이벤트 위임)
+        document.addEventListener('click', (e) => {
+            const stepCell = e.target.closest('.step-title-clickable');
+            if (!stepCell) return;
+            const stepId = stepCell.dataset.stepId;
+            const title = stepCell.dataset.stepTitle;
+            const concept = stepCell.dataset.conceptId;
+            if (stepId) loadSimilarInMain(parseInt(stepId), decodeURIComponent(title), concept);
+        });
+
+        // Tab switching logic
+        document.querySelectorAll('.sidebar-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active from all tabs
+                document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.sidebar-tab-content').forEach(c => c.classList.remove('active'));
+
+                // Add active to clicked tab
+                tab.classList.add('active');
+                const targetId = tab.dataset.tab;
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // Expression Search Logic
+        const expInput = document.getElementById('expression-search-input');
+        const expBtn = document.getElementById('expression-search-btn');
+        const expGuide = document.getElementById('expression-search-guide');
+        const expContainer = document.getElementById('expression-snippet-container');
+        const expList = document.getElementById('expression-snippet-list');
+        const expCount = document.getElementById('expression-count-header');
+
+        function executeExpressionSearch(query) {
+            if (!query.trim()) return;
+            expInput.value = query;
+
+            expGuide.style.display = 'none';
+            expContainer.style.display = 'flex';
+            expCount.innerText = '검색 중...';
+            expList.innerHTML = '<p class="placeholder-text">결과를 불러오는 중입니다...</p>';
+
+            fetch(`/api/search_expression?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) throw new Error(data.error);
+
+                    expCount.innerText = `검색 결과: ${data.count}건`;
+                    expList.innerHTML = '';
+
+                    if (data.count === 0) {
+                        expList.innerHTML = '<p class="placeholder-text">일치하는 결과가 없습니다.</p>';
+                        return;
+                    }
+
+                    data.results.forEach(item => {
+                        const card = document.createElement('div');
+                        card.style.cssText = `
+                            background: var(--bg-surface);
+                            border: 1px solid var(--border-color);
+                            border-radius: 6px;
+                            padding: 10px;
+                            cursor: pointer;
+                            transition: background 0.2s, border-color 0.2s;
+                        `;
+                        card.onmouseover = () => { card.style.borderColor = '#10b981'; card.style.background = 'rgba(16, 185, 129, 0.03)'; };
+                        card.onmouseout = () => { card.style.borderColor = 'var(--border-color)'; card.style.background = 'var(--bg-surface)'; };
+
+                        // Set CSS for <mark> tags dynamically inside this list
+                        const snippetHtml = item.snippet.replace(/<mark>/g, '<mark style="background-color: rgba(234, 179, 8, 0.3); color: #fef08a; padding: 0 2px; border-radius: 2px;">');
+
+                        card.innerHTML = `
+                            <div style="font-weight: 600; font-size: 0.9rem; color: #10b981; margin-bottom: 4px;">${item.problem_id}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-main); line-height: 1.5; word-break: break-all;">${snippetHtml}</div>
+                        `;
+
+                        card.addEventListener('click', () => {
+                            // Highlight selected card visually
+                            Array.from(expList.children).forEach(c => c.style.borderLeft = 'none');
+                            card.style.borderLeft = '3px solid #10b981';
+
+                            // Load Split View detail logic here
+                            // We will implement loadSplitViewDetail shortly
+                            loadSplitViewDetail(item.problem_id);
+                        });
+
+                        expList.appendChild(card);
+                    });
+                })
+                .catch(err => {
+                    expCount.innerText = '오류 발생';
+                    expList.innerHTML = `<p class="placeholder-text" style="color: #ef4444;">${err.message}</p>`;
+                });
+        }
+
+        // Bind Search Events
+        expBtn.addEventListener('click', () => executeExpressionSearch(expInput.value));
+        expInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') executeExpressionSearch(expInput.value);
+        });
+
+        // Quick Tag Clicks
+        document.querySelectorAll('.quick-query-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                executeExpressionSearch(tag.dataset.query);
+            });
+        });
+
+        // Split View detailed page
+        function loadSplitViewDetail(problemId) {
+            // Switch view
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('view-expression-detail').classList.add('active');
+
+            // Set header (Disabled by user request)
+            // document.getElementById('exp-detail-title').innerText = `${problemId} 상세`;
+
+            // Clear and show loader
+            const tbody = document.getElementById('exp-detail-tbody');
+            const tloader = document.getElementById('exp-detail-loader');
+            const tableEl = document.getElementById('exp-detail-table');
+
+            tbody.innerHTML = '';
+            tloader.style.display = 'block';
+            tableEl.style.display = 'none';
+
+            // Load Snapshot Image
+            const imgContainer = document.getElementById('exp-detail-image-container');
+            const snapshotImg = document.getElementById('exp-detail-snapshot');
+            const imgError = document.getElementById('exp-detail-image-error');
+
+            imgContainer.style.display = 'none';
+            imgError.style.display = 'none';
+            snapshotImg.src = `/thumbnail/${encodeURIComponent(problemId)}`;
+            snapshotImg.onload = () => { imgContainer.style.display = 'flex'; };
+            snapshotImg.onerror = () => { imgContainer.style.display = 'flex'; imgError.style.display = 'block'; snapshotImg.style.display = 'none'; };
+            snapshotImg.style.display = 'block';
+
+            fetch(`/api/problem_steps?pid=${encodeURIComponent(problemId)}`)
+                .then(res => res.json())
+                .then(data => {
+                    tloader.style.display = 'none';
+                    if (data.error || !data.steps || data.steps.length === 0) {
+                        const dummySteps = [{
+                            problem_id: problemId,
+                            step_number: '',
+                            trigger_text: '아직 해설이 반영되지 않은 문항입니다.',
+                            explanation_text: '',
+                            action_concept_id: '',
+                            standard_name: '',
+                            ref_code: ''
+                        }];
+                        const groups = { [problemId]: dummySteps };
+                        renderMainTable(groups, [problemId], null, 'exp-detail-table', 'exp-detail-tbody');
+                        return;
+                    }
+
+                    // Format data for renderMainTable: { pid: [steps] }
+                    // Also need to ensure step_id is present for similar search/edit functions
+                    const formattedSteps = data.steps.map(s => ({
+                        ...s,
+                        problem_id: problemId,
+                        trigger_text: s.step_title // renderMainTable uses trigger_text for display
+                    }));
+
+                    const groups = { [problemId]: formattedSteps };
+
+                    // Call the generalized renderMainTable
+                    renderMainTable(groups, [problemId], null, 'exp-detail-table', 'exp-detail-tbody');
+                })
+                .catch(err => {
+                    tloader.style.display = 'none';
+                    tbody.innerHTML = `<tr><td colspan="3" class="placeholder-text" style="color: #ef4444;">데이터 로드 실패: ${err.message}</td></tr>`;
+                    tableEl.style.display = 'table';
+                });
+        }
+
+        // Init
+        fetchStats();
+        fetchConceptsTree();
+    </script>
+
+    <!-- ── Concept Picker 사이드 패널 ────────────────────── -->
+    <div id="concept-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;"
+        onclick="closeConceptPicker()"></div>
+
+    <div id="concept-picker-panel" style="
+        position:fixed;top:0;right:-480px;width:460px;height:100vh;
+        background:var(--sidebar-bg,#1a1a2e);border-left:1px solid rgba(16,185,129,0.3);
+        display:flex;flex-direction:column;z-index:901;
+        transition:right 0.25s cubic-bezier(0.4,0,0.2,1);
+        box-shadow:-8px 0 32px rgba(0,0,0,0.5);
+    ">
+        <!-- 헤더 -->
+        <div style="padding:1.2rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                <strong style="color:#10b981;font-size:1rem;">✏️ 성취기준 도우미</strong>
+                <button onclick="closeConceptPicker()"
+                    style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem;">&times;</button>
+            </div>
+            <div id="picker-current-label"
+                style="font-size:0.82rem;color:var(--text-muted);padding:0.5rem 0.8rem;background:rgba(255,255,255,0.04);border-radius:6px;border-left:3px solid #10b981;">
+                현재: —
+            </div>
+        </div>
+
+        <!-- 검색 -->
+        <div style="padding:0.8rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
+            <input id="picker-search-input" type="text" placeholder="ref_code 또는 성취기준 검색..." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);
+                       border-radius:6px;padding:0.5rem 0.75rem;color:var(--text-main);font-size:0.85rem;outline:none;"
+                oninput="filterPickerList(this.value)">
+        </div>
+
+        <!-- 목록 -->
+        <div id="concept-picker-list" style="flex:1;overflow-y:auto;padding:0.5rem;"></div>
+    </div>
+
+    <style>
+        /* 성취기준 셀 호버 효과 */
+        .concept-edit-cell:hover .edit-pencil {
+            opacity: 1 !important;
+        }
+
+        .concept-edit-cell:hover {
+            background: rgba(16, 185, 129, 0.06);
+            cursor: pointer;
+        }
+
+        /* Picker 목록 아이템 */
+        .picker-subject-header {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #10b981;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+            margin-top: 0.6rem;
+        }
+
+        .picker-concept-item {
+            padding: 0.55rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.12s;
+            margin: 2px 0;
+        }
+
+        .picker-concept-item:hover {
+            background: rgba(16, 185, 129, 0.12);
+        }
+
+        .picker-concept-item.is-current {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 3px solid #10b981;
+        }
+
+        .picker-ref {
+            font-size: 0.75rem;
+            color: #6ee7b7;
+            font-family: monospace;
+            margin-bottom: 2px;
+        }
+
+        .picker-name {
+            font-size: 0.82rem;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+    </style>
+
+    <script>
+        // ── Concept Picker 전역 상태 ─────────────────────
+        let _pickerConceptsFlat = [];   // [{id, ref_code, standard_name, subject}]
+        let _pickerEditTarget = null;   // { stepId, currentConceptId, tdEl }
+
+        // concepts 데이터 한번만 받아온다 (캐시)
+        async function loadPickerConcepts() {
+            if (_pickerConceptsFlat.length > 0) return;
+            const res = await fetch('/api/concepts_tree');
+            const tree = await res.json();
+            // tree: { subject: { unit: [{id, ref_code, standard_name}] } }
+            for (const [subject, units] of Object.entries(tree)) {
+                for (const [unit, concepts] of Object.entries(units)) {
+                    for (const c of concepts) {
+                        _pickerConceptsFlat.push({ ...c, subject, unit });
+                    }
+                }
+            }
+            // ref_code 오름차순 정렬
+            _pickerConceptsFlat.sort((a, b) => (a.ref_code || '').localeCompare(b.ref_code || ''));
+        }
+
+        function renderPickerList(items) {
+            const container = document.getElementById('concept-picker-list');
+            container.innerHTML = '';
+            let lastSubject = null;
+
+            for (const c of items) {
+                if (c.subject !== lastSubject) {
+                    const hdr = document.createElement('div');
+                    hdr.className = 'picker-subject-header';
+                    hdr.textContent = c.subject;
+                    container.appendChild(hdr);
+                    lastSubject = c.subject;
+                }
+                const item = document.createElement('div');
+                item.className = 'picker-concept-item';
+                if (_pickerEditTarget && c.id === _pickerEditTarget.currentConceptId) {
+                    item.classList.add('is-current');
+                }
+                item.innerHTML = `<div class="picker-ref">${c.ref_code || c.id}</div><div class="picker-name">${c.standard_name}</div>`;
+                item.addEventListener('click', () => applyConceptChange(c));
+                container.appendChild(item);
+            }
+
+            if (items.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">검색 결과 없음</p>';
+            }
+        }
+
+        function filterPickerList(query) {
+            const q = query.toLowerCase();
+            const filtered = q
+                ? _pickerConceptsFlat.filter(c =>
+                    (c.ref_code || '').toLowerCase().includes(q) ||
+                    (c.standard_name || '').toLowerCase().includes(q))
+                : _pickerConceptsFlat;
+            renderPickerList(filtered);
+        }
+
+        async function openConceptPicker(stepId, currentConceptId, refCode, standardName, tdEl) {
+            _pickerEditTarget = { stepId, currentConceptId, tdEl };
+
+            // 현재값 헤더에 표시
+            document.getElementById('picker-current-label').textContent =
+                `현재: ${refCode || currentConceptId} ${standardName || ''}`;
+
+            // 검색 초기화
+            const searchInput = document.getElementById('picker-search-input');
+            searchInput.value = '';
+
+            // 오버레이 + 패널 열기
+            document.getElementById('concept-picker-overlay').style.display = 'block';
+            const panel = document.getElementById('concept-picker-panel');
+            panel.style.right = '0';
+
+            // 목록 로드 & 렌더
+            await loadPickerConcepts();
+            renderPickerList(_pickerConceptsFlat);
+
+            // 현재 개념로 스크롤
+            setTimeout(() => {
+                const currentEl = document.querySelector('.picker-concept-item.is-current');
+                if (currentEl) currentEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }, 100);
+
+            searchInput.focus();
+        }
+
+        function closeConceptPicker() {
+            document.getElementById('concept-picker-overlay').style.display = 'none';
+            document.getElementById('concept-picker-panel').style.right = '-480px';
+            _pickerEditTarget = null;
+        }
+
+        async function applyConceptChange(newConcept) {
+            if (!_pickerEditTarget) return;
+            const { stepId, currentConceptId, tdEl } = _pickerEditTarget;
+            if (newConcept.id === currentConceptId) { closeConceptPicker(); return; }
+
+            // 낙관적 UI 업데이트
+            const displaySpan = tdEl.querySelector('.concept-display');
+            const originalText = displaySpan ? displaySpan.textContent : '';
+            if (displaySpan) displaySpan.textContent = '저장 중...';
+
+            try {
+                const res = await fetch('/api/update_step_concept', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ step_id: stepId, new_concept_id: newConcept.id })
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    // 셀 내용 업데이트
+                    if (displaySpan) displaySpan.textContent = `${newConcept.ref_code ? `${newConcept.ref_code} ` : ''}${newConcept.standard_name}`;
+                    tdEl.dataset.conceptId = newConcept.id;
+                    tdEl.dataset.refCode = newConcept.ref_code || '';
+                    tdEl.dataset.standardName = newConcept.standard_name;
+                    const fileMsg = result.file_updated ? '(MD 업데이트 완료)' : '(MD 파일 없음)';
+                    console.log(`✅ 성취기준 변경: ${result.old_concept_id} → ${result.new_concept_id} ${fileMsg}`);
+                    closeConceptPicker();
+                } else {
+                    if (displaySpan) displaySpan.textContent = originalText;
+                    alert('오류: ' + (result.error || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                if (displaySpan) displaySpan.textContent = originalText;
+                alert('네트워크 오류: ' + err.message);
+            }
+        }
+
+        // renderMainTable 이후 이벤트 위임 (해당 셀 클릭 시 picker 열기)
+        document.addEventListener('click', (e) => {
+            const cell = e.target.closest('.concept-edit-cell');
+            if (!cell) return;
+            const stepId = parseInt(cell.dataset.stepId);
+            if (!stepId) return;
+            openConceptPicker(
+                stepId,
+                cell.dataset.conceptId,
+                cell.dataset.refCode,
+                cell.dataset.standardName,
+                cell
+            );
+        });
+    </script>
+
+</body>
+
+</html>
