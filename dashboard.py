@@ -291,7 +291,10 @@ def search():
         if prob_id not in seen_probs:
             seen_probs.add(prob_id)
             top_unique_probs.append(prob_id)
-            prob_scores[prob_id] = score
+            prob_scores[prob_id] = {
+                'cos_similarity': score,
+                'match_step_id': int(_vec_data['step_ids'][idx])
+            }
         if len(top_unique_probs) >= 20: 
             break
             
@@ -315,8 +318,10 @@ def search():
         res_dict['trigger_text'] = row['step_title'] or ''
         
         pid = row['problem_id']
-        res_dict['cos_similarity'] = prob_scores.get(pid, 0.0)
-        res_dict['hybrid_score'] = prob_scores.get(pid, 0.0)
+        res_score_dict = prob_scores.get(pid, {})
+        res_dict['cos_similarity'] = res_score_dict.get('cos_similarity', 0.0)
+        res_dict['hybrid_score'] = res_score_dict.get('cos_similarity', 0.0)
+        res_dict['match_step_id'] = res_score_dict.get('match_step_id', None)
         res_dict['same_concept'] = False
         results.append(res_dict)
         
@@ -389,6 +394,104 @@ def steps_by_concept():
 
     return jsonify({'results': [dict(r) for r in rows]})
 
+@app.route('/api/problem_answers', methods=['POST'])
+def problem_answers():
+    """주어진 problem_id 목록에 대해 Sol/ 폴더의 MD 파일을 읽어 정답을 추출하여 반환합니다."""
+    data = request.get_json()
+    problem_ids = data.get('problem_ids', [])
+    if not problem_ids or not isinstance(problem_ids, list):
+        return jsonify({'error': '유효하지 않은 problem_ids 목록입니다.'}), 400
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    answers = {}
+
+    for pid in problem_ids:
+        # 연도 폴더 유추
+        year_match = re.match(r'^(\d{4})', pid)
+        sol_path = None
+        if year_match:
+            year = year_match.group(1)
+            candidate = os.path.join(base_dir, 'Sol', year, f'{pid}.md')
+            if os.path.exists(candidate):
+                sol_path = candidate
+        
+        if not sol_path:
+            candidate = os.path.join(base_dir, 'Sol', f'{pid}.md')
+            if os.path.exists(candidate):
+                sol_path = candidate
+        
+        if not sol_path:
+            answers[pid] = None
+            continue
+        
+        try:
+            with open(sol_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            matches = re.finditer(r'정답(?:은|:)?\s*(.+?)(?:입니다|번\s*입니다|번입니다|\.|\n|$)', content)
+            found_ans = None
+            for m in matches:
+                ans_str = m.group(1).strip()
+                # Clean up markdown styling, blockquote markers, and LaTeX dollar signs
+                ans_str = re.sub(r'[\*\_>\$]+', '', ans_str).strip()
+                
+                if not ans_str:
+                    continue
+                
+                # Extract digits inside parentheses: (5) -> 5
+                paren_match = re.match(r'^\((\d)\)$', ans_str)
+                if paren_match:
+                    ans_str = paren_match.group(1)
+                
+                is_mcq = False
+                if ans_str.endswith('번'):
+                    ans_str = ans_str[:-1].strip()
+                    is_mcq = True
+                elif paren_match:
+                    is_mcq = True
+                
+                # Check year and problem number for MCQ auto-conversion
+                try:
+                    year_val = 2022 # Default to current regime
+                    year_extract = re.match(r'^(\d{4})', pid)
+                    if year_extract:
+                        year_val = int(year_extract.group(1))
+                    
+                    parts = pid.split('_')
+                    if len(parts) >= 2:
+                        num_part = ''.join(filter(str.isdigit, parts[-1]))
+                        if num_part:
+                            pnum = int(num_part)
+                            if year_val >= 2022:
+                                # 2022+ regime: Common (1-15 MCQ, 16-22 SA), Elective (23-28 MCQ, 29-30 SA)
+                                if (1 <= pnum <= 15) or (23 <= pnum <= 28):
+                                    is_mcq = True
+                            else:
+                                # Pre-2022 regime: 1-21 MCQ, 22-30 SA
+                                if (1 <= pnum <= 21):
+                                    is_mcq = True
+                except:
+                    pass
+                
+                if is_mcq:
+                    # If it's an MCQ and we already have a circled number in the string (e.g. "① 65")
+                    # just take the circled number part.
+                    circled_match = re.search(r'([①②③④⑤])', ans_str)
+                    if circled_match:
+                        ans_str = circled_match.group(1)
+                    elif ans_str in ['1', '2', '3', '4', '5']:
+                        circled_map = {'1':'①', '2':'②', '3':'③', '4':'④', '5':'⑤'}
+                        ans_str = circled_map[ans_str]
+                
+                if ans_str:
+                    found_ans = ans_str
+
+            answers[pid] = found_ans
+        except Exception as e:
+            app.logger.error(f"Error reading answer for {pid}: {e}")
+            answers[pid] = None
+
+    return jsonify({'answers': answers})
+
 @app.route('/api/update_step_concept', methods=['PATCH'])
 def update_step_concept():
     """step_id의 action_concept_id를 new_concept_id로 변경하고 Sol MD 파일도 업데이트."""
@@ -442,9 +545,7 @@ def update_step_concept():
         file_updated = False
         if sol_path:
             with open(sol_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-
-            # [Step N] 헤더를 찾고 그 이후 첫 번째 Action 라인의 [CPT-...] 교체
+                content = f.read()            # [Step N] 헤더를 찾고 그 이후 첫 번째 Action 라인의 [CPT-...] 교체
             # 패턴: ## [Step {step_number}] 헤더 다음 블록에서 - **Action**: [...] CPT-ID 부분만
             step_header_pattern = re.compile(
                 r'(##\s+\[Step\s+' + str(step_number) + r'\][^\n]*\n'   # ## [Step N] 헤더

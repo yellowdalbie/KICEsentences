@@ -6,9 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KICE DB Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <!-- Google Fonts for modern typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
     <!-- KaTeX CSS and JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -26,23 +23,13 @@
             </div>
             <!-- Sidebar Tabs -->
             <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-tab="tab-keyword">개념유사도</button>
+                <button class="sidebar-tab" data-tab="tab-expression">기출표현</button>
                 <button class="sidebar-tab" data-tab="tab-unit">성취기준</button>
-                <button class="sidebar-tab" data-tab="tab-keyword">해설개념</button>
-                <button class="sidebar-tab active" data-tab="tab-expression">기출표현</button>
             </div>
 
-            <!-- Tab 1: 단원 (Unit) -->
-            <div id="tab-unit" class="sidebar-tab-content">
-                <div class="obs-file-explorer" style="flex: 1; overflow-y: auto;">
-                    <div id="concept-tree" class="tree-content">
-                        <!-- Populated by JS -->
-                        <p class="placeholder-text" style="padding: 1rem 0; font-size: 0.9rem;">불러오는 중...</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 2: 키워드 (Keyword) -->
-            <div id="tab-keyword" class="sidebar-tab-content">
+            <!-- Tab 1: 개념유사도 (Keyword/Similarity) -->
+            <div id="tab-keyword" class="sidebar-tab-content active">
                 <div class="sidebar-search">
                     <input type="text" id="search-input" placeholder="해설 개념 검색 (예: 미분가능성)">
                     <button id="search-btn" aria-label="검색">
@@ -71,8 +58,8 @@
                 </div>
             </div>
 
-            <!-- Tab 3: 표현 (Expression) -->
-            <div id="tab-expression" class="sidebar-tab-content active" style="flex: 1;">
+            <!-- Tab 2: 기출표현 (Expression) -->
+            <div id="tab-expression" class="sidebar-tab-content" style="flex: 1;">
                 <div class="sidebar-search">
                     <input type="text" id="expression-search-input" placeholder="표현 검색 (예: 최대/최소)">
                     <button id="expression-search-btn" aria-label="표현 검색" class="expression-btn">
@@ -101,7 +88,7 @@
                         <li style="margin-bottom: 4px;"><strong>구문</strong>: <code>"두 실근"</code> (따옴표)</li>
                         <li style="margin-bottom: 4px;"><strong>경로</strong>: <code>path:2025</code></li>
                     </ul>
-                    <div style="color: #10b981; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.8rem;">빠른 예시 클릭!
+                    <div style="color: #10b981; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.8rem;">빠른 예시 클릭!
                     </div>
                     <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="quick-query-tags">
                         <span class="quick-query-tag" data-query="극댓값 | 극솟값"
@@ -119,13 +106,23 @@
                 <div id="expression-snippet-container"
                     style="display: none; flex: 1; flex-direction: column; overflow: hidden;">
                     <div id="expression-count-header"
-                        style="padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; color: #10b981; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">
+                        style="padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 500; color: #10b981; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">
                         검색 결과: 0건
                     </div>
                     <!-- Scrollable list -->
                     <div id="expression-snippet-list"
                         style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 0.6rem 1rem; padding-bottom: 2rem;">
                         <!-- Custom JS populated cards go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: 성취기준 (Unit) -->
+            <div id="tab-unit" class="sidebar-tab-content">
+                <div class="obs-file-explorer" style="flex: 1; overflow-y: auto;">
+                    <div id="concept-tree" class="tree-content">
+                        <!-- Populated by JS -->
+                        <p class="placeholder-text" style="padding: 1rem 0; font-size: 0.9rem;">불러오는 중...</p>
                     </div>
                 </div>
             </div>
@@ -171,54 +168,81 @@
 
             <!-- View 1: Overview -->
             <section id="view-overview" class="view-section active">
-                <header class="top-header">
-                    <h1>문항 분석 현황</h1>
-                    <p class="subtitle">평가원 수학 해설 데이터베이스 분석 진척도</p>
-                </header>
-
-                <!-- KPI Widgets (Cards) -->
-                <div class="kpi-grid" style="grid-template-columns: 1fr 2fr; gap: 1.5rem;">
-                    <div class="kpi-card glass"
-                        style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-                        <h3 style="margin-bottom: 0.5rem; color: #a78bfa;">전체 분석 진척도</h3>
-                        <div class="kpi-value" id="kpi-problems" style="font-size: 2.2rem; margin: 0.5rem 0;">- / -
-                        </div>
-                        <p class="kpi-desc" id="kpi-problems-desc">총 문항 중 분석 완료된 문항 수</p>
+                <div class="chart-card glass" style="padding: 1.5rem; margin-top: 1rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.8rem;">
+                        <h3 style="font-size: 1.15rem; color: #a78bfa;">분석 진행 상황</h3>
+                        <div id="total-progress-text"
+                            style="font-size: 1.2rem; font-weight: 600; color: var(--text-main);">- / -</div>
                     </div>
 
-                    <div class="chart-card glass" style="padding: 1.25rem;">
-                        <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">연도별 분석 현황</h3>
-                        <div id="yearly-progress-container" style="display: flex; flex-direction: column; gap: 1rem;">
-                            <!-- Row 1: 2026-2022 -->
-                            <div id="yearly-row-1" style="display: flex; gap: 1rem; flex-wrap: wrap;"></div>
-                            <!-- Row 2: Others -->
-                            <div id="yearly-row-2" style="display: flex; gap: 1rem; flex-wrap: wrap;"></div>
+                    <!-- Total Progress Bar -->
+                    <div
+                        style="width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; margin-bottom: 2rem; overflow: hidden; border: 1px solid rgba(139, 92, 246, 0.2);">
+                        <div id="total-progress-bar"
+                            style="width: 0%; height: 100%; background: linear-gradient(90deg, #8b5cf6, #d8b4fe); transition: width 0.8s ease-out;">
                         </div>
+                    </div>
+
+                    <div id="yearly-progress-container" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                        <!-- Row 1: 2026-2022 -->
+                        <div id="yearly-row-1" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
+                        <!-- Row 2: Others -->
+                        <div id="yearly-row-2" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
                     </div>
                 </div>
 
-                <div class="charts-grid">
-                    <!-- Top Concepts List -->
-                    <div class="chart-card glass">
-                        <h3>상위 5개 개념 (Action)</h3>
-                        <ul class="ranking-list" id="top-concepts-list">
-                            <!-- Populated by JS -->
-                            <li class="skeleton-loader"></li>
-                            <li class="skeleton-loader"></li>
-                            <li class="skeleton-loader"></li>
-                        </ul>
-                    </div>
+                <div class="charts-grid" style="grid-template-columns: 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                    <div class="chart-card glass" style="padding: 1.5rem;">
+                        <h3 style="margin-bottom: 1.2rem; color: #a78bfa; font-size: 1.2rem;">💡 검색 및 분석 활용 가이드</h3>
 
-                    <!-- Top Trigger-Action Pairs -->
-                    <div class="chart-card glass">
-                        <h3>상위 조건-반응 조합</h3>
-                        <p class="kpi-desc" style="margin-bottom:12px">가장 자주 등장하는 Trigger → Action 패턴</p>
-                        <ul class="ranking-list" id="top-pairs-list">
-                            <!-- Populated by JS -->
-                            <li class="skeleton-loader"></li>
-                            <li class="skeleton-loader"></li>
-                            <li class="skeleton-loader"></li>
-                        </ul>
+                        <div
+                            style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                            <strong style="color: #f87171; display: block; margin-bottom: 0.5rem;">⚠️ 미적분II 및 기하 과목 분석
+                                안내</strong>
+                            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
+                                미적분II와 기하는 <strong>'기출표현'</strong> 탭을 통한 문항의 텍스트 검색만 가능합니다.<br>
+                                <strong>'개념유사도'</strong> 및 <strong>'성취기준'</strong> 탭으로는 검색되지 않음을 유의해 주시기 바랍니다.
+                            </p>
+                        </div>
+
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                            <div
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                <h4
+                                    style="color: #a78bfa; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    <span
+                                        style="background: rgba(167, 139, 250, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                    </span> 개념유사도
+                                </h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">AI가 해설의 맥락을
+                                    분석하여 검색어와 핵심 원리가 가장 비슷한 문항을 추천합니다.</p>
+                            </div>
+                            <div
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                <h4
+                                    style="color: #c4b5fd; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    <span
+                                        style="background: rgba(196, 181, 253, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                    </span> 기출표현
+                                </h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">문제에 실린
+                                    구체적인 수식, 조건, 단어 등 원본 텍스트를 정밀하게 검색합니다.</p>
+                            </div>
+                            <div
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                <h4
+                                    style="color: #ddd6fe; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    <span
+                                        style="background: rgba(221, 214, 254, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
+                                    </span> 성취기준
+                                </h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">교육과정의 성취기준을
+                                    선택하면
+                                    해당 성취기준에 해당하는 문항을 탐색할 수 있습니다.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -317,6 +341,62 @@
     </div><!-- /.app-container -->
 
 
+    <!-- Bottom Problem Cart -->
+    <div id="problem-cart" class="glass">
+        <div id="cart-toggle-btn" title="장바구니 열기/닫기">
+            <span id="cart-badge">0</span>
+            <svg id="cart-toggle-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+        </div>
+        <div class="cart-header">
+            <h3 style="margin: 0; font-size: 1rem; color: #a78bfa;">담은 문항 목록</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="cart-clear-btn" class="cart-btn"
+                    style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">비우기</button>
+                <button id="cart-preview-btn" class="cart-btn"
+                    style="background: var(--accent-blue); color: white;">미리보기</button>
+            </div>
+        </div>
+        <div id="cart-items-container">
+            <p id="cart-empty-msg" class="placeholder-text" style="padding: 1rem 0; margin: 0; font-size: 0.85rem;">클릭하여
+                문항을 담으세요.</p>
+        </div>
+    </div>
+
+    <!-- Print Preview Modal -->
+    <div id="print-preview-modal" style="display: none;">
+        <div id="print-preview-backdrop"></div>
+        <div id="print-preview-header" class="no-print">
+            <h2 style="margin: 0; font-size: 1.25rem; color: #f8fafc;">인쇄 미리보기</h2>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label for="answer-display-opt" style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;">정답
+                        표시:</label>
+                    <select id="answer-display-opt" onchange="openPrintPreview()">
+                        <option value="none" selected>표시 안 함</option>
+                        <option value="inline">각 문항에 표시</option>
+                        <option value="end">마지막 장에 모아서 표시</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="cart-btn" style="background: var(--accent-purple); color: white;"
+                        onclick="window.print()">PDF 저장</button>
+                    <button class="cart-btn"
+                        style="background: rgba(255,255,255,0.1); color: #f8fafc; border: 1px solid rgba(255,255,255,0.2);"
+                        onclick="closePrintPreview()">닫기</button>
+                </div>
+            </div>
+        </div>
+        <div id="print-preview-scroll-area">
+            <div id="print-preview-content">
+                <div id="print-preview-body">
+                    <!-- Images appended here -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Tab Navigation Logic
@@ -348,14 +428,17 @@
                 const data = await response.json();
 
                 // Update KPIs
-                document.getElementById('kpi-problems').innerText = `${data.total_analyzed} / ${data.total_pdfs}`;
+                const totalText = document.getElementById('total-progress-text');
+                const progressBar = document.getElementById('total-progress-bar');
+
+                if (totalText) totalText.innerText = `${data.total_analyzed} / ${data.total_pdfs}`;
+
                 const completionRate = data.total_pdfs > 0 ? Math.round((data.total_analyzed / data.total_pdfs) * 100) : 0;
-                document.getElementById('kpi-problems-desc').innerText = `총 문항 중 ${completionRate}% 분석 완료`;
+                if (progressBar) progressBar.style.width = completionRate + '%';
 
                 // Update Yearly Progress Charts
                 const row1 = document.getElementById('yearly-row-1');
                 const row2 = document.getElementById('yearly-row-2');
-                const container = document.getElementById('yearly-progress-container');
 
                 if (row1 && row2) {
                     row1.innerHTML = '';
@@ -371,7 +454,7 @@
 
                         const chartHtml = `
                             <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);">${item.year}</span>
+                                <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">${item.year}</span>
                                 <div style="
                                     width: 10px; height: 10px; 
                                     border-radius: 50%; 
@@ -380,7 +463,7 @@
                                     flex-shrink: 0;
                                 "></div>
                             </div>
-                            <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500; padding-left: 1px;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 400; padding-left: 1px;">
                                 ${item.analyzed}/${item.total}
                             </div>
                         `;
@@ -393,44 +476,8 @@
                         }
                     });
                 }
-
-                // Update Top Concepts
-                const conceptsList = document.getElementById('top-concepts-list');
-                conceptsList.innerHTML = '';
-                data.top_concepts.forEach(item => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="ranking-item">
-                            <span class="ranking-name">${item.standard_name}</span>
-                            <span class="ranking-sub">${item.ref_code || item.id}</span>
-                        </div>
-                        <span class="ranking-count">${item.cnt}</span>
-                    `;
-                    conceptsList.appendChild(li);
-                });
-
-
-                // Update Top Pairs (Trigger → Action)
-                const pairsList = document.getElementById('top-pairs-list');
-                pairsList.innerHTML = '';
-                data.top_pairs.forEach(item => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div class="ranking-item">
-                            <span class="ranking-name">${item.trigger_cat}</span>
-                            <span class="ranking-sub">→ ${item.ref_code || ''} ${item.standard_name || ''}</span>
-                        </div>
-                        <span class="ranking-count">${item.cnt}</span>
-                    `;
-                    pairsList.appendChild(li);
-                });
-
-                // Re-render KaTeX inside the lists
-                if (window.renderMathInElement) {
-                    renderMathInElement(document.getElementById('top-pairs-list'), { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
-                }
             } catch (error) {
-                console.error("Failed to fetch stats", error);
+                console.error('Error fetching stats:', error);
             }
         }
 
@@ -474,17 +521,21 @@
 
                     // Build score map if it was a semantic search
                     const scoreMap = {};
+                    const matchStepIds = new Set();
                     data.results.forEach(r => {
                         if (r.cos_similarity !== undefined) {
                             if (!scoreMap[r.problem_id] || r.hybrid_score > scoreMap[r.problem_id].hybrid_score) {
                                 scoreMap[r.problem_id] = { cos_similarity: r.cos_similarity, hybrid_score: r.hybrid_score, same_concept: r.same_concept };
                             }
                         }
+                        if (r.match_step_id) {
+                            matchStepIds.add(String(r.match_step_id));
+                        }
                     });
 
                     // Render function
                     const doRender = () => {
-                        renderMainTable(groups, undefined, scoreMap);
+                        renderMainTable(groups, undefined, scoreMap, 'main-search-table', 'search-tbody', matchStepIds);
                     };
 
                     doRender();
@@ -781,7 +832,7 @@
 
 
         // ── 공통 메인 렌더링 함수 ────────────────────────────────────
-        function renderMainTable(groups, orderedProbIds, scoreMap, targetTableId = 'main-search-table', targetTbodyId = 'search-tbody') {
+        function renderMainTable(groups, orderedProbIds, scoreMap, targetTableId = 'main-search-table', targetTbodyId = 'search-tbody', matchStepIds = new Set()) {
             const searchTable = document.getElementById(targetTableId);
             const searchTbody = document.getElementById(targetTbodyId);
             searchTbody.innerHTML = '';
@@ -809,10 +860,15 @@
                     const editSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
                     const fullConcept = (row.ref_code || row.action_concept_id || '') + ' ' + (row.standard_name || '');
 
+                    let textStyle = '';
+                    if (matchStepIds && matchStepIds.has(String(row.step_id))) {
+                        textStyle = 'color: #c4b5fd; font-weight: 600;';
+                    }
+
                     if (index === 0) {
-                        const pdfImg = `<img src="/thumbnail/${row.problem_id}" style="width:480px;height:auto;display:block;border-radius:4px;" alt="${row.problem_id}">`;
-                        html += `<td rowspan="${rowCount}" style="vertical-align:top;">
-                            <span class="tag tag-blue tooltip-trigger" style="cursor:pointer;" data-tooltip="${encodeURIComponent(pdfImg)}">${row.problem_id}</span>`;
+                        const pdfImg = `<img src="/thumbnail/${pid}" style="width:480px;height:auto;display:block;border-radius:4px;" alt="${pid}">`;
+                        html += `<td rowspan="${rowCount}" style="vertical-align:top; border-right: 1px solid rgba(255, 255, 255, 0.05);">
+                            <span class="tag tag-blue prob-id-trigger tooltip-trigger" style="cursor:pointer; user-select:none;" data-prob-id="${pid}" data-tooltip="${encodeURIComponent(pdfImg)}" onclick="toggleCartItem('${pid}')">${pid}</span>`;
 
                         if (score && score.cos_similarity !== undefined) {
                             const pct = Math.round((score.cos_similarity || 0) * 100);
@@ -839,7 +895,7 @@
                                     data-concept-id="${row.action_concept_id || ''}"
                                     style="opacity:0.45;cursor:pointer;flex-shrink:0;color:#a78bfa;margin-top:2px;"
                                     onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">${linkSvg}</span>` : ''}
-                                <span style="flex:1;">${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
+                                <span style="flex:1; transition: all 0.2s; ${textStyle}">${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
                             </div>
                         </td>
                         <td class="concept-edit-cell tooltip-trigger"
@@ -882,10 +938,12 @@
                     if (simData.error) { placeholder.innerText = simData.error; return; }
 
                     const scoreMap = {};
+                    const matchStepIds = new Set();
                     simData.results.forEach(r => {
                         if (!scoreMap[r.problem_id] || r.hybrid_score > scoreMap[r.problem_id].hybrid_score) {
                             scoreMap[r.problem_id] = { cos_similarity: r.cos_similarity, hybrid_score: r.hybrid_score, same_concept: r.same_concept };
                         }
+                        matchStepIds.add(String(r.step_id));
                     });
 
                     const orderedProbIds = [];
@@ -904,7 +962,7 @@
                             });
 
                             const doRender = () => {
-                                renderMainTable(groups, orderedProbIds, scoreMap);
+                                renderMainTable(groups, orderedProbIds, scoreMap, 'main-search-table', 'search-tbody', matchStepIds);
                             };
 
                             doRender();
@@ -989,7 +1047,9 @@
                         const snippetHtml = item.snippet.replace(/<mark>/g, '<mark style="background-color: rgba(234, 179, 8, 0.3); color: #fef08a; padding: 0 2px; border-radius: 2px;">');
 
                         card.innerHTML = `
-                            <div style="font-weight: 600; font-size: 0.9rem; color: #10b981; margin-bottom: 4px;">${item.problem_id}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span class="tag tag-blue prob-id-trigger" style="font-weight: 500;" data-prob-id="${item.problem_id}" onclick="event.stopPropagation(); toggleCartItem('${item.problem_id}')">${item.problem_id}</span>
+                            </div>
                             <div style="font-size: 0.8rem; color: var(--text-main); line-height: 1.5; word-break: break-all;">${snippetHtml}</div>
                         `;
 
@@ -1312,11 +1372,11 @@
                     closeConceptPicker();
                 } else {
                     if (displaySpan) displaySpan.textContent = originalText;
-                    alert('오류: ' + (result.error || '알 수 없는 오류'));
+                    showCustomAlert('오류: ' + (result.error || '알 수 없는 오류'));
                 }
             } catch (err) {
                 if (displaySpan) displaySpan.textContent = originalText;
-                alert('네트워크 오류: ' + err.message);
+                showCustomAlert('네트워크 오류: ' + err.message);
             }
         }
 
@@ -1335,7 +1395,23 @@
             );
         });
     </script>
-
+    <!-- Include Cart Logic -->
+    <script src="{{ url_for('static', filename='cart.js') }}"></script>
+    <!-- Custom Alert Modal -->
+    <div id="custom-alert-modal" class="no-print">
+        <div class="custom-alert-content">
+            <div class="custom-alert-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2.5" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <div id="custom-alert-message" class="custom-alert-message">알림 메시지</div>
+            <button class="custom-alert-btn" onclick="closeCustomAlert()">확인</button>
+        </div>
+    </div>
 </body>
 
 </html>
