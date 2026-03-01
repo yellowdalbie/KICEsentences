@@ -25,34 +25,15 @@
   .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2);
     color: #94a3b8; }
   .btn-outline:hover { border-color: rgba(255,255,255,0.4); color: #e2e8f0; }
-  .btn-green { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4);
-    color: #10b981; }
-  .btn-green:hover { background: rgba(16,185,129,0.35); }
-  .btn-green:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-amber { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4);
-    color: #f59e0b; }
-  .btn-amber:hover { background: rgba(245,158,11,0.35); }
   .btn-red { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
     color: #f87171; }
   .btn-red:hover { background: rgba(239,68,68,0.3); }
-
-  /* 탭 필터 */
-  .tab-bar {
-    background: #1a1a2e; border-bottom: 1px solid rgba(255,255,255,0.06);
-    padding: 0 1.5rem; display: flex; gap: 0.25rem; align-items: center;
-  }
-  .tab-btn {
-    padding: 0.6rem 1rem; background: none; border: none; border-bottom: 2px solid transparent;
-    color: #64748b; cursor: pointer; font-size: 0.85rem; transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .tab-btn.active { color: #f59e0b; border-bottom-color: #f59e0b; }
-  .tab-btn:hover:not(.active) { color: #94a3b8; }
+  .btn-red:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* 본문 레이아웃 */
   .main-layout {
     display: grid; grid-template-columns: 320px 1fr;
-    height: calc(100vh - 94px); overflow: hidden;
+    height: calc(100vh - 57px); overflow: hidden;
   }
 
   /* 왼쪽: 제보 목록 */
@@ -81,8 +62,6 @@
     border: 1px solid rgba(245,158,11,0.3); padding: 1px 6px;
     border-radius: 4px; font-size: 0.72rem;
   }
-  .tag-pending { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; }
-  .tag-reviewed { background: rgba(16,185,129,0.1); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; }
   .ts { font-size: 0.72rem; color: #475569; }
 
   /* 오른쪽: 상세 패널 */
@@ -105,42 +84,36 @@
     text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;
   }
 
-  /* 원본 MD 영역 */
-  .md-raw {
+  /* AI 프롬프트 영역 */
+  .prompt-box {
     background: #0a0e1a; border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px; padding: 0.85rem 1rem;
     font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem;
-    color: #94a3b8; white-space: pre-wrap; word-break: break-all;
-    max-height: 260px; overflow-y: auto; line-height: 1.6;
+    color: #94a3b8; white-space: pre-wrap; word-break: break-word;
+    max-height: 340px; overflow-y: auto; line-height: 1.6;
   }
 
-  /* 수정 입력 영역 */
-  textarea.corrected-input {
-    width: 100%; min-height: 200px; padding: 0.85rem 1rem;
-    background: #0a0e1a; border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px; color: #e2e8f0;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem;
-    line-height: 1.6; resize: vertical;
+  /* 썸네일 툴팁 */
+  .pid-thumb-wrap { position: relative; display: inline-block; }
+  .pid-thumb-wrap:hover .pid-thumb-tooltip { display: block; }
+  .pid-thumb-tooltip {
+    display: none; position: absolute; z-index: 200;
+    bottom: calc(100% + 6px); left: 0;
+    background: #1a1a2e; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 0.4rem; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    pointer-events: none;
   }
-  textarea.corrected-input:focus { outline: none; border-color: rgba(16,185,129,0.5); }
+  .pid-thumb-tooltip img { display: block; width: 320px; height: auto; border-radius: 4px; }
 
-  /* 미리보기 영역 */
-  .preview-box {
-    background: #0f172a; border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px; padding: 1rem; font-size: 0.83rem; line-height: 1.6; color: #cbd5e1;
-    display: none;
-  }
-  .preview-box.visible { display: block; }
-  .preview-box p { margin: 0 0 0.4rem; }
-  .preview-label { font-size: 0.73rem; color: #64748b; margin-bottom: 0.35rem; }
-  .preview-value { color: #e2e8f0; padding: 0.4rem 0.6rem; background: rgba(255,255,255,0.04);
-    border-radius: 6px; font-size: 0.82rem; }
-
-  /* 액션 버튼 영역 */
-  .action-row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
-  .status-msg { font-size: 0.8rem; padding: 0.45rem 0.75rem; border-radius: 6px; }
+  /* 상태 메시지 */
+  .status-msg { font-size: 0.8rem; padding: 0.45rem 0.75rem; border-radius: 6px; display: inline-block; }
   .status-msg.ok { background: rgba(16,185,129,0.15); color: #6ee7b7; }
   .status-msg.err { background: rgba(239,68,68,0.15); color: #f87171; }
+
+  /* 삭제 버튼 영역 */
+  .delete-zone {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
 
   /* 스크롤바 */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -157,16 +130,8 @@
     <span id="stats-badge" style="font-size:0.78rem;color:#64748b;"></span>
   </div>
   <div class="header-actions">
-    <button class="btn btn-outline" id="rebuild-btn" onclick="rebuildVectors()">벡터 재빌드</button>
     <a href="/" class="btn btn-outline">← 메인으로</a>
   </div>
-</div>
-
-<!-- 탭 필터 -->
-<div class="tab-bar">
-  <button class="tab-btn active" data-status="all" onclick="switchTab(this,'all')">전체</button>
-  <button class="tab-btn" data-status="pending" onclick="switchTab(this,'pending')">미반영</button>
-  <button class="tab-btn" data-status="reviewed" onclick="switchTab(this,'reviewed')">반영완료</button>
 </div>
 
 <!-- 본문 -->
@@ -191,42 +156,29 @@
 </div>
 
 <script>
-  // ── URL에서 관리자 키 추출 ───────────────────────────────────
   const ADMIN_KEY = new URLSearchParams(window.location.search).get('key') || '';
 
   function adminHeaders() {
     return { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY };
   }
 
-  // ── 상태 변수 ────────────────────────────────────────────────
   let _allReports = [];
-  let _currentStatus = 'all';
   let _selectedReport = null;
   const FIELD_LABELS = { standard_name: '성취기준', step_title: '단계별 요약', explanation: '해설' };
 
   // ── 제보 목록 로드 ───────────────────────────────────────────
   function loadReports() {
-    fetch(`/api/admin/reports?status=${_currentStatus}&key=${ADMIN_KEY}`)
-      .then(r => r.json())
+    fetch(`/api/admin/reports?key=${ADMIN_KEY}`)
+      .then(r => { if (!r.ok) throw r; return r.json(); })
       .then(data => {
         _allReports = data.reports || [];
         renderList(_allReports);
-        updateStatsBadge();
+        document.getElementById('stats-badge').textContent =
+          _allReports.length ? `총 ${_allReports.length}건` : '';
       })
       .catch(() => {
         document.getElementById('report-list-panel').innerHTML =
           '<div class="report-list-empty">로드 실패</div>';
-      });
-  }
-
-  function updateStatsBadge() {
-    fetch(`/api/admin/reports?status=all&key=${ADMIN_KEY}`)
-      .then(r => r.json())
-      .then(data => {
-        const all = data.reports || [];
-        const pending = all.filter(r => r.status === 'pending').length;
-        document.getElementById('stats-badge').textContent =
-          `전체 ${all.length}건 | 미반영 ${pending}건`;
       });
   }
 
@@ -240,37 +192,26 @@
     panel.innerHTML = '';
     reports.forEach(r => {
       const item = document.createElement('div');
-      item.className = 'report-item' + (_selectedReport && r.timestamp === _selectedReport.timestamp ? ' active' : '');
+      item.className = 'report-item' +
+        (_selectedReport && r.timestamp === _selectedReport.timestamp ? ' active' : '');
 
       const tags = (r.reported_fields || [])
-        .map(f => `<span class="tag-field">${FIELD_LABELS[f] || f}</span>`).join('');
-      const statusTag = r.status === 'pending'
-        ? '<span class="tag-pending">미반영</span>'
-        : '<span class="tag-reviewed">반영완료</span>';
-      const ts = r.timestamp ? new Date(r.timestamp).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+        .map(f => `<span class="tag-field">${FIELD_LABELS[f] || escHtml(f)}</span>`).join('');
+      const ts = r.timestamp
+        ? new Date(r.timestamp).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })
+        : '';
 
       item.innerHTML = `
-        <div class="prob-id">${r.problem_id}</div>
-        <div class="step-info">Step ${r.step_number}  ·  ${r.standard_name || r.action_concept_id || ''}</div>
+        <div class="prob-id">${escHtml(r.problem_id)}</div>
+        <div class="step-info">Step ${escHtml(String(r.step_number))}  ·  ${escHtml(r.standard_name || r.action_concept_id || '')}</div>
         <div class="meta-row">
           <div class="tags">${tags}</div>
-          <div style="display:flex;gap:0.3rem;align-items:center;">${statusTag}<span class="ts">${ts}</span></div>
+          <span class="ts">${ts}</span>
         </div>`;
 
       item.addEventListener('click', () => selectReport(r, item));
       panel.appendChild(item);
     });
-  }
-
-  // ── 탭 전환 ──────────────────────────────────────────────────
-  function switchTab(el, status) {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    _currentStatus = status;
-    _selectedReport = null;
-    document.getElementById('report-detail-panel').innerHTML =
-      '<div class="detail-empty"><span>왼쪽에서 제보를 선택하세요</span></div>';
-    loadReports();
   }
 
   // ── 제보 선택 ────────────────────────────────────────────────
@@ -286,24 +227,31 @@
     const panel = document.getElementById('report-detail-panel');
 
     const tags = (report.reported_fields || [])
-      .map(f => `<span class="tag-field">${FIELD_LABELS[f] || f}</span>`).join(' ');
+      .map(f => `<span class="tag-field">${FIELD_LABELS[f] || escHtml(f)}</span>`).join(' ');
     const ts = report.timestamp ? new Date(report.timestamp).toLocaleString('ko-KR') : '';
-    const statusHtml = report.status === 'pending'
-      ? '<span class="tag-pending">미반영</span>'
-      : '<span class="tag-reviewed">반영완료</span>';
-
-    const dismissBtnHtml = report.status === 'pending'
-      ? `<button class="btn btn-red" onclick="dismissReport()">수정 없이 검토 완료</button>` : '';
 
     panel.innerHTML = `
       <!-- A. 제보 정보 -->
       <div class="card">
         <div class="card-title">제보 정보</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1rem;font-size:0.83rem;">
-          <div><span style="color:#64748b;">문항</span><div style="color:#e2e8f0;margin-top:0.15rem;">${report.problem_id} · Step ${report.step_number}</div></div>
-          <div><span style="color:#64748b;">상태</span><div style="margin-top:0.15rem;">${statusHtml}</div></div>
+          <div>
+            <span style="color:#64748b;">문항</span>
+            <div style="margin-top:0.15rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+              <span class="pid-thumb-wrap" style="color:#e2e8f0;font-weight:600;">
+                ${escHtml(report.problem_id)}
+                <div class="pid-thumb-tooltip">
+                  <img src="/thumbnail/${encodeURIComponent(report.problem_id)}" alt="${escHtml(report.problem_id)}">
+                </div>
+              </span>
+              <span style="color:#94a3b8;">· Step ${escHtml(String(report.step_number))}</span>
+            </div>
+          </div>
           <div><span style="color:#64748b;">일시</span><div style="color:#e2e8f0;margin-top:0.15rem;">${ts}</div></div>
-          <div><span style="color:#64748b;">성취기준</span><div style="color:#94a3b8;margin-top:0.15rem;font-size:0.78rem;">${report.action_concept_id || ''}</div></div>
+          <div style="grid-column:1/-1;">
+            <span style="color:#64748b;">성취기준</span>
+            <div id="detail-concept-display" style="color:#94a3b8;margin-top:0.15rem;font-size:0.78rem;">${escHtml(report.action_concept_id || '로드 중...')}</div>
+          </div>
         </div>
         <div style="margin-top:0.75rem;">
           <span style="color:#64748b;font-size:0.78rem;">보고된 항목</span>
@@ -315,145 +263,118 @@
         </div>
       </div>
 
-      <!-- B. 원본 MD -->
-      <div class="card" id="card-original">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-          <div class="card-title" style="margin-bottom:0;">원본 MD</div>
-          <div style="display:flex;gap:0.5rem;">
-            <button class="btn btn-outline" style="font-size:0.76rem;padding:0.3rem 0.7rem;" onclick="copyOriginalMd()">복사</button>
-          </div>
-        </div>
-        <div id="original-md-box" class="md-raw">불러오는 중...</div>
-      </div>
-
-      <!-- C. 수정 입력 -->
-      <div class="card" id="card-edit" ${report.status === 'reviewed' ? 'style="opacity:0.55;pointer-events:none;"' : ''}>
-        <div class="card-title">수정할 내용 (MD 형식)</div>
-        <p style="font-size:0.78rem;color:#64748b;margin-bottom:0.6rem;">원본을 Claude에 전달해 수정 결과를 받은 후 아래에 붙여넣으세요.</p>
-        <textarea class="corrected-input" id="corrected-md-input" placeholder="수정된 Step MD 블록을 붙여넣으세요..."></textarea>
-        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;">
-          <button class="btn btn-outline" style="font-size:0.78rem;" onclick="previewCorrected()">미리보기</button>
-        </div>
-        <!-- 미리보기 박스 -->
-        <div class="preview-box" id="preview-box" style="margin-top:0.75rem;">
-          <div class="preview-label">스텝 제목</div>
-          <div class="preview-value" id="preview-step-title" style="margin-bottom:0.6rem;"></div>
-          <div class="preview-label">성취기준 ID</div>
-          <div class="preview-value" id="preview-concept-id" style="margin-bottom:0.6rem;"></div>
-          <div class="preview-label">해설 (요약)</div>
-          <div class="preview-value" id="preview-explanation" style="white-space:pre-wrap;max-height:100px;overflow-y:auto;"></div>
-        </div>
-      </div>
-
-      <!-- D. 액션 버튼 -->
+      <!-- B. AI 수정 요청 프롬프트 -->
       <div class="card">
-        <div class="action-row">
-          ${report.status === 'pending'
-            ? `<button class="btn btn-green" onclick="applyReport()">반영하기</button>
-               ${dismissBtnHtml}`
-            : `<span style="color:#6ee7b7;font-size:0.83rem;">✅ 이미 반영 완료된 제보입니다.</span>`}
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+          <div class="card-title" style="margin-bottom:0;">수정 요청 사항</div>
+          <button class="btn btn-outline" style="font-size:0.76rem;padding:0.3rem 0.7rem;" onclick="copyPrompt()">복사</button>
+        </div>
+        <div id="prompt-box" class="prompt-box">프롬프트 생성 중...</div>
+      </div>
+
+      <!-- C. 삭제 -->
+      <div class="card">
+        <div class="delete-zone">
+          <button class="btn btn-red" id="delete-btn" onclick="deleteReport()">이 제보 삭제</button>
           <span id="action-status-msg"></span>
         </div>
+        <p style="margin-top:0.6rem;font-size:0.75rem;color:#475569;">
+          삭제하면 JSONL에서 완전히 제거되며 복구할 수 없습니다.<br>
+          로컬에서 수정 완료 후 git push → 서버 git pull 이후 삭제하세요.
+        </p>
       </div>
     `;
 
-    // 원본 MD 로드
+    // step_detail 로드 → 성취기준 + 프롬프트
     if (report.step_id) {
       fetch(`/api/admin/step_detail/${report.step_id}?key=${ADMIN_KEY}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw r; return r.json(); })
         .then(data => {
-          const box = document.getElementById('original-md-box');
-          if (box) box.textContent = data.raw_md || '(원본 없음)';
-          // 수정 입력란 초기값 설정
-          const input = document.getElementById('corrected-md-input');
-          if (input && data.raw_md) input.value = data.raw_md;
+          const conceptEl = document.getElementById('detail-concept-display');
+          if (conceptEl) {
+            const refCode = (data.db_row && data.db_row.ref_code) || '';
+            const stdName = (data.db_row && data.db_row.standard_name) || '';
+            conceptEl.textContent = refCode && stdName
+              ? `${refCode} ${stdName}`
+              : (report.action_concept_id || '(없음)');
+          }
+          const promptBox = document.getElementById('prompt-box');
+          if (promptBox) promptBox.textContent = buildAiPrompt(report, data);
         })
         .catch(() => {
-          const box = document.getElementById('original-md-box');
-          if (box) box.textContent = '로드 실패';
+          const promptBox = document.getElementById('prompt-box');
+          if (promptBox) promptBox.textContent = '스텝 정보 로드 실패';
         });
     }
   }
 
-  // ── 원본 MD 복사 ─────────────────────────────────────────────
-  function copyOriginalMd() {
-    const box = document.getElementById('original-md-box');
+  // ── 프롬프트 복사 ─────────────────────────────────────────────
+  function copyPrompt() {
+    const box = document.getElementById('prompt-box');
     if (!box) return;
     navigator.clipboard.writeText(box.textContent)
       .then(() => showActionMsg('클립보드에 복사됐습니다.', 'ok'))
       .catch(() => showActionMsg('복사 실패', 'err'));
   }
 
-  // ── 미리보기 ─────────────────────────────────────────────────
-  function previewCorrected() {
-    const input = document.getElementById('corrected-md-input');
-    const box = document.getElementById('preview-box');
-    if (!input || !box) return;
+  // ── AI 프롬프트 생성 ──────────────────────────────────────────
+  function buildAiPrompt(report, data) {
+    const pid = report.problem_id || '';
+    const stepNum = report.step_number || '';
+    const fields = report.reported_fields || [];
+    const db = (data && data.db_row) || {};
 
-    const md = input.value || '';
-    // 간단한 클라이언트 파싱
-    const titleM = md.match(/## \[Step \d+\]([^\n]*)/);
-    const actionM = md.match(/- \*\*Action\*\*:\s*(?:\[(.*?)\])?\s*(.*?)(?:\n|$)/);
-    const expM = md.match(/> \*\*📝 해설.*?\n([\s\S]*?)(?=## \[Step|\Z|$)/);
-
-    document.getElementById('preview-step-title').textContent =
-      titleM ? titleM[1].trim() : '(파싱 불가)';
-    document.getElementById('preview-concept-id').textContent =
-      actionM && actionM[1] ? actionM[1].trim() : '(없음)';
-
-    if (expM) {
-      const expLines = expM[1].split('\n')
-        .map(l => l.startsWith('> ') ? l.slice(2) : l.startsWith('>') ? l.slice(1) : l)
-        .join('\n').trim();
-      document.getElementById('preview-explanation').textContent =
-        expLines.length > 300 ? expLines.slice(0, 300) + '...' : expLines;
-    } else {
-      document.getElementById('preview-explanation').textContent = '(해설 없음)';
+    const fieldDescriptions = [];
+    if (fields.includes('step_title'))
+      fieldDescriptions.push(`스텝 타이틀(${db.step_title || ''})`);
+    if (fields.includes('standard_name')) {
+      const ref = db.ref_code || '';
+      const std = db.standard_name || '';
+      fieldDescriptions.push(`성취기준(현재: ${ref} ${std})`);
     }
+    if (fields.includes('explanation'))
+      fieldDescriptions.push('해설');
+    const fieldDesc = fieldDescriptions.join('과 ');
 
-    box.classList.add('visible');
+    const fieldLabels = [];
+    if (fields.includes('step_title')) fieldLabels.push('스텝 타이틀');
+    if (fields.includes('standard_name')) fieldLabels.push('성취기준');
+    if (fields.includes('explanation')) fieldLabels.push('해설');
+    const fieldLabel = fieldLabels.join(', ');
+
+    const sol = (data && data.sol_content) || '(해설 파일 없음)';
+    const mdref = (data && data.mdref_content) || '(원본 문항 파일 없음)';
+    const userMsg = report.user_message || '';
+
+    return `아래는 ${pid}의 현재 해설 내용입니다:
+
+${sol}
+
+---
+
+아래는 원본 문항 내용입니다:
+
+${mdref}
+
+---
+
+위 해설에서 [Step ${stepNum}]의 ${fieldDesc}에 대한 오류가 의심됩니다.
+
+수정 의견:
+${userMsg}
+
+@concepts.json, @AI_Sol_Instructions.md를 참고하여, [Step ${stepNum}]의 ${fieldLabel}만 수정하고 같은 Step 내 다른 항목과 다른 Step들은 그대로 유지하면서 ${pid}.md를 온전히 재작성해주세요.`;
   }
 
-  // ── 반영하기 ─────────────────────────────────────────────────
-  function applyReport() {
+  // ── 제보 삭제 ─────────────────────────────────────────────────
+  function deleteReport() {
     if (!_selectedReport) return;
-    const input = document.getElementById('corrected-md-input');
-    const corrected = (input ? input.value : '').trim();
-    if (!corrected) {
-      showActionMsg('수정 내용을 입력해주세요.', 'err'); return;
-    }
-    if (!confirm(`수정된 내용을 Sol/ 파일과 DB에 반영합니다.\n계속하시겠습니까?`)) return;
+    if (!confirm(`[${_selectedReport.problem_id} Step ${_selectedReport.step_number}] 제보를 삭제합니다.\n이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`)) return;
 
-    fetch(`/api/admin/apply?key=${ADMIN_KEY}`, {
-      method: 'POST',
-      headers: adminHeaders(),
-      body: JSON.stringify({
-        step_id: _selectedReport.step_id,
-        problem_id: _selectedReport.problem_id,
-        step_number: _selectedReport.step_number,
-        report_timestamp: _selectedReport.timestamp,
-        corrected_md: corrected,
-      }),
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) {
-        showActionMsg('✅ 반영 완료. ' + (data.note || ''), 'ok');
-        _selectedReport.status = 'reviewed';
-        loadReports();
-      } else {
-        showActionMsg('오류: ' + (data.error || '실패'), 'err');
-      }
-    })
-    .catch(() => showActionMsg('네트워크 오류', 'err'));
-  }
+    const btn = document.getElementById('delete-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '삭제 중...'; }
 
-  // ── 수정 없이 검토 완료 ──────────────────────────────────────
-  function dismissReport() {
-    if (!_selectedReport) return;
-    if (!confirm('수정 없이 검토 완료로 처리합니다. 계속하시겠습니까?')) return;
-
-    fetch(`/api/admin/dismiss?key=${ADMIN_KEY}`, {
+    fetch(`/api/admin/delete_report?key=${ADMIN_KEY}`, {
       method: 'POST',
       headers: adminHeaders(),
       body: JSON.stringify({
@@ -461,32 +382,25 @@
         report_timestamp: _selectedReport.timestamp,
       }),
     })
-    .then(r => r.json())
+    .then(r => { if (!r.ok) throw r; return r.json(); })
     .then(data => {
       if (data.ok) {
-        showActionMsg('검토 완료로 처리됐습니다.', 'ok');
-        _selectedReport.status = 'reviewed';
-        loadReports();
+        _allReports = _allReports.filter(r => r.timestamp !== _selectedReport.timestamp);
+        _selectedReport = null;
+        renderList(_allReports);
+        document.getElementById('report-detail-panel').innerHTML =
+          '<div class="detail-empty"><span>제보가 삭제됐습니다.</span></div>';
+        document.getElementById('stats-badge').textContent =
+          _allReports.length ? `총 ${_allReports.length}건` : '';
       } else {
+        if (btn) { btn.disabled = false; btn.textContent = '이 제보 삭제'; }
         showActionMsg('오류: ' + (data.error || '실패'), 'err');
       }
     })
-    .catch(() => showActionMsg('네트워크 오류', 'err'));
-  }
-
-  // ── 벡터 재빌드 ──────────────────────────────────────────────
-  function rebuildVectors() {
-    const btn = document.getElementById('rebuild-btn');
-    btn.disabled = true; btn.textContent = '재빌드 중...';
-    fetch(`/api/admin/rebuild_vectors?key=${ADMIN_KEY}`, {
-      method: 'POST', headers: adminHeaders(), body: '{}',
-    })
-    .then(r => r.json())
-    .then(data => {
-      alert(data.message || '벡터 재빌드가 시작됐습니다.');
-      setTimeout(() => { btn.disabled = false; btn.textContent = '벡터 재빌드'; }, 3000);
-    })
-    .catch(() => { btn.disabled = false; btn.textContent = '벡터 재빌드'; alert('요청 실패'); });
+    .catch(() => {
+      if (btn) { btn.disabled = false; btn.textContent = '이 제보 삭제'; }
+      showActionMsg('네트워크 오류', 'err');
+    });
   }
 
   // ── 상태 메시지 ──────────────────────────────────────────────
@@ -500,8 +414,9 @@
 
   // ── HTML 이스케이프 ──────────────────────────────────────────
   function escHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-              .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    return String(str)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
   // ── 초기 로드 ────────────────────────────────────────────────

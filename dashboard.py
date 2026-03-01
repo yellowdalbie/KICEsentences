@@ -6,6 +6,8 @@ import unicodedata
 import subprocess
 import numpy as np
 import bleach as bleach_module
+import markdown as markdown_module
+import html as html_module
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, send_from_directory, send_file
 from sklearn.metrics.pairwise import cosine_similarity
@@ -764,8 +766,6 @@ def search_expression():
         "results": matched_files
     })
 
-import markdown
-
 @app.route('/docs/search_rules')
 def serve_search_rules():
     rules_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Docs', 'search_rules.md')
@@ -925,6 +925,17 @@ def _get_sol_path(problem_id):
     return candidate if os.path.exists(candidate) else None
 
 
+def _get_mdref_path(problem_id):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    m = re.match(r'^(\d{4})', problem_id)
+    if m:
+        candidate = os.path.join(base_dir, 'MD_Ref', m.group(1), f'{problem_id}.md')
+        if os.path.exists(candidate):
+            return candidate
+    candidate = os.path.join(base_dir, 'MD_Ref', f'{problem_id}.md')
+    return candidate if os.path.exists(candidate) else None
+
+
 def _extract_step_block(md_content, step_number):
     """MD 내용에서 특정 step 블록 추출 (## [Step N] 부터 다음 ## [Step 또는 파일 끝까지)"""
     pattern = rf'(## \[Step {step_number}\][^\n]*\n.*?)(?=## \[Step \d+\]|\Z)'
@@ -1021,8 +1032,9 @@ def report_error():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/pending_reports')
-def pending_reports():
+@app.route('/api/step_reports')
+def step_reports():
+    """사용자용: 해당 step의 모든 기존 제보 반환 (중복 제보 방지 안내용)"""
     step_id = request.args.get('step_id')
     if not step_id:
         return jsonify({'error': 'step_id 파라미터 필요'}), 400
@@ -1032,8 +1044,7 @@ def pending_reports():
         return jsonify({'error': '유효하지 않은 step_id'}), 400
 
     all_reports = _read_reports()
-    result = [r for r in all_reports
-              if r.get('step_id') == step_id_int and r.get('status') == 'pending']
+    result = [r for r in all_reports if r.get('step_id') == step_id_int]
     result.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
     return jsonify({'reports': result, 'count': len(result)})
 
@@ -1052,12 +1063,7 @@ def admin_reports():
     if not _check_admin_key():
         return jsonify({'error': '접근 거부'}), 403
 
-    status_filter = request.args.get('status', 'all')
     all_reports = _read_reports()
-
-    if status_filter != 'all':
-        all_reports = [r for r in all_reports if r.get('status') == status_filter]
-
     all_reports.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
     return jsonify({'reports': all_reports, 'count': len(all_reports)})
 
@@ -1085,14 +1091,23 @@ def admin_step_detail(step_id):
         return jsonify({'error': f'step_id {step_id} 없음'}), 404
 
     sol_path = _get_sol_path(row['problem_id'])
+    sol_content = None
     raw_md = None
     if sol_path:
         with open(sol_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        raw_md = _extract_step_block(content, row['step_number'])
+            sol_content = f.read()
+        raw_md = _extract_step_block(sol_content, row['step_number'])
+
+    mdref_path = _get_mdref_path(row['problem_id'])
+    mdref_content = None
+    if mdref_path:
+        with open(mdref_path, 'r', encoding='utf-8') as f:
+            mdref_content = f.read()
 
     return jsonify({
         'raw_md': raw_md or '',
+        'sol_content': sol_content or '',
+        'mdref_content': mdref_content or '',
         'db_row': {
             'step_title': row['step_title'] or '',
             'explanation_text': row['explanation_text'] or '',
@@ -1104,111 +1119,29 @@ def admin_step_detail(step_id):
     })
 
 
-@app.route('/api/admin/apply', methods=['POST'])
-def admin_apply():
+@app.route('/api/admin/delete_report', methods=['POST'])
+def admin_delete_report():
+    """관리자용: JSONL에서 제보 레코드 완전 삭제"""
     if not _check_admin_key():
         return jsonify({'error': '접근 거부'}), 403
 
     data = request.get_json()
-    step_id = data.get('step_id')
-    problem_id = data.get('problem_id')
-    step_number = data.get('step_number')
     report_timestamp = data.get('report_timestamp')
-    corrected_md = data.get('corrected_md', '').strip()
-
-    if not all([step_id, problem_id, step_number, corrected_md]):
-        return jsonify({'error': '필수 필드 누락'}), 400
-
-    # ① Sol/ MD 파일 업데이트
-    sol_path = _get_sol_path(problem_id)
-    if not sol_path:
-        return jsonify({'error': f'Sol 파일 없음: {problem_id}'}), 404
-
-    with open(sol_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    old_block = _extract_step_block(content, step_number)
-    if old_block is None:
-        return jsonify({'error': f'Step {step_number} 블록을 찾을 수 없음'}), 400
-
-    new_block = corrected_md.rstrip()
-    new_content = content.replace(old_block, new_block, 1)
-
-    with open(sol_path, 'w', encoding='utf-8') as f:
-        f.write(new_content)
-
-    # ② 수정된 블록 파싱 → DB UPDATE
-    parsed = _parse_step_block(new_block)
-    conn = get_db_connection()
-    try:
-        conn.execute('''
-            UPDATE steps
-            SET step_title=?, explanation_text=?, explanation_html=?,
-                action_concept_id=?, action_text=?, result_text=?
-            WHERE step_id=?
-        ''', (
-            parsed['step_title'],
-            parsed['explanation_text'],
-            parsed['explanation_html'],
-            parsed['action_concept_id'],
-            parsed['action_text'],
-            parsed['result_text'],
-            step_id,
-        ))
-        conn.commit()
-    finally:
-        conn.close()
-
-    # ③ JSONL 상태 업데이트
-    if report_timestamp:
-        all_reports = _read_reports()
-        updated = False
-        for r in all_reports:
-            if r.get('timestamp') == report_timestamp and r.get('step_id') == int(step_id):
-                r['status'] = 'reviewed'
-                updated = True
-        if updated:
-            _write_reports(all_reports)
-
-    return jsonify({'ok': True, 'note': '벡터는 [벡터 재빌드] 버튼으로 별도 갱신 필요'})
-
-
-@app.route('/api/admin/dismiss', methods=['POST'])
-def admin_dismiss():
-    if not _check_admin_key():
-        return jsonify({'error': '접근 거부'}), 403
-
-    data = request.get_json()
     step_id = data.get('step_id')
-    report_timestamp = data.get('report_timestamp')
 
     if not report_timestamp:
         return jsonify({'error': 'report_timestamp 누락'}), 400
 
     all_reports = _read_reports()
-    updated = False
-    for r in all_reports:
-        if r.get('timestamp') == report_timestamp and r.get('step_id') == int(step_id or 0):
-            r['status'] = 'reviewed'
-            updated = True
-    if updated:
+    before = len(all_reports)
+    all_reports = [
+        r for r in all_reports
+        if not (r.get('timestamp') == report_timestamp and r.get('step_id') == int(step_id or 0))
+    ]
+    if len(all_reports) < before:
         _write_reports(all_reports)
         return jsonify({'ok': True})
     return jsonify({'error': '해당 제보를 찾을 수 없음'}), 404
-
-
-@app.route('/api/admin/rebuild_vectors', methods=['POST'])
-def admin_rebuild_vectors():
-    if not _check_admin_key():
-        return jsonify({'error': '접근 거부'}), 403
-
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    script = os.path.join(base_dir, 'build_vectors.py')
-    if not os.path.exists(script):
-        return jsonify({'error': 'build_vectors.py 없음'}), 404
-
-    subprocess.Popen(['python3', script], cwd=base_dir)
-    return jsonify({'ok': True, 'message': '벡터 재빌드가 백그라운드에서 시작됐습니다.'})
 
 
 if __name__ == '__main__':

@@ -9,9 +9,11 @@ __pycache__/
 .env
 *.db
 *.sqlite
+!kice_database.sqlite
 *.log
 nohup.out
 admin.key
+error_reports.jsonl
 
 # OS specific files
 .DS_Store
@@ -26,6 +28,8 @@ generate_all_thumbnails.py
 normalize_triggers.py
 fix_*.py
 build_*.py
+!build_db.py
+!build_vectors.py
 get_targets*.py
 filter_*.py
 gen_trigger_review.py

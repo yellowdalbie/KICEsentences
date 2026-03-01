@@ -1203,10 +1203,10 @@
                 불러오는 중...
             </div>
 
-            <!-- 뷰 B: 미반영 제보 목록 -->
+            <!-- 뷰 B: 기존 제보 목록 -->
             <div id="report-view-pending" style="display:none;">
                 <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#fbbf24;">
-                    이 스텝에 대한 미반영 제보가 있습니다.
+                    이 스텝에 대해 처리 중인 제보가 있습니다.
                     <span id="pending-count-badge" style="font-weight:700;"></span>
                 </div>
                 <div id="pending-report-list" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;"></div>
@@ -1233,6 +1233,21 @@
 
             <!-- 뷰 C: 제보 작성 폼 -->
             <div id="report-view-form" style="display:none;">
+                <!-- 문항번호 + 썸네일 호버 -->
+                <div id="report-form-pid-row" style="margin-bottom:0.6rem;display:flex;align-items:center;gap:0.4rem;">
+                    <span style="font-size:0.75rem;color:#64748b;">문항</span>
+                    <span id="report-form-pid-wrap" style="position:relative;display:inline-block;">
+                        <span id="report-form-pid-text" style="font-size:0.85rem;font-weight:600;color:#e2e8f0;cursor:default;"></span>
+                        <div id="report-form-pid-tooltip" style="
+                            display:none;position:absolute;z-index:902;
+                            bottom:calc(100% + 6px);left:0;
+                            background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);
+                            border-radius:8px;padding:0.4rem;box-shadow:0 8px 24px rgba(0,0,0,0.6);
+                            pointer-events:none;">
+                            <img id="report-form-pid-thumb" src="" alt="" style="display:block;width:320px;height:auto;border-radius:4px;">
+                        </div>
+                    </span>
+                </div>
                 <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:0.75rem;">오류가 있는 항목을 선택하고 내용을 적어주세요.</p>
 
                 <!-- 체크박스 항목들 -->
@@ -1269,11 +1284,14 @@
                 <!-- 텍스트 입력 -->
                 <textarea id="report-textarea"
                     placeholder="오류 내용을 자세히 적어주세요."
-                    oninput="updateSubmitBtn()"
+                    oninput="updateSubmitBtn(); updateTextareaPreview();"
                     style="width:100%;min-height:120px;padding:0.75rem;
                         background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);
                         border-radius:8px;color:#e2e8f0;font-size:0.85rem;line-height:1.5;
                         resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+
+                <!-- 수식 미리보기 -->
+                <div id="report-textarea-preview" style="display:none;margin-top:0.4rem;padding:0.6rem 0.75rem;background:rgba(0,0,0,0.2);border-radius:6px;font-size:0.82rem;color:#cbd5e1;line-height:1.6;"></div>
 
                 <!-- 유효성 안내 -->
                 <div id="report-validation-msg" style="display:none;font-size:0.78rem;color:#f87171;margin-top:0.4rem;"></div>
@@ -1312,13 +1330,18 @@
         }
         #submit-report-btn { cursor: not-allowed; }
         #submit-report-btn:not(:disabled) {
-            background: rgba(16,185,129,0.25);
-            border-color: rgba(16,185,129,0.6);
-            color: #10b981;
+            background: rgba(16,185,129,0.4);
+            border-color: #10b981;
+            color: #ecfdf5;
             cursor: pointer;
             opacity: 1;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(16,185,129,0.35);
         }
-        #submit-report-btn:not(:disabled):hover { background: rgba(16,185,129,0.35); }
+        #submit-report-btn:not(:disabled):hover {
+            background: rgba(16,185,129,0.6);
+            box-shadow: 0 0 16px rgba(16,185,129,0.5);
+        }
         #report-textarea:focus { outline: none; border-color: rgba(16,185,129,0.5); }
     </style>
 
@@ -1350,8 +1373,8 @@
 
             if (!ctx || !ctx.stepId) { showReportForm(ctx); return; }
 
-            // 미반영 제보 확인
-            fetch(`/api/pending_reports?step_id=${ctx.stepId}`)
+            // 기존 제보 확인 (중복 제보 방지 안내용)
+            fetch(`/api/step_reports?step_id=${ctx.stepId}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.count && data.count > 0) {
@@ -1367,6 +1390,7 @@
         function closeConceptPicker() {
             document.getElementById('concept-picker-overlay').style.display = 'none';
             document.getElementById('concept-picker-panel').style.right = '-500px';
+            document.body.style.overflow = '';
             // 상태 초기화
             ['check-concept','check-title','check-explanation'].forEach(id => {
                 const el = document.getElementById(id);
@@ -1374,6 +1398,8 @@
             });
             const ta = document.getElementById('report-textarea');
             if (ta) ta.value = '';
+            const taPreview = document.getElementById('report-textarea-preview');
+            if (taPreview) { taPreview.textContent = ''; taPreview.style.display = 'none'; }
             ['preview-concept','preview-title','preview-explanation'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = 'none';
@@ -1433,18 +1459,38 @@
             _showReportView('report-view-form');
             if (!ctx) return;
 
+            // 문항번호 + 썸네일 호버 세팅
+            const pidText = document.getElementById('report-form-pid-text');
+            const pidThumb = document.getElementById('report-form-pid-thumb');
+            const pidTooltip = document.getElementById('report-form-pid-tooltip');
+            const pidWrap = document.getElementById('report-form-pid-wrap');
+            if (pidText) pidText.textContent = ctx.problemId || '';
+            if (pidThumb && ctx.problemId) pidThumb.src = `/thumbnail/${encodeURIComponent(ctx.problemId)}`;
+            if (pidWrap) {
+                pidWrap.onmouseenter = () => { if (pidTooltip) pidTooltip.style.display = 'block'; };
+                pidWrap.onmouseleave = () => { if (pidTooltip) pidTooltip.style.display = 'none'; };
+            }
+
             // 미리보기 내용 채우기
+            const _katexOpts = { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false };
+
             const conceptText = (ctx.refCode ? ctx.refCode + ' ' : '') + (ctx.standardName || '');
-            document.getElementById('preview-concept').textContent = conceptText || '(성취기준 없음)';
+            const conceptEl = document.getElementById('preview-concept');
+            conceptEl.textContent = conceptText || '(성취기준 없음)';
+            if (window.renderMathInElement) renderMathInElement(conceptEl, _katexOpts);
 
             const titleText = ctx.stepTitle || '(단계별 요약 없음)';
-            document.getElementById('preview-title').textContent = titleText;
+            const titleEl = document.getElementById('preview-title');
+            titleEl.textContent = titleText;
+            if (window.renderMathInElement) renderMathInElement(titleEl, _katexOpts);
 
             // 해설은 HTML 태그 제거 후 텍스트만
             const expRaw = ctx.explanation || '';
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = expRaw;
-            document.getElementById('preview-explanation').textContent = tempDiv.textContent || '(해설 없음)';
+            const expEl = document.getElementById('preview-explanation');
+            expEl.textContent = tempDiv.textContent || '(해설 없음)';
+            if (window.renderMathInElement) renderMathInElement(expEl, _katexOpts);
 
             // 체크박스 변경 시 미리보기 토글 연동
             document.getElementById('check-concept').onchange = function() {
@@ -1459,6 +1505,24 @@
                 document.getElementById('preview-explanation').style.display = this.checked ? '' : 'none';
                 updateReportTitle(); updateSubmitBtn();
             };
+        }
+
+        // ── textarea 수식 미리보기 ────────────────────────────────
+        function updateTextareaPreview() {
+            const ta = document.getElementById('report-textarea');
+            const preview = document.getElementById('report-textarea-preview');
+            if (!ta || !preview) return;
+            const val = ta.value || '';
+            const hasMath = /\$|\\\(|\\\[/.test(val);
+            if (!hasMath || !val.trim()) {
+                preview.style.display = 'none';
+                return;
+            }
+            preview.textContent = val;
+            preview.style.display = '';
+            if (window.renderMathInElement) {
+                renderMathInElement(preview, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false });
+            }
         }
 
         // ── 동적 제목 업데이트 ────────────────────────────────────
