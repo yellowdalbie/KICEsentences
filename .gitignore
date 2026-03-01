@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Environment and Data
+.env
+*.db
+*.sqlite
+*.log
+nohup.out
+admin.key
+
+# OS specific files
+.DS_Store
+
+# Project specific exclusions
+PDF_Ref/
+test*.js
+test*.html
+
+# Tools
+generate_all_thumbnails.py
+normalize_triggers.py
+fix_*.py
+build_*.py
+get_targets*.py
+filter_*.py
+gen_trigger_review.py
+export_triggers.py
+update_triggers_db.py
+trigger_review.md
+implementation_plan.md.resolved

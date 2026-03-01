@@ -3,6 +3,9 @@ import json
 import glob
 import re
 import os
+import markdown
+import bleach
+import html
 
 DB_FILE = 'kice_database.sqlite'
 CONCEPTS_FILE = 'concepts.json'
@@ -51,6 +54,7 @@ def setup_database():
             step_number INTEGER,
             step_title TEXT,
             explanation_text TEXT,
+            explanation_html TEXT,
             action_concept_id TEXT,
             action_text TEXT,
             result_text TEXT,
@@ -87,16 +91,18 @@ def load_concepts(conn):
     conn.commit()
 
 def parse_metadata_from_filename(filename):
+    import unicodedata
     basename = os.path.basename(filename).replace('.md', '')
+    basename = unicodedata.normalize('NFC', basename)  # Normalize macOS NFD filenames
     # format examples: 2026.6모_01, 2026.9모_09, 2026수능_01
-    #                  2026.6모_확23, 2026수능_기23, 2026수능_미23
-    match = re.search(r'(\d{4})\.?([가-힣\d]+)_(확|기|미)?(\d+)', basename)
+    #                  2016수능A_11, 2017.6모나_19
+    match = re.search(r'(\d{4})\.?([가-힣A-Za-z\d]+)_(확|기|미|A|B)?(\d+)', basename)
     if match:
         year = int(match.group(1))
-        exam_type = match.group(2)  # "6모", "9모", "수능", "예비"
-        prefix = match.group(3)     # "확", "기", "미", or None
+        exam_type = match.group(2)  # "6모", "수능A", "6모나"
+        prefix = match.group(3)     # "확", "기", "미", "A", "B" or None
         question_no = int(match.group(4))
-        prefix_map = {'확': '확통', '기': '기하', '미': '미적분'}
+        prefix_map = {'확': '확통', '기': '기하', '미': '미적분', 'A': '가형', 'B': '나형'}
         subject_type = prefix_map.get(prefix, '공통')
         return basename, year, exam_type, subject_type, question_no
     return basename, None, None, None, None
@@ -162,10 +168,38 @@ def parse_solutions(conn):
             # Extract explanation text
             explanation_match = re.search(r'> \*\*📝 해설.*?\n(.*)', block, re.DOTALL)
             explanation_text = ""
+            explanation_html = ""
             if explanation_match:
                 explanation_lines = explanation_match.group(1).strip().split('\n')
                 explanation_lines = [line[2:] if line.startswith('> ') else (line[1:] if line.startswith('>') else line) for line in explanation_lines]
                 explanation_text = '\n'.join(explanation_lines).strip()
+                
+                # HTML Pre-rendering (Dual-Column)
+                temp_text = explanation_text
+                math_dict = {}
+                math_counter = 0
+                
+                def math_replacer(m):
+                    nonlocal math_counter
+                    token = f"XMATH{math_counter}X"
+                    math_dict[token] = m.group(0)
+                    math_counter += 1
+                    return token
+                
+                # Extract math blocks
+                temp_text = re.sub(r'(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[^\$\n]+?\$|\\\([\s\S]*?\\\))', math_replacer, temp_text)
+                
+                # Render to HTML with nl2br
+                parsed_html = markdown.markdown(temp_text, extensions=['extensions.nl2br' if markdown.__version__.startswith('2') else 'nl2br'])
+                
+                # Restore math blocks with HTML escaping
+                for token, math_content in math_dict.items():
+                    escaped_math = html.escape(math_content)
+                    parsed_html = parsed_html.replace(token, escaped_math)
+                
+                # Sanitize with bleach
+                allowed_tags = ['b', 'i', 'strong', 'em', 'ul', 'li', 'br', 'p', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'blockquote']
+                explanation_html = bleach.clean(parsed_html, tags=allowed_tags)
             
             # Handling multi-triggers
             if '] + [' in trigger_full_text:
@@ -184,9 +218,9 @@ def parse_solutions(conn):
             
             # Insert Step
             cursor.execute('''
-                INSERT INTO steps (problem_id, step_number, step_title, explanation_text, action_concept_id, action_text, result_text)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (problem_id, step_num, step_title, explanation_text, action_concept_id, action_text, result_text))
+                INSERT INTO steps (problem_id, step_number, step_title, explanation_text, explanation_html, action_concept_id, action_text, result_text)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (problem_id, step_num, step_title, explanation_text, explanation_html, action_concept_id, action_text, result_text))
             
             step_id = cursor.lastrowid
             

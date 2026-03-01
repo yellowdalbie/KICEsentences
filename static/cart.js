@@ -121,7 +121,8 @@ async function openPrintPreview() {
     // 1. Sort inherently by Year and Problem No (String sorting works well for KICE IDs usually, e.g. 2025.6모_01 < 2025.6모_02)
     ids.sort();
 
-    const answerOpt = document.getElementById('answer-display-opt').value;
+    const answerOpt      = document.getElementById('answer-display-opt').value;
+    const explanationOpt = document.getElementById('explanation-display-opt').value;
 
     try {
         // 2. Fetch Answers
@@ -133,7 +134,19 @@ async function openPrintPreview() {
         const ansData = await res.json();
         const answers = ansData.answers || {};
 
-        // 3. Measure Images
+        // 3. Fetch explanation steps (separate 옵션일 때만)
+        let stepsData = {};
+        if (explanationOpt === 'separate') {
+            const expRes = await fetch('/api/problem_steps_bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ problem_ids: ids })
+            });
+            const expData = await expRes.json();
+            stepsData = expData.steps || {};
+        }
+
+        // 4. Measure Images
         const loadedItems = [];
         for (const pid of ids) {
             const imgInfo = await loadAndMeasureImage(`/thumbnail/${pid}`);
@@ -141,9 +154,10 @@ async function openPrintPreview() {
             const isLong = (imgInfo.height / imgInfo.width) > 1.0;
             loadedItems.push({
                 pid,
-                src: `/thumbnail/${pid}`,
+                src:    `/thumbnail/${pid}`,
                 isLong,
-                answer: answers[pid] || ''
+                answer: answers[pid] || '',
+                steps:  stepsData[pid] || []
             });
         }
 
@@ -246,6 +260,18 @@ async function openPrintPreview() {
             }
         }
 
+        // 6. Build explanation pages (separate 옵션일 때만)
+        let expPages = [];
+        if (explanationOpt === 'separate') {
+            const expItems = loadedItems
+                .filter(item => item.steps && item.steps.length > 0)
+                .map(item => ({ pid: item.pid, examNumber: item.examNumber, steps: item.steps, answer: item.answer }));
+            if (expItems.length > 0) {
+                expPages = await buildExplanationPages(expItems, pages.length);
+            }
+        }
+        const totalPageCount = pages.length + expPages.length;
+
         // 5. Render HTML
         printModalBody.innerHTML = '';
         pages.forEach((page, pIdx) => {
@@ -331,7 +357,7 @@ async function openPrintPreview() {
             footerDiv.innerHTML = `
                 <div class="footer-page-box">
                     <span class="footer-page-current">${pIdx + 1}</span>
-                    <span class="footer-page-total">${pages.length}</span>
+                    <span class="footer-page-total">${totalPageCount}</span>
                 </div>
                 <div class="footer-copyright">* 이 문제지에 관한 저작권은 한국교육과정평가원에 있습니다.</div>
             `;
@@ -340,10 +366,206 @@ async function openPrintPreview() {
             printModalBody.appendChild(pageDiv);
         });
 
+        // 해설지 페이지 append
+        for (const expPageDiv of expPages) {
+            printModalBody.appendChild(expPageDiv);
+        }
+
+        // 전체 KaTeX 렌더링 (문제지 + 해설지)
+        if (window.renderMathInElement) {
+            renderMathInElement(printModalBody, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$',  right: '$',  display: false }
+                ]
+            });
+        }
+
     } catch (e) {
         console.error(e);
         printModalBody.innerHTML = `<p class="placeholder-text" style="color:red;">오류가 발생했습니다: ${e.message}</p>`;
     }
+}
+
+// ── 해설 아이템 HTML 생성 헬퍼 ──
+function buildExpItemHtml(item) {
+    const stepsHtml = item.steps.map(step => `
+        <div class="csat-exp-step">
+            <div class="csat-exp-step-title">Step ${step.step_number}${step.step_title ? ' — ' + step.step_title : ''}</div>
+            <div class="csat-exp-step-body">${step.explanation_html}</div>
+        </div>
+    `).join('');
+
+    const ansHtml = item.answer
+        ? `<span class="csat-exp-answer">${item.answer}</span>`
+        : '';
+
+    return `
+        <div class="csat-exp-item-header">
+            <div class="csat-exp-item-header-left">
+                <span class="csat-num-box">${item.examNumber}</span>
+                <span class="csat-db-id-tag">${item.pid}</span>
+            </div>
+            ${ansHtml}
+        </div>
+        <div class="csat-exp-item-steps">${stepsHtml}</div>
+    `;
+}
+
+// ── 해설지 페이지 배열 생성 (DOM 측정 기반 2단 흐름) ──
+async function buildExplanationPages(expItems, problemPageCount) {
+    // 1단계: 측정용 컨테이너 준비 (csat-col 실효 너비와 동일하게)
+    const measureContainer = document.createElement('div');
+    measureContainer.style.cssText =
+        'position:absolute; left:-9999px; top:0; visibility:hidden; ' +
+        'width:calc((210mm - 30mm - 21px) / 2); overflow:visible;';
+    document.body.appendChild(measureContainer);
+
+    // 2단계: 각 해설 아이템 DOM 생성 및 KaTeX 렌더링
+    const measuredItems = [];
+    for (const item of expItems) {
+        const el = document.createElement('div');
+        el.className = 'csat-exp-item';
+        el.innerHTML = buildExpItemHtml(item);
+        measureContainer.appendChild(el);
+        if (window.renderMathInElement) {
+            renderMathInElement(el, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$',  right: '$',  display: false }
+                ]
+            });
+        }
+        measuredItems.push({ item, el });
+    }
+
+    // 3단계: 브라우저 레이아웃 완료 후 기준 높이 측정
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    // 임시 페이지로 가용 컬럼 높이 측정
+    const tempPage = document.createElement('div');
+    tempPage.className = 'csat-page';
+    tempPage.style.cssText = 'position:absolute; left:-9999px; visibility:hidden;';
+    tempPage.innerHTML = `
+        <div class="csat-header-page1">
+            <div class="h1-top"></div>
+            <div class="h1-main-wrapper"></div>
+            <div class="h1-divider"></div>
+        </div>
+        <div class="csat-footer"></div>`;
+    document.body.appendChild(tempPage);
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    const headerHeight  = tempPage.querySelector('.csat-header-page1').offsetHeight;
+    const footerHeight  = tempPage.querySelector('.csat-footer').offsetHeight;
+    const pageHeight    = tempPage.offsetHeight;
+    const usableColHeightFirst  = pageHeight - headerHeight - footerHeight - 20;
+    const usableColHeightNormal = pageHeight - 80 - footerHeight - 20; // csat-header-normal ≈ 80px
+    tempPage.remove();
+
+    // 각 아이템 높이 기록 (12px gap 포함)
+    for (const { item, el } of measuredItems) {
+        item.measuredHeight = el.offsetHeight + 12;
+    }
+
+    // 측정 컨테이너 제거
+    measureContainer.remove();
+
+    // 4단계: 배치 알고리즘
+    const expPagesList = [];
+    let curPage = { isFirst: true, cols: [{ items: [], usedHeight: 0 }, { items: [], usedHeight: 0 }] };
+    expPagesList.push(curPage);
+    let colIdx = 0;
+
+    for (const { item } of measuredItems) {
+        const colLimit = curPage.isFirst ? usableColHeightFirst : usableColHeightNormal;
+        if (curPage.cols[colIdx].usedHeight + item.measuredHeight > colLimit) {
+            colIdx++;
+            if (colIdx > 1) {
+                curPage = { isFirst: false, cols: [{ items: [], usedHeight: 0 }, { items: [], usedHeight: 0 }] };
+                expPagesList.push(curPage);
+                colIdx = 0;
+            }
+        }
+        curPage.cols[colIdx].items.push(item);
+        curPage.cols[colIdx].usedHeight += item.measuredHeight;
+    }
+
+    // 5단계: 해설지 DOM 렌더링
+    const result = [];
+    const totalPages = problemPageCount + expPagesList.length;
+
+    expPagesList.forEach((expPage, epIdx) => {
+        const globalPageNum = problemPageCount + epIdx + 1;
+        const pageDiv = document.createElement('div');
+        pageDiv.className = 'csat-page';
+
+        // 헤더
+        if (expPage.isFirst) {
+            pageDiv.innerHTML = `
+                <div class="csat-header-page1">
+                    <div class="h1-top">
+                        <span class="exam-title" contenteditable="true">2028학년도 대학수학능력시험 대비 해설지</span>
+                    </div>
+                    <div class="h1-main-wrapper" style="position:relative; margin-bottom:10px;">
+                        <span class="exam-period">제 2 교시</span>
+                        <div class="h1-main">수학 영역</div>
+                        <span class="exam-type">홀수형</span>
+                    </div>
+                    <div class="h1-divider"></div>
+                </div>
+            `;
+        } else {
+            pageDiv.innerHTML = `
+                <div class="csat-header-normal">
+                    <span class="page-num">${globalPageNum}</span>
+                    <span class="h-main">수학 영역</span>
+                    <span class="h-type">홀수형</span>
+                </div>
+            `;
+        }
+
+        // 2단 컬럼
+        const colsDiv = document.createElement('div');
+        colsDiv.className = 'csat-columns';
+
+        expPage.cols.forEach((col, cIdx) => {
+            const colDiv = document.createElement('div');
+            colDiv.className = 'csat-col csat-exp-col';
+
+            col.items.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'csat-exp-item';
+                el.innerHTML = buildExpItemHtml(item);
+                colDiv.appendChild(el);
+            });
+
+            colsDiv.appendChild(colDiv);
+            if (cIdx === 0) {
+                const vLine = document.createElement('div');
+                vLine.className = 'csat-vline';
+                colsDiv.appendChild(vLine);
+            }
+        });
+
+        pageDiv.appendChild(colsDiv);
+
+        // 푸터
+        const footerDiv = document.createElement('div');
+        footerDiv.className = 'csat-footer';
+        footerDiv.innerHTML = `
+            <div class="footer-page-box">
+                <span class="footer-page-current">${globalPageNum}</span>
+                <span class="footer-page-total">${totalPages}</span>
+            </div>
+            <div class="footer-copyright">* 이 문제지에 관한 저작권은 한국교육과정평가원에 있습니다.</div>
+        `;
+        pageDiv.appendChild(footerDiv);
+
+        result.push(pageDiv);
+    });
+
+    return result;
 }
 
 // Helper to measure image size

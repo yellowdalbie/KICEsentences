@@ -380,6 +380,14 @@
                         <option value="end">마지막 장에 모아서 표시</option>
                     </select>
                 </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <label for="explanation-display-opt"
+                           style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;">해설 표시:</label>
+                    <select id="explanation-display-opt" onchange="openPrintPreview()">
+                        <option value="none" selected>작성 안 함</option>
+                        <option value="separate">문제지 끝에 해설 추가</option>
+                    </select>
+                </div>
                 <div style="display: flex; gap: 12px;">
                     <button class="cart-btn" style="background: var(--accent-purple); color: white;"
                         onclick="window.print()">PDF 저장</button>
@@ -724,7 +732,7 @@
             const trigger = e.target.closest('.tooltip-trigger');
             if (!trigger) return;
 
-            const tooltipContent = decodeURIComponent(trigger.getAttribute('data-tooltip') || '');
+            let tooltipContent = decodeURIComponent(trigger.getAttribute('data-tooltip') || '');
             if (!tooltipContent) return;
 
             globalTooltip.innerHTML = tooltipContent;
@@ -854,10 +862,10 @@
                 rows.forEach((row, index) => {
                     const tr = document.createElement('tr');
                     const safeTrigger = row.trigger_text || '';
-                    const explanation = row.explanation_text ? row.explanation_text.replace(/"/g, '&quot;') : '해설 내용이 없습니다.';
+                    const rawExplanation = row.explanation_html || row.explanation_text || '해설 내용이 없습니다.';
                     let html = '';
 
-                    const editSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+                    const reportSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
                     const fullConcept = (row.ref_code || row.action_concept_id || '') + ' ' + (row.standard_name || '');
 
                     let textStyle = '';
@@ -887,7 +895,7 @@
 
                     html += `
                         <td class="latex-font" style="white-space:normal;">
-                            <div class="tooltip-trigger" data-tooltip="${encodeURIComponent(explanation.replace(/\n/g, '<br>'))}"
+                            <div class="tooltip-trigger" data-tooltip="${encodeURIComponent(rawExplanation)}"
                                  style="display:flex;align-items:flex-start;gap:0.5rem;">
                                 ${row.step_id ? `<span class="step-title-clickable" title="유사 스텝 검색"
                                     data-step-id="${row.step_id}"
@@ -900,16 +908,20 @@
                         </td>
                         <td class="concept-edit-cell tooltip-trigger"
                             data-step-id="${row.step_id}"
+                            data-problem-id="${pid}"
+                            data-step-number="${row.step_number || ''}"
                             data-concept-id="${row.action_concept_id || ''}"
                             data-ref-code="${row.ref_code || ''}"
                             data-standard-name="${row.standard_name || ''}"
+                            data-step-title="${encodeURIComponent(row.step_title || '')}"
+                            data-explanation="${encodeURIComponent(row.explanation_html || row.explanation_text || '')}"
                             data-tooltip="${encodeURIComponent(fullConcept)}"
-                            title="성취기준 수정">
+                            title="오류 제보">
                             <div style="display:flex;align-items:center;gap:6px;cursor:pointer;">
                                 <span class="concept-display" style="display:inline-block;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">
                                     ${fullConcept}
                                 </span>
-                                <span class="edit-pencil" style="opacity:0;transition:opacity 0.15s;font-size:0.75rem;color:#a78bfa;flex-shrink:0;">${editSvg}</span>
+                                <span class="edit-pencil" style="opacity:0;transition:opacity 0.15s;font-size:0.75rem;color:#a78bfa;flex-shrink:0;">${reportSvg}</span>
                             </div>
                         </td>`;
                     tr.innerHTML = html;
@@ -1159,240 +1171,405 @@
         fetchConceptsTree();
     </script>
 
-    <!-- ── Concept Picker 사이드 패널 ────────────────────── -->
+    <!-- ── 오류 제보 사이드 패널 ──────────────────────────── -->
     <div id="concept-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;"
         onclick="closeConceptPicker()"></div>
 
     <div id="concept-picker-panel" style="
-        position:fixed;top:0;right:-480px;width:460px;height:100vh;
+        position:fixed;top:0;right:-500px;width:480px;height:100vh;
         background:var(--sidebar-bg,#1a1a2e);border-left:1px solid rgba(16,185,129,0.3);
         display:flex;flex-direction:column;z-index:901;
         transition:right 0.25s cubic-bezier(0.4,0,0.2,1);
         box-shadow:-8px 0 32px rgba(0,0,0,0.5);
+        overflow:hidden;
     ">
-        <!-- 헤더 -->
-        <div style="padding:1.2rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                <strong style="color:#10b981;font-size:1rem;">✏️ 성취기준 도우미</strong>
+        <!-- 고정 헤더 -->
+        <div style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:rgba(0,0,0,0.2);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
+                <div>
+                    <strong style="color:#f59e0b;font-size:0.95rem;">⚠️ 오류 제보</strong>
+                    <div id="report-panel-subtitle" style="font-size:0.78rem;color:#64748b;margin-top:0.2rem;"></div>
+                </div>
                 <button onclick="closeConceptPicker()"
-                    style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem;">&times;</button>
-            </div>
-            <div id="picker-current-label"
-                style="font-size:0.82rem;color:var(--text-muted);padding:0.5rem 0.8rem;background:rgba(255,255,255,0.04);border-radius:6px;border-left:3px solid #10b981;">
-                현재: —
+                    style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;line-height:1;flex-shrink:0;">&times;</button>
             </div>
         </div>
 
-        <!-- 검색 -->
-        <div style="padding:0.8rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
-            <input id="picker-search-input" type="text" placeholder="ref_code 또는 성취기준 검색..." style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);
-                       border-radius:6px;padding:0.5rem 0.75rem;color:var(--text-main);font-size:0.85rem;outline:none;"
-                oninput="filterPickerList(this.value)">
-        </div>
+        <!-- 스크롤 영역 -->
+        <div style="flex:1;overflow-y:auto;padding:1.25rem;">
 
-        <!-- 목록 -->
-        <div id="concept-picker-list" style="flex:1;overflow-y:auto;padding:0.5rem;"></div>
+            <!-- 뷰 A: 로딩 -->
+            <div id="report-view-loading" style="display:flex;justify-content:center;align-items:center;height:200px;color:#64748b;font-size:0.9rem;">
+                불러오는 중...
+            </div>
+
+            <!-- 뷰 B: 미반영 제보 목록 -->
+            <div id="report-view-pending" style="display:none;">
+                <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#fbbf24;">
+                    이 스텝에 대한 미반영 제보가 있습니다.
+                    <span id="pending-count-badge" style="font-weight:700;"></span>
+                </div>
+                <div id="pending-report-list" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;"></div>
+                <div id="pending-report-detail" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1rem;font-size:0.85rem;display:none;">
+                    <div style="margin-bottom:0.5rem;">
+                        <span style="color:#94a3b8;font-size:0.78rem;">제보 일시</span>
+                        <div id="pending-detail-time" style="color:#e2e8f0;margin-top:0.2rem;"></div>
+                    </div>
+                    <div style="margin-bottom:0.5rem;">
+                        <span style="color:#94a3b8;font-size:0.78rem;">보고된 항목</span>
+                        <div id="pending-detail-fields" style="margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.3rem;"></div>
+                    </div>
+                    <div>
+                        <span style="color:#94a3b8;font-size:0.78rem;">제보 내용</span>
+                        <div id="pending-detail-message" style="color:#e2e8f0;margin-top:0.2rem;white-space:pre-wrap;line-height:1.5;background:rgba(0,0,0,0.2);padding:0.6rem;border-radius:6px;"></div>
+                    </div>
+                </div>
+                <button onclick="switchToReportForm()" style="
+                    margin-top:1rem;width:100%;padding:0.6rem;
+                    background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);
+                    color:#10b981;border-radius:8px;cursor:pointer;font-size:0.85rem;
+                    transition:background 0.15s;">+ 추가 제보하기</button>
+            </div>
+
+            <!-- 뷰 C: 제보 작성 폼 -->
+            <div id="report-view-form" style="display:none;">
+                <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:0.75rem;">오류가 있는 항목을 선택하고 내용을 적어주세요.</p>
+
+                <!-- 체크박스 항목들 -->
+                <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;">
+                    <!-- 성취기준 -->
+                    <label id="check-label-concept" style="display:block;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem;cursor:pointer;transition:border-color 0.15s;">
+                        <div style="display:flex;align-items:center;gap:0.6rem;">
+                            <input type="checkbox" id="check-concept" style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;" onchange="updateReportTitle();updateSubmitBtn();">
+                            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:500;">성취기준</span>
+                        </div>
+                        <div id="preview-concept" style="display:none;margin-top:0.5rem;padding:0.5rem;background:rgba(0,0,0,0.2);border-radius:5px;font-size:0.8rem;color:#94a3b8;line-height:1.5;"></div>
+                    </label>
+                    <!-- 단계별 요약 -->
+                    <label id="check-label-title" style="display:block;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem;cursor:pointer;transition:border-color 0.15s;">
+                        <div style="display:flex;align-items:center;gap:0.6rem;">
+                            <input type="checkbox" id="check-title" style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;" onchange="updateReportTitle();updateSubmitBtn();">
+                            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:500;">단계별 요약</span>
+                        </div>
+                        <div id="preview-title" style="display:none;margin-top:0.5rem;padding:0.5rem;background:rgba(0,0,0,0.2);border-radius:5px;font-size:0.8rem;color:#94a3b8;line-height:1.5;"></div>
+                    </label>
+                    <!-- 해설 -->
+                    <label id="check-label-explanation" style="display:block;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem;cursor:pointer;transition:border-color 0.15s;">
+                        <div style="display:flex;align-items:center;gap:0.6rem;">
+                            <input type="checkbox" id="check-explanation" style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;" onchange="updateReportTitle();updateSubmitBtn();">
+                            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:500;">해설</span>
+                        </div>
+                        <div id="preview-explanation" style="display:none;margin-top:0.5rem;padding:0.5rem;background:rgba(0,0,0,0.2);border-radius:5px;font-size:0.8rem;color:#94a3b8;line-height:1.5;max-height:120px;overflow-y:auto;"></div>
+                    </label>
+                </div>
+
+                <!-- 동적 제목 -->
+                <div id="report-title-display" style="display:none;font-size:0.82rem;color:#fbbf24;margin-bottom:0.75rem;padding:0.5rem 0.75rem;background:rgba(245,158,11,0.08);border-radius:6px;line-height:1.4;"></div>
+
+                <!-- 텍스트 입력 -->
+                <textarea id="report-textarea"
+                    placeholder="오류 내용을 자세히 적어주세요."
+                    oninput="updateSubmitBtn()"
+                    style="width:100%;min-height:120px;padding:0.75rem;
+                        background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);
+                        border-radius:8px;color:#e2e8f0;font-size:0.85rem;line-height:1.5;
+                        resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+
+                <!-- 유효성 안내 -->
+                <div id="report-validation-msg" style="display:none;font-size:0.78rem;color:#f87171;margin-top:0.4rem;"></div>
+
+                <!-- 제보 버튼 -->
+                <button id="submit-report-btn" onclick="submitReport()" disabled style="
+                    margin-top:0.75rem;width:100%;padding:0.7rem;
+                    background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);
+                    color:#6ee7b7;border-radius:8px;font-size:0.88rem;font-weight:500;
+                    transition:all 0.15s;opacity:0.5;">제보하기</button>
+            </div>
+
+            <!-- 뷰 D: 성공 화면 -->
+            <div id="report-view-success" style="display:none;text-align:center;padding:2rem 1rem;">
+                <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
+                <h3 style="color:#10b981;margin-bottom:0.5rem;font-size:1rem;">소중한 의견 감사합니다.</h3>
+                <p style="color:#94a3b8;font-size:0.88rem;line-height:1.6;">서비스 개선에 큰 도움이 됩니다.</p>
+                <button onclick="closeConceptPicker()" style="
+                    margin-top:1.5rem;padding:0.6rem 2rem;
+                    background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);
+                    color:#10b981;border-radius:8px;cursor:pointer;font-size:0.88rem;">닫기</button>
+            </div>
+
+        </div><!-- /스크롤 영역 -->
     </div>
 
     <style>
         /* 성취기준 셀 호버 효과 */
-        .concept-edit-cell:hover .edit-pencil {
-            opacity: 1 !important;
+        .concept-edit-cell:hover .edit-pencil { opacity: 1 !important; }
+        .concept-edit-cell:hover { background: rgba(245,158,11,0.06); cursor: pointer; }
+        #check-label-concept:has(#check-concept:checked),
+        #check-label-title:has(#check-title:checked),
+        #check-label-explanation:has(#check-explanation:checked) {
+            border-color: rgba(16,185,129,0.5);
+            background: rgba(16,185,129,0.06);
         }
-
-        .concept-edit-cell:hover {
-            background: rgba(16, 185, 129, 0.06);
-            cursor: pointer;
-        }
-
-        /* Picker 목록 아이템 */
-        .picker-subject-header {
-            padding: 0.5rem 0.8rem;
-            font-size: 0.75rem;
-            font-weight: 700;
+        #submit-report-btn { cursor: not-allowed; }
+        #submit-report-btn:not(:disabled) {
+            background: rgba(16,185,129,0.25);
+            border-color: rgba(16,185,129,0.6);
             color: #10b981;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(16, 185, 129, 0.15);
-            margin-top: 0.6rem;
-        }
-
-        .picker-concept-item {
-            padding: 0.55rem 0.9rem;
-            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.12s;
-            margin: 2px 0;
+            opacity: 1;
         }
-
-        .picker-concept-item:hover {
-            background: rgba(16, 185, 129, 0.12);
-        }
-
-        .picker-concept-item.is-current {
-            background: rgba(16, 185, 129, 0.2);
-            border-left: 3px solid #10b981;
-        }
-
-        .picker-ref {
-            font-size: 0.75rem;
-            color: #6ee7b7;
-            font-family: monospace;
-            margin-bottom: 2px;
-        }
-
-        .picker-name {
-            font-size: 0.82rem;
-            color: var(--text-main);
-            line-height: 1.3;
-        }
+        #submit-report-btn:not(:disabled):hover { background: rgba(16,185,129,0.35); }
+        #report-textarea:focus { outline: none; border-color: rgba(16,185,129,0.5); }
     </style>
 
     <script>
-        // ── Concept Picker 전역 상태 ─────────────────────
-        let _pickerConceptsFlat = [];   // [{id, ref_code, standard_name, subject}]
-        let _pickerEditTarget = null;   // { stepId, currentConceptId, tdEl }
+        // ── 패널 컨텍스트 저장 ──────────────────────────────────
+        let _reportCtx = null;
 
-        // concepts 데이터 한번만 받아온다 (캐시)
-        async function loadPickerConcepts() {
-            if (_pickerConceptsFlat.length > 0) return;
-            const res = await fetch('/api/concepts_tree');
-            const tree = await res.json();
-            // tree: { subject: { unit: [{id, ref_code, standard_name}] } }
-            for (const [subject, units] of Object.entries(tree)) {
-                for (const [unit, concepts] of Object.entries(units)) {
-                    for (const c of concepts) {
-                        _pickerConceptsFlat.push({ ...c, subject, unit });
-                    }
-                }
-            }
-            // ref_code 오름차순 정렬
-            _pickerConceptsFlat.sort((a, b) => (a.ref_code || '').localeCompare(b.ref_code || ''));
+        // ── 뷰 전환 ─────────────────────────────────────────────
+        function _showReportView(viewId) {
+            ['report-view-loading','report-view-pending','report-view-form','report-view-success'].forEach(id => {
+                document.getElementById(id).style.display = (id === viewId) ? '' : 'none';
+            });
         }
 
-        function renderPickerList(items) {
-            const container = document.getElementById('concept-picker-list');
-            container.innerHTML = '';
-            let lastSubject = null;
-
-            for (const c of items) {
-                if (c.subject !== lastSubject) {
-                    const hdr = document.createElement('div');
-                    hdr.className = 'picker-subject-header';
-                    hdr.textContent = c.subject;
-                    container.appendChild(hdr);
-                    lastSubject = c.subject;
-                }
-                const item = document.createElement('div');
-                item.className = 'picker-concept-item';
-                if (_pickerEditTarget && c.id === _pickerEditTarget.currentConceptId) {
-                    item.classList.add('is-current');
-                }
-                item.innerHTML = `<div class="picker-ref">${c.ref_code || c.id}</div><div class="picker-name">${c.standard_name}</div>`;
-                item.addEventListener('click', () => applyConceptChange(c));
-                container.appendChild(item);
-            }
-
-            if (items.length === 0) {
-                container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">검색 결과 없음</p>';
-            }
-        }
-
-        function filterPickerList(query) {
-            const q = query.toLowerCase();
-            const filtered = q
-                ? _pickerConceptsFlat.filter(c =>
-                    (c.ref_code || '').toLowerCase().includes(q) ||
-                    (c.standard_name || '').toLowerCase().includes(q))
-                : _pickerConceptsFlat;
-            renderPickerList(filtered);
-        }
-
-        async function openConceptPicker(stepId, currentConceptId, refCode, standardName, tdEl) {
-            _pickerEditTarget = { stepId, currentConceptId, tdEl };
-
-            // 현재값 헤더에 표시
-            document.getElementById('picker-current-label').textContent =
-                `현재: ${refCode || currentConceptId} ${standardName || ''}`;
-
-            // 검색 초기화
-            const searchInput = document.getElementById('picker-search-input');
-            searchInput.value = '';
-
-            // 오버레이 + 패널 열기
+        // ── 패널 열기 ───────────────────────────────────────────
+        function openConceptPicker(ctx) {
+            _reportCtx = ctx;
             document.getElementById('concept-picker-overlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
             const panel = document.getElementById('concept-picker-panel');
             panel.style.right = '0';
 
-            // 목록 로드 & 렌더
-            await loadPickerConcepts();
-            renderPickerList(_pickerConceptsFlat);
+            // 헤더 서브타이틀
+            const subtitle = document.getElementById('report-panel-subtitle');
+            subtitle.textContent = ctx ? `${ctx.problemId}  ·  Step ${ctx.stepNumber}` : '';
 
-            // 현재 개념로 스크롤
-            setTimeout(() => {
-                const currentEl = document.querySelector('.picker-concept-item.is-current');
-                if (currentEl) currentEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            }, 100);
+            // 로딩 상태로 시작
+            _showReportView('report-view-loading');
 
-            searchInput.focus();
+            if (!ctx || !ctx.stepId) { showReportForm(ctx); return; }
+
+            // 미반영 제보 확인
+            fetch(`/api/pending_reports?step_id=${ctx.stepId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.count && data.count > 0) {
+                        _showPendingView(data.reports, ctx);
+                    } else {
+                        showReportForm(ctx);
+                    }
+                })
+                .catch(() => showReportForm(ctx));
         }
 
+        // ── 패널 닫기 ───────────────────────────────────────────
         function closeConceptPicker() {
             document.getElementById('concept-picker-overlay').style.display = 'none';
-            document.getElementById('concept-picker-panel').style.right = '-480px';
-            _pickerEditTarget = null;
+            document.getElementById('concept-picker-panel').style.right = '-500px';
+            // 상태 초기화
+            ['check-concept','check-title','check-explanation'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.checked = false;
+            });
+            const ta = document.getElementById('report-textarea');
+            if (ta) ta.value = '';
+            ['preview-concept','preview-title','preview-explanation'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            document.getElementById('report-title-display').style.display = 'none';
+            document.getElementById('report-validation-msg').style.display = 'none';
+            const btn = document.getElementById('submit-report-btn');
+            if (btn) { btn.disabled = true; }
         }
 
-        async function applyConceptChange(newConcept) {
-            if (!_pickerEditTarget) return;
-            const { stepId, currentConceptId, tdEl } = _pickerEditTarget;
-            if (newConcept.id === currentConceptId) { closeConceptPicker(); return; }
+        // ── 미반영 제보 목록 뷰 ──────────────────────────────────
+        function _showPendingView(reports, ctx) {
+            _showReportView('report-view-pending');
+            const badge = document.getElementById('pending-count-badge');
+            badge.textContent = `(${reports.length}건)`;
 
-            // 낙관적 UI 업데이트
-            const displaySpan = tdEl.querySelector('.concept-display');
-            const originalText = displaySpan ? displaySpan.textContent : '';
-            if (displaySpan) displaySpan.textContent = '저장 중...';
+            const listEl = document.getElementById('pending-report-list');
+            listEl.innerHTML = '';
+            const fieldLabels = { standard_name:'성취기준', step_title:'단계별 요약', explanation:'해설' };
 
-            try {
-                const res = await fetch('/api/update_step_concept', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ step_id: stepId, new_concept_id: newConcept.id })
-                });
-                const result = await res.json();
+            reports.forEach((r, i) => {
+                const item = document.createElement('div');
+                item.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.65rem 0.85rem;cursor:pointer;transition:border-color 0.15s;';
+                const tags = (r.reported_fields || []).map(f => `<span style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);padding:1px 6px;border-radius:4px;font-size:0.73rem;">${fieldLabels[f]||f}</span>`).join(' ');
+                const ts = r.timestamp ? new Date(r.timestamp).toLocaleString('ko-KR') : '';
+                item.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;"><div style="display:flex;flex-wrap:wrap;gap:0.3rem;">${tags}</div><span style="font-size:0.73rem;color:#64748b;flex-shrink:0;">${ts}</span></div>`;
+                item.addEventListener('click', () => _showPendingDetail(r));
+                item.addEventListener('mouseenter', () => { item.style.borderColor = 'rgba(245,158,11,0.4)'; });
+                item.addEventListener('mouseleave', () => { item.style.borderColor = 'rgba(255,255,255,0.1)'; });
+                listEl.appendChild(item);
+            });
 
-                if (result.success) {
-                    // 셀 내용 업데이트
-                    if (displaySpan) displaySpan.textContent = `${newConcept.ref_code ? `${newConcept.ref_code} ` : ''}${newConcept.standard_name}`;
-                    tdEl.dataset.conceptId = newConcept.id;
-                    tdEl.dataset.refCode = newConcept.ref_code || '';
-                    tdEl.dataset.standardName = newConcept.standard_name;
-                    const fileMsg = result.file_updated ? '(MD 업데이트 완료)' : '(MD 파일 없음)';
-                    console.log(`✅ 성취기준 변경: ${result.old_concept_id} → ${result.new_concept_id} ${fileMsg}`);
-                    closeConceptPicker();
-                } else {
-                    if (displaySpan) displaySpan.textContent = originalText;
-                    showCustomAlert('오류: ' + (result.error || '알 수 없는 오류'));
-                }
-            } catch (err) {
-                if (displaySpan) displaySpan.textContent = originalText;
-                showCustomAlert('네트워크 오류: ' + err.message);
+            // 첫 번째 자동 선택
+            if (reports.length > 0) _showPendingDetail(reports[0]);
+        }
+
+        function _showPendingDetail(report) {
+            const detail = document.getElementById('pending-report-detail');
+            detail.style.display = '';
+            const fieldLabels = { standard_name:'성취기준', step_title:'단계별 요약', explanation:'해설' };
+            document.getElementById('pending-detail-time').textContent =
+                report.timestamp ? new Date(report.timestamp).toLocaleString('ko-KR') : '';
+            document.getElementById('pending-detail-fields').innerHTML =
+                (report.reported_fields || [])
+                    .map(f => `<span style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);padding:2px 8px;border-radius:4px;font-size:0.78rem;">${fieldLabels[f]||f}</span>`)
+                    .join('');
+            document.getElementById('pending-detail-message').textContent = report.user_message || '';
+        }
+
+        // ── 추가 제보 버튼 → 폼 전환 ─────────────────────────────
+        function switchToReportForm() {
+            showReportForm(_reportCtx);
+        }
+
+        // ── 제보 폼 초기화 및 표시 ────────────────────────────────
+        function showReportForm(ctx) {
+            _showReportView('report-view-form');
+            if (!ctx) return;
+
+            // 미리보기 내용 채우기
+            const conceptText = (ctx.refCode ? ctx.refCode + ' ' : '') + (ctx.standardName || '');
+            document.getElementById('preview-concept').textContent = conceptText || '(성취기준 없음)';
+
+            const titleText = ctx.stepTitle || '(단계별 요약 없음)';
+            document.getElementById('preview-title').textContent = titleText;
+
+            // 해설은 HTML 태그 제거 후 텍스트만
+            const expRaw = ctx.explanation || '';
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = expRaw;
+            document.getElementById('preview-explanation').textContent = tempDiv.textContent || '(해설 없음)';
+
+            // 체크박스 변경 시 미리보기 토글 연동
+            document.getElementById('check-concept').onchange = function() {
+                document.getElementById('preview-concept').style.display = this.checked ? '' : 'none';
+                updateReportTitle(); updateSubmitBtn();
+            };
+            document.getElementById('check-title').onchange = function() {
+                document.getElementById('preview-title').style.display = this.checked ? '' : 'none';
+                updateReportTitle(); updateSubmitBtn();
+            };
+            document.getElementById('check-explanation').onchange = function() {
+                document.getElementById('preview-explanation').style.display = this.checked ? '' : 'none';
+                updateReportTitle(); updateSubmitBtn();
+            };
+        }
+
+        // ── 동적 제목 업데이트 ────────────────────────────────────
+        function updateReportTitle() {
+            const labels = [];
+            if (document.getElementById('check-concept').checked) labels.push('성취기준');
+            if (document.getElementById('check-title').checked) labels.push('단계별 요약');
+            if (document.getElementById('check-explanation').checked) labels.push('해설');
+
+            const titleEl = document.getElementById('report-title-display');
+            if (labels.length === 0) {
+                titleEl.style.display = 'none';
+                return;
+            }
+            const pid = _reportCtx ? _reportCtx.problemId : '';
+            titleEl.textContent = `${pid}의 ${labels.join(', ')}에 오류를 제보합니다.`;
+            titleEl.style.display = '';
+        }
+
+        // ── 제보 버튼 활성/비활성 ─────────────────────────────────
+        function updateSubmitBtn() {
+            const anyChecked = document.getElementById('check-concept').checked
+                || document.getElementById('check-title').checked
+                || document.getElementById('check-explanation').checked;
+            const hasText = (document.getElementById('report-textarea').value || '').trim().length > 0;
+            const btn = document.getElementById('submit-report-btn');
+            btn.disabled = !(anyChecked && hasText);
+
+            const msg = document.getElementById('report-validation-msg');
+            if (!anyChecked && !hasText) {
+                msg.textContent = '항목을 선택하고 오류 내용을 입력해주세요.';
+                msg.style.display = '';
+            } else if (!anyChecked) {
+                msg.textContent = '오류가 있는 항목을 하나 이상 선택해주세요.';
+                msg.style.display = '';
+            } else if (!hasText) {
+                msg.textContent = '오류 내용을 입력해주세요.';
+                msg.style.display = '';
+            } else {
+                msg.style.display = 'none';
             }
         }
 
-        // renderMainTable 이후 이벤트 위임 (해당 셀 클릭 시 picker 열기)
+        // ── 제보 전송 ─────────────────────────────────────────────
+        function submitReport() {
+            if (!_reportCtx) return;
+            const reportedFields = [];
+            if (document.getElementById('check-concept').checked) reportedFields.push('standard_name');
+            if (document.getElementById('check-title').checked) reportedFields.push('step_title');
+            if (document.getElementById('check-explanation').checked) reportedFields.push('explanation');
+            const userMessage = (document.getElementById('report-textarea').value || '').trim();
+            if (reportedFields.length === 0 || !userMessage) { updateSubmitBtn(); return; }
+
+            const body = {
+                problem_id:       _reportCtx.problemId,
+                step_id:          _reportCtx.stepId,
+                step_number:      _reportCtx.stepNumber,
+                action_concept_id:_reportCtx.conceptId,
+                standard_name:    _reportCtx.standardName,
+                step_title:       _reportCtx.stepTitle,
+                reported_fields:  reportedFields,
+                user_message:     userMessage,
+            };
+
+            const btn = document.getElementById('submit-report-btn');
+            btn.disabled = true;
+            btn.textContent = '전송 중...';
+
+            fetch('/api/report_error', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    _showReportView('report-view-success');
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = '제보하기';
+                    const msg = document.getElementById('report-validation-msg');
+                    msg.textContent = '제보 전송에 실패했습니다. 다시 시도해주세요.';
+                    msg.style.display = '';
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.textContent = '제보하기';
+                const msg = document.getElementById('report-validation-msg');
+                msg.textContent = '네트워크 오류가 발생했습니다. 다시 시도해주세요.';
+                msg.style.display = '';
+            });
+        }
+
+        // ── 이벤트 위임: 경고 아이콘 클릭 시 패널 열기 ─────────────
         document.addEventListener('click', (e) => {
-            const cell = e.target.closest('.concept-edit-cell');
+            const icon = e.target.closest('.edit-pencil');
+            if (!icon) return;
+            const cell = icon.closest('.concept-edit-cell');
             if (!cell) return;
-            const stepId = parseInt(cell.dataset.stepId);
-            if (!stepId) return;
-            openConceptPicker(
-                stepId,
-                cell.dataset.conceptId,
-                cell.dataset.refCode,
-                cell.dataset.standardName,
-                cell
-            );
+            const ctx = {
+                stepId:      parseInt(cell.dataset.stepId),
+                problemId:   cell.dataset.problemId || '',
+                stepNumber:  cell.dataset.stepNumber || '',
+                conceptId:   cell.dataset.conceptId || '',
+                refCode:     cell.dataset.refCode || '',
+                standardName:cell.dataset.standardName || '',
+                stepTitle:   decodeURIComponent(cell.dataset.stepTitle || ''),
+                explanation: decodeURIComponent(cell.dataset.explanation || ''),
+            };
+            openConceptPicker(ctx);
         });
     </script>
     <!-- Include Cart Logic -->

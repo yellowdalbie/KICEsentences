@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KICE 오류 제보 관리</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0f172a; color: #e2e8f0; min-height: 100vh;
+    font-size: 14px; line-height: 1.5;
+  }
+
+  /* 상단 헤더 */
+  .header {
+    background: #1a1a2e; border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 0.9rem 1.5rem; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  }
+  .header-title { color: #f59e0b; font-size: 1rem; font-weight: 700; }
+  .header-actions { display: flex; gap: 0.6rem; align-items: center; }
+  .btn { padding: 0.45rem 0.9rem; border-radius: 6px; border: none; cursor: pointer;
+    font-size: 0.82rem; font-weight: 500; transition: all 0.15s; }
+  .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2);
+    color: #94a3b8; }
+  .btn-outline:hover { border-color: rgba(255,255,255,0.4); color: #e2e8f0; }
+  .btn-green { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4);
+    color: #10b981; }
+  .btn-green:hover { background: rgba(16,185,129,0.35); }
+  .btn-green:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-amber { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4);
+    color: #f59e0b; }
+  .btn-amber:hover { background: rgba(245,158,11,0.35); }
+  .btn-red { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+    color: #f87171; }
+  .btn-red:hover { background: rgba(239,68,68,0.3); }
+
+  /* 탭 필터 */
+  .tab-bar {
+    background: #1a1a2e; border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0 1.5rem; display: flex; gap: 0.25rem; align-items: center;
+  }
+  .tab-btn {
+    padding: 0.6rem 1rem; background: none; border: none; border-bottom: 2px solid transparent;
+    color: #64748b; cursor: pointer; font-size: 0.85rem; transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: #f59e0b; border-bottom-color: #f59e0b; }
+  .tab-btn:hover:not(.active) { color: #94a3b8; }
+
+  /* 본문 레이아웃 */
+  .main-layout {
+    display: grid; grid-template-columns: 320px 1fr;
+    height: calc(100vh - 94px); overflow: hidden;
+  }
+
+  /* 왼쪽: 제보 목록 */
+  .report-list-panel {
+    border-right: 1px solid rgba(255,255,255,0.06);
+    overflow-y: auto; background: #111827;
+  }
+  .report-list-empty {
+    padding: 2rem; text-align: center; color: #475569; font-size: 0.85rem;
+  }
+  .report-item {
+    padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer; transition: background 0.12s; user-select: none;
+  }
+  .report-item:hover { background: rgba(255,255,255,0.04); }
+  .report-item.active { background: rgba(245,158,11,0.08); border-left: 3px solid #f59e0b; }
+  .report-item .prob-id { font-weight: 600; color: #e2e8f0; font-size: 0.88rem; }
+  .report-item .step-info { font-size: 0.78rem; color: #94a3b8; margin-top: 0.15rem; }
+  .report-item .meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 0.4rem; gap: 0.4rem; flex-wrap: wrap;
+  }
+  .report-item .tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .tag-field {
+    background: rgba(245,158,11,0.15); color: #fbbf24;
+    border: 1px solid rgba(245,158,11,0.3); padding: 1px 6px;
+    border-radius: 4px; font-size: 0.72rem;
+  }
+  .tag-pending { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; }
+  .tag-reviewed { background: rgba(16,185,129,0.1); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; }
+  .ts { font-size: 0.72rem; color: #475569; }
+
+  /* 오른쪽: 상세 패널 */
+  .report-detail-panel {
+    overflow-y: auto; padding: 1.5rem;
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+  .detail-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; color: #475569; font-size: 0.88rem; text-align: center; gap: 0.75rem;
+  }
+
+  /* 섹션 카드 */
+  .card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 1rem 1.25rem;
+  }
+  .card-title {
+    font-size: 0.78rem; color: #64748b; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;
+  }
+
+  /* 원본 MD 영역 */
+  .md-raw {
+    background: #0a0e1a; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 0.85rem 1rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem;
+    color: #94a3b8; white-space: pre-wrap; word-break: break-all;
+    max-height: 260px; overflow-y: auto; line-height: 1.6;
+  }
+
+  /* 수정 입력 영역 */
+  textarea.corrected-input {
+    width: 100%; min-height: 200px; padding: 0.85rem 1rem;
+    background: #0a0e1a; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; color: #e2e8f0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem;
+    line-height: 1.6; resize: vertical;
+  }
+  textarea.corrected-input:focus { outline: none; border-color: rgba(16,185,129,0.5); }
+
+  /* 미리보기 영역 */
+  .preview-box {
+    background: #0f172a; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 1rem; font-size: 0.83rem; line-height: 1.6; color: #cbd5e1;
+    display: none;
+  }
+  .preview-box.visible { display: block; }
+  .preview-box p { margin: 0 0 0.4rem; }
+  .preview-label { font-size: 0.73rem; color: #64748b; margin-bottom: 0.35rem; }
+  .preview-value { color: #e2e8f0; padding: 0.4rem 0.6rem; background: rgba(255,255,255,0.04);
+    border-radius: 6px; font-size: 0.82rem; }
+
+  /* 액션 버튼 영역 */
+  .action-row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+  .status-msg { font-size: 0.8rem; padding: 0.45rem 0.75rem; border-radius: 6px; }
+  .status-msg.ok { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  .status-msg.err { background: rgba(239,68,68,0.15); color: #f87171; }
+
+  /* 스크롤바 */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- 상단 헤더 -->
+<div class="header">
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <span class="header-title">⚠️ KICE 오류 제보 관리</span>
+    <span id="stats-badge" style="font-size:0.78rem;color:#64748b;"></span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="rebuild-btn" onclick="rebuildVectors()">벡터 재빌드</button>
+    <a href="/" class="btn btn-outline">← 메인으로</a>
+  </div>
+</div>
+
+<!-- 탭 필터 -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-status="all" onclick="switchTab(this,'all')">전체</button>
+  <button class="tab-btn" data-status="pending" onclick="switchTab(this,'pending')">미반영</button>
+  <button class="tab-btn" data-status="reviewed" onclick="switchTab(this,'reviewed')">반영완료</button>
+</div>
+
+<!-- 본문 -->
+<div class="main-layout">
+
+  <!-- 왼쪽: 제보 목록 -->
+  <div class="report-list-panel" id="report-list-panel">
+    <div class="report-list-empty">불러오는 중...</div>
+  </div>
+
+  <!-- 오른쪽: 상세 -->
+  <div class="report-detail-panel" id="report-detail-panel">
+    <div class="detail-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1" ry="1"/>
+      </svg>
+      <span>왼쪽에서 제보를 선택하세요</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── URL에서 관리자 키 추출 ───────────────────────────────────
+  const ADMIN_KEY = new URLSearchParams(window.location.search).get('key') || '';
+
+  function adminHeaders() {
+    return { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY };
+  }
+
+  // ── 상태 변수 ────────────────────────────────────────────────
+  let _allReports = [];
+  let _currentStatus = 'all';
+  let _selectedReport = null;
+  const FIELD_LABELS = { standard_name: '성취기준', step_title: '단계별 요약', explanation: '해설' };
+
+  // ── 제보 목록 로드 ───────────────────────────────────────────
+  function loadReports() {
+    fetch(`/api/admin/reports?status=${_currentStatus}&key=${ADMIN_KEY}`)
+      .then(r => r.json())
+      .then(data => {
+        _allReports = data.reports || [];
+        renderList(_allReports);
+        updateStatsBadge();
+      })
+      .catch(() => {
+        document.getElementById('report-list-panel').innerHTML =
+          '<div class="report-list-empty">로드 실패</div>';
+      });
+  }
+
+  function updateStatsBadge() {
+    fetch(`/api/admin/reports?status=all&key=${ADMIN_KEY}`)
+      .then(r => r.json())
+      .then(data => {
+        const all = data.reports || [];
+        const pending = all.filter(r => r.status === 'pending').length;
+        document.getElementById('stats-badge').textContent =
+          `전체 ${all.length}건 | 미반영 ${pending}건`;
+      });
+  }
+
+  // ── 목록 렌더링 ──────────────────────────────────────────────
+  function renderList(reports) {
+    const panel = document.getElementById('report-list-panel');
+    if (!reports.length) {
+      panel.innerHTML = '<div class="report-list-empty">제보 내역이 없습니다.</div>';
+      return;
+    }
+    panel.innerHTML = '';
+    reports.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'report-item' + (_selectedReport && r.timestamp === _selectedReport.timestamp ? ' active' : '');
+
+      const tags = (r.reported_fields || [])
+        .map(f => `<span class="tag-field">${FIELD_LABELS[f] || f}</span>`).join('');
+      const statusTag = r.status === 'pending'
+        ? '<span class="tag-pending">미반영</span>'
+        : '<span class="tag-reviewed">반영완료</span>';
+      const ts = r.timestamp ? new Date(r.timestamp).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+
+      item.innerHTML = `
+        <div class="prob-id">${r.problem_id}</div>
+        <div class="step-info">Step ${r.step_number}  ·  ${r.standard_name || r.action_concept_id || ''}</div>
+        <div class="meta-row">
+          <div class="tags">${tags}</div>
+          <div style="display:flex;gap:0.3rem;align-items:center;">${statusTag}<span class="ts">${ts}</span></div>
+        </div>`;
+
+      item.addEventListener('click', () => selectReport(r, item));
+      panel.appendChild(item);
+    });
+  }
+
+  // ── 탭 전환 ──────────────────────────────────────────────────
+  function switchTab(el, status) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    _currentStatus = status;
+    _selectedReport = null;
+    document.getElementById('report-detail-panel').innerHTML =
+      '<div class="detail-empty"><span>왼쪽에서 제보를 선택하세요</span></div>';
+    loadReports();
+  }
+
+  // ── 제보 선택 ────────────────────────────────────────────────
+  function selectReport(report, itemEl) {
+    _selectedReport = report;
+    document.querySelectorAll('.report-item').forEach(el => el.classList.remove('active'));
+    itemEl.classList.add('active');
+    renderDetail(report);
+  }
+
+  // ── 상세 렌더링 ──────────────────────────────────────────────
+  function renderDetail(report) {
+    const panel = document.getElementById('report-detail-panel');
+
+    const tags = (report.reported_fields || [])
+      .map(f => `<span class="tag-field">${FIELD_LABELS[f] || f}</span>`).join(' ');
+    const ts = report.timestamp ? new Date(report.timestamp).toLocaleString('ko-KR') : '';
+    const statusHtml = report.status === 'pending'
+      ? '<span class="tag-pending">미반영</span>'
+      : '<span class="tag-reviewed">반영완료</span>';
+
+    const dismissBtnHtml = report.status === 'pending'
+      ? `<button class="btn btn-red" onclick="dismissReport()">수정 없이 검토 완료</button>` : '';
+
+    panel.innerHTML = `
+      <!-- A. 제보 정보 -->
+      <div class="card">
+        <div class="card-title">제보 정보</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1rem;font-size:0.83rem;">
+          <div><span style="color:#64748b;">문항</span><div style="color:#e2e8f0;margin-top:0.15rem;">${report.problem_id} · Step ${report.step_number}</div></div>
+          <div><span style="color:#64748b;">상태</span><div style="margin-top:0.15rem;">${statusHtml}</div></div>
+          <div><span style="color:#64748b;">일시</span><div style="color:#e2e8f0;margin-top:0.15rem;">${ts}</div></div>
+          <div><span style="color:#64748b;">성취기준</span><div style="color:#94a3b8;margin-top:0.15rem;font-size:0.78rem;">${report.action_concept_id || ''}</div></div>
+        </div>
+        <div style="margin-top:0.75rem;">
+          <span style="color:#64748b;font-size:0.78rem;">보고된 항목</span>
+          <div style="margin-top:0.35rem;display:flex;gap:0.35rem;flex-wrap:wrap;">${tags}</div>
+        </div>
+        <div style="margin-top:0.75rem;">
+          <span style="color:#64748b;font-size:0.78rem;">제보 내용</span>
+          <div style="margin-top:0.35rem;background:rgba(0,0,0,0.2);padding:0.65rem 0.85rem;border-radius:7px;color:#cbd5e1;white-space:pre-wrap;line-height:1.6;font-size:0.83rem;">${escHtml(report.user_message || '')}</div>
+        </div>
+      </div>
+
+      <!-- B. 원본 MD -->
+      <div class="card" id="card-original">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+          <div class="card-title" style="margin-bottom:0;">원본 MD</div>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-outline" style="font-size:0.76rem;padding:0.3rem 0.7rem;" onclick="copyOriginalMd()">복사</button>
+          </div>
+        </div>
+        <div id="original-md-box" class="md-raw">불러오는 중...</div>
+      </div>
+
+      <!-- C. 수정 입력 -->
+      <div class="card" id="card-edit" ${report.status === 'reviewed' ? 'style="opacity:0.55;pointer-events:none;"' : ''}>
+        <div class="card-title">수정할 내용 (MD 형식)</div>
+        <p style="font-size:0.78rem;color:#64748b;margin-bottom:0.6rem;">원본을 Claude에 전달해 수정 결과를 받은 후 아래에 붙여넣으세요.</p>
+        <textarea class="corrected-input" id="corrected-md-input" placeholder="수정된 Step MD 블록을 붙여넣으세요..."></textarea>
+        <div style="margin-top:0.6rem;display:flex;gap:0.5rem;">
+          <button class="btn btn-outline" style="font-size:0.78rem;" onclick="previewCorrected()">미리보기</button>
+        </div>
+        <!-- 미리보기 박스 -->
+        <div class="preview-box" id="preview-box" style="margin-top:0.75rem;">
+          <div class="preview-label">스텝 제목</div>
+          <div class="preview-value" id="preview-step-title" style="margin-bottom:0.6rem;"></div>
+          <div class="preview-label">성취기준 ID</div>
+          <div class="preview-value" id="preview-concept-id" style="margin-bottom:0.6rem;"></div>
+          <div class="preview-label">해설 (요약)</div>
+          <div class="preview-value" id="preview-explanation" style="white-space:pre-wrap;max-height:100px;overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <!-- D. 액션 버튼 -->
+      <div class="card">
+        <div class="action-row">
+          ${report.status === 'pending'
+            ? `<button class="btn btn-green" onclick="applyReport()">반영하기</button>
+               ${dismissBtnHtml}`
+            : `<span style="color:#6ee7b7;font-size:0.83rem;">✅ 이미 반영 완료된 제보입니다.</span>`}
+          <span id="action-status-msg"></span>
+        </div>
+      </div>
+    `;
+
+    // 원본 MD 로드
+    if (report.step_id) {
+      fetch(`/api/admin/step_detail/${report.step_id}?key=${ADMIN_KEY}`)
+        .then(r => r.json())
+        .then(data => {
+          const box = document.getElementById('original-md-box');
+          if (box) box.textContent = data.raw_md || '(원본 없음)';
+          // 수정 입력란 초기값 설정
+          const input = document.getElementById('corrected-md-input');
+          if (input && data.raw_md) input.value = data.raw_md;
+        })
+        .catch(() => {
+          const box = document.getElementById('original-md-box');
+          if (box) box.textContent = '로드 실패';
+        });
+    }
+  }
+
+  // ── 원본 MD 복사 ─────────────────────────────────────────────
+  function copyOriginalMd() {
+    const box = document.getElementById('original-md-box');
+    if (!box) return;
+    navigator.clipboard.writeText(box.textContent)
+      .then(() => showActionMsg('클립보드에 복사됐습니다.', 'ok'))
+      .catch(() => showActionMsg('복사 실패', 'err'));
+  }
+
+  // ── 미리보기 ─────────────────────────────────────────────────
+  function previewCorrected() {
+    const input = document.getElementById('corrected-md-input');
+    const box = document.getElementById('preview-box');
+    if (!input || !box) return;
+
+    const md = input.value || '';
+    // 간단한 클라이언트 파싱
+    const titleM = md.match(/## \[Step \d+\]([^\n]*)/);
+    const actionM = md.match(/- \*\*Action\*\*:\s*(?:\[(.*?)\])?\s*(.*?)(?:\n|$)/);
+    const expM = md.match(/> \*\*📝 해설.*?\n([\s\S]*?)(?=## \[Step|\Z|$)/);
+
+    document.getElementById('preview-step-title').textContent =
+      titleM ? titleM[1].trim() : '(파싱 불가)';
+    document.getElementById('preview-concept-id').textContent =
+      actionM && actionM[1] ? actionM[1].trim() : '(없음)';
+
+    if (expM) {
+      const expLines = expM[1].split('\n')
+        .map(l => l.startsWith('> ') ? l.slice(2) : l.startsWith('>') ? l.slice(1) : l)
+        .join('\n').trim();
+      document.getElementById('preview-explanation').textContent =
+        expLines.length > 300 ? expLines.slice(0, 300) + '...' : expLines;
+    } else {
+      document.getElementById('preview-explanation').textContent = '(해설 없음)';
+    }
+
+    box.classList.add('visible');
+  }
+
+  // ── 반영하기 ─────────────────────────────────────────────────
+  function applyReport() {
+    if (!_selectedReport) return;
+    const input = document.getElementById('corrected-md-input');
+    const corrected = (input ? input.value : '').trim();
+    if (!corrected) {
+      showActionMsg('수정 내용을 입력해주세요.', 'err'); return;
+    }
+    if (!confirm(`수정된 내용을 Sol/ 파일과 DB에 반영합니다.\n계속하시겠습니까?`)) return;
+
+    fetch(`/api/admin/apply?key=${ADMIN_KEY}`, {
+      method: 'POST',
+      headers: adminHeaders(),
+      body: JSON.stringify({
+        step_id: _selectedReport.step_id,
+        problem_id: _selectedReport.problem_id,
+        step_number: _selectedReport.step_number,
+        report_timestamp: _selectedReport.timestamp,
+        corrected_md: corrected,
+      }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        showActionMsg('✅ 반영 완료. ' + (data.note || ''), 'ok');
+        _selectedReport.status = 'reviewed';
+        loadReports();
+      } else {
+        showActionMsg('오류: ' + (data.error || '실패'), 'err');
+      }
+    })
+    .catch(() => showActionMsg('네트워크 오류', 'err'));
+  }
+
+  // ── 수정 없이 검토 완료 ──────────────────────────────────────
+  function dismissReport() {
+    if (!_selectedReport) return;
+    if (!confirm('수정 없이 검토 완료로 처리합니다. 계속하시겠습니까?')) return;
+
+    fetch(`/api/admin/dismiss?key=${ADMIN_KEY}`, {
+      method: 'POST',
+      headers: adminHeaders(),
+      body: JSON.stringify({
+        step_id: _selectedReport.step_id,
+        report_timestamp: _selectedReport.timestamp,
+      }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        showActionMsg('검토 완료로 처리됐습니다.', 'ok');
+        _selectedReport.status = 'reviewed';
+        loadReports();
+      } else {
+        showActionMsg('오류: ' + (data.error || '실패'), 'err');
+      }
+    })
+    .catch(() => showActionMsg('네트워크 오류', 'err'));
+  }
+
+  // ── 벡터 재빌드 ──────────────────────────────────────────────
+  function rebuildVectors() {
+    const btn = document.getElementById('rebuild-btn');
+    btn.disabled = true; btn.textContent = '재빌드 중...';
+    fetch(`/api/admin/rebuild_vectors?key=${ADMIN_KEY}`, {
+      method: 'POST', headers: adminHeaders(), body: '{}',
+    })
+    .then(r => r.json())
+    .then(data => {
+      alert(data.message || '벡터 재빌드가 시작됐습니다.');
+      setTimeout(() => { btn.disabled = false; btn.textContent = '벡터 재빌드'; }, 3000);
+    })
+    .catch(() => { btn.disabled = false; btn.textContent = '벡터 재빌드'; alert('요청 실패'); });
+  }
+
+  // ── 상태 메시지 ──────────────────────────────────────────────
+  function showActionMsg(text, type) {
+    const el = document.getElementById('action-status-msg');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'status-msg ' + (type || '');
+    setTimeout(() => { if (el) el.textContent = ''; }, 5000);
+  }
+
+  // ── HTML 이스케이프 ──────────────────────────────────────────
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // ── 초기 로드 ────────────────────────────────────────────────
+  loadReports();
+</script>
+</body>
+</html>

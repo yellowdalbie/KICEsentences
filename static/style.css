@@ -575,25 +575,94 @@ body {
 .custom-tooltip {
     visibility: hidden;
     opacity: 0;
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e1e24;
-    color: #f8fafc;
-    padding: 1.25rem;
-    border-radius: 8px;
+    position: fixed;
+    z-index: 10000;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(139, 92, 246, 0.4);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
-    z-index: 9999;
+    border-radius: 12px;
+    color: #e2e8f0;
+    padding: 1.25rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
     width: max-content;
-    max-width: 500px;
-    font-size: 1.05rem;
+    max-width: 550px;
+    font-size: 0.95rem;
     line-height: 1.6;
     white-space: normal;
     text-align: left;
-    transition: opacity 0.05s ease, visibility 0.05s;
+    transition: opacity 0.2s ease;
     pointer-events: none;
+}
+
+/* Tooltip Markdown Styling */
+.custom-tooltip p {
+    margin-bottom: 0.75rem;
+}
+
+.custom-tooltip p:last-child {
+    margin-bottom: 0;
+}
+
+.custom-tooltip strong {
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+.custom-tooltip ul,
+.custom-tooltip ol {
+    margin: 0.5rem 0 0.75rem 1.25rem;
+}
+
+.custom-tooltip li {
+    margin-bottom: 0.25rem;
+}
+
+.custom-tooltip blockquote {
+    border-left: 3px solid #7c3aed;
+    background: rgba(124, 58, 237, 0.1);
+    padding: 0.5rem 0.75rem;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    font-style: italic;
+    color: #cbd5e1;
+}
+
+/* Tooltip Table Styling */
+.custom-tooltip table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-tooltip th,
+.custom-tooltip td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+}
+
+.custom-tooltip th {
+    background: rgba(139, 92, 246, 0.25);
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+.custom-tooltip tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.custom-tooltip code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #94a3b8;
 }
 
 .custom-tooltip-right {
@@ -857,8 +926,9 @@ body {
     padding: 2rem 0;
 }
 
-/* Custom Select Styling */
-#answer-display-opt {
+/* Custom Select Styling (정답 표시 + 해설 표시 공통) */
+#answer-display-opt,
+#explanation-display-opt {
     background-color: #312e81;
     /* Deep Indigo */
     color: #f8fafc;
@@ -877,7 +947,8 @@ body {
     transition: all 0.2s;
 }
 
-#answer-display-opt:hover {
+#answer-display-opt:hover,
+#explanation-display-opt:hover {
     background-color: #3730a3;
     border-color: #6366f1;
 }
@@ -1176,6 +1247,78 @@ body {
     /* No bold */
     color: #000;
     /* Pure black */
+}
+
+/* ── 해설지 전용 스타일 ──────────────────────────────────────────────────── */
+
+/* 해설지 열: grid 해제 후 flex 세로 배치로 가변 높이 처리 */
+.csat-col.csat-exp-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    grid-template-rows: none;
+    overflow: visible;
+    min-width: 0; /* flex min-width:auto 로 인한 열 불균등 방지 */
+}
+
+/* 해설지 문항 블록 */
+.csat-exp-item {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+.csat-exp-item:last-child {
+    border-bottom: none;
+}
+
+.csat-exp-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.csat-exp-item-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.csat-exp-answer {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #000;
+    white-space: nowrap;
+}
+
+.csat-exp-item-steps {
+    padding-left: 4px;
+}
+
+/* 스텝 블록 */
+.csat-exp-step {
+    margin-bottom: 7px;
+}
+
+/* 스텝 타이틀: 굵은 글씨 */
+.csat-exp-step-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 3px;
+}
+
+/* 스텝 해설: 얇은 글씨 */
+.csat-exp-step-body {
+    font-size: 0.76rem;
+    font-weight: 300;
+    color: #222;
+    line-height: 1.55;
+}
+
+/* 인쇄 시 스텝 블록 줄바꿈 방지 */
+@media print {
+    .csat-exp-item  { break-inside: avoid; }
+    .csat-exp-step  { break-inside: avoid; }
 }
 
 /* ========================================================================= */

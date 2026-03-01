@@ -3,8 +3,10 @@ import json
 import re
 import os
 import unicodedata
+import subprocess
 import numpy as np
-import pypdfium2 as pdfium
+import bleach as bleach_module
+from datetime import datetime
 from flask import Flask, render_template, jsonify, request, send_from_directory, send_file
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
@@ -56,16 +58,7 @@ def serve_pdf(filename):
 def serve_thumbnail(problem_id):
     thumb_path = os.path.join(THUMBNAIL_DIR, f'{problem_id}.png')
     if not os.path.exists(thumb_path):
-        pdf_path = os.path.join('PDF_Ref', f'{problem_id}.pdf')
-        if not os.path.exists(pdf_path):
-            return '', 404
-        pdf = pdfium.PdfDocument(pdf_path)
-        page = pdf[0]
-        # Render at 2x scale for sharpness: width ~480px at 2x = 960px native
-        bitmap = page.render(scale=2.5)
-        pil_image = bitmap.to_pil()
-        pil_image.save(thumb_path, 'PNG', optimize=True)
-        pdf.close()
+        return '', 404
     return send_file(thumb_path, mimetype='image/png')
 
 
@@ -255,7 +248,7 @@ def search():
                 LEFT JOIN concepts c ON s.action_concept_id = c.id
                 WHERE t.trigger_text LIKE ? OR t.normalized_text LIKE ? OR c.standard_name LIKE ? OR s.action_concept_id LIKE ? OR c.ref_code LIKE ? OR s.step_title LIKE ? OR p.problem_id LIKE ?
             )
-            SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text,
+            SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text, s.explanation_html,
                    (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
                    COALESCE(s.step_title, '') AS trigger_text, 
                    s.step_title,
@@ -304,7 +297,7 @@ def search():
         
     placeholder = ','.join('?' for _ in top_unique_probs)
     rows = conn.execute(f'''
-        SELECT s.step_id, s.problem_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text,
+        SELECT s.step_id, s.problem_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text, s.explanation_html,
                c.standard_name, c.ref_code,
                (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps
         FROM steps s
@@ -346,7 +339,7 @@ def steps_by_problems():
     placeholders = ','.join('?' * len(prob_ids))
     conn = get_db_connection()
     rows = [dict(r) for r in conn.execute(f'''
-        SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text,
+        SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text, s.explanation_html,
                (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
                COALESCE(s.step_title, '') AS trigger_text,
                s.step_title,
@@ -378,7 +371,7 @@ def steps_by_concept():
         WITH matched_problems AS (
             SELECT DISTINCT problem_id FROM steps WHERE action_concept_id = ?
         )
-        SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text,
+        SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text, s.explanation_html,
                (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
                COALESCE(s.step_title, '') AS trigger_text,
                s.step_title,
@@ -491,99 +484,6 @@ def problem_answers():
             answers[pid] = None
 
     return jsonify({'answers': answers})
-
-@app.route('/api/update_step_concept', methods=['PATCH'])
-def update_step_concept():
-    """step_id의 action_concept_id를 new_concept_id로 변경하고 Sol MD 파일도 업데이트."""
-    data = request.get_json()
-    step_id = data.get('step_id')
-    new_concept_id = data.get('new_concept_id')  # CPT-... 형식의 내부 id
-
-    if not step_id or not new_concept_id:
-        return jsonify({'error': 'step_id와 new_concept_id가 필요합니다.'}), 400
-
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    conn = get_db_connection()
-
-    try:
-        # 현재 스텝 정보 조회
-        row = conn.execute(
-            'SELECT problem_id, step_number, action_concept_id FROM steps WHERE step_id = ?',
-            (step_id,)
-        ).fetchone()
-        if not row:
-            return jsonify({'error': f'step_id {step_id}를 찾을 수 없습니다.'}), 404
-
-        problem_id = row['problem_id']
-        step_number = row['step_number']
-        old_concept_id = row['action_concept_id']
-
-        # 1. DB 업데이트
-        conn.execute(
-            'UPDATE steps SET action_concept_id = ? WHERE step_id = ?',
-            (new_concept_id, step_id)
-        )
-        conn.commit()
-
-        # 2. Sol MD 파일 찾기: Sol/{year}/{problem_id}.md
-        #    연도는 problem_id 앞 4자리 숫자 (예: 2025.6모_01 → 2025)
-        import glob
-        year_match = re.match(r'^(\d{4})', problem_id)
-        sol_path = None
-        if year_match:
-            year = year_match.group(1)
-            candidate = os.path.join(base_dir, 'Sol', year, f'{problem_id}.md')
-            if os.path.exists(candidate):
-                sol_path = candidate
-
-        # 연도 폴더 구조가 없을 경우 루트도 탐색
-        if not sol_path:
-            candidate = os.path.join(base_dir, 'Sol', f'{problem_id}.md')
-            if os.path.exists(candidate):
-                sol_path = candidate
-
-        file_updated = False
-        if sol_path:
-            with open(sol_path, 'r', encoding='utf-8') as f:
-                content = f.read()            # [Step N] 헤더를 찾고 그 이후 첫 번째 Action 라인의 [CPT-...] 교체
-            # 패턴: ## [Step {step_number}] 헤더 다음 블록에서 - **Action**: [...] CPT-ID 부분만
-            step_header_pattern = re.compile(
-                r'(##\s+\[Step\s+' + str(step_number) + r'\][^\n]*\n'   # ## [Step N] 헤더
-                r'(?:(?!##\s+\[Step\s+\d+\]).)*?)'                       # 다음 ## [Step 까지 아닌 내용
-                r'(- \*\*Action\*\*:\s*\[)'                               # - **Action**: [ 캡처
-                r'[A-Z0-9\-]+'                                            # 현재 concept id
-                r'(\])',                                                   # ] 캡처
-                re.DOTALL
-            )
-
-            new_content, n_subs = step_header_pattern.subn(
-                r'\g<1>\g<2>' + new_concept_id + r'\g<3>',
-                content,
-                count=1
-            )
-
-            if n_subs > 0:
-                with open(sol_path, 'w', encoding='utf-8') as f:
-                    f.write(new_content)
-                file_updated = True
-
-        return jsonify({
-            'success': True,
-            'step_id': step_id,
-            'problem_id': problem_id,
-            'step_number': step_number,
-            'old_concept_id': old_concept_id,
-            'new_concept_id': new_concept_id,
-            'file_updated': file_updated,
-            'sol_path': sol_path
-        })
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({'error': str(e)}), 500
-    finally:
-        conn.close()
-
 
 
 @app.route('/api/concepts_tree')
@@ -907,7 +807,7 @@ def problem_steps():
     conn = get_db_connection()
     try:
         rows = conn.execute('''
-            SELECT s.step_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text,
+            SELECT s.step_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text, s.explanation_html,
                    c.standard_name, c.ref_code
             FROM steps s
             LEFT JOIN concepts c ON s.action_concept_id = c.id
@@ -922,6 +822,7 @@ def problem_steps():
                 'step_number': row['step_number'],
                 'step_title': row['step_title'],
                 'explanation_text': row['explanation_text'],
+                'explanation_html': row['explanation_html'],
                 'action_concept_id': row['action_concept_id'],
                 'standard_name': row['standard_name'],
                 'ref_code': row['ref_code']
@@ -932,6 +833,381 @@ def problem_steps():
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+
+@app.route('/api/problem_steps_bulk', methods=['POST'])
+def problem_steps_bulk():
+    """여러 problem_id의 스텝 해설을 한 번에 반환합니다."""
+    data = request.get_json()
+    problem_ids = data.get('problem_ids', [])
+    if not problem_ids or not isinstance(problem_ids, list):
+        return jsonify({'error': '유효하지 않은 problem_ids 목록입니다.'}), 400
+
+    placeholders = ','.join('?' * len(problem_ids))
+    conn = get_db_connection()
+    try:
+        rows = conn.execute(f'''
+            SELECT s.problem_id, s.step_number, s.step_title,
+                   s.explanation_html, s.explanation_text
+            FROM steps s
+            WHERE s.problem_id IN ({placeholders})
+            ORDER BY s.problem_id, s.step_number ASC
+        ''', problem_ids).fetchall()
+
+        result = {}
+        for row in rows:
+            pid = row['problem_id']
+            if pid not in result:
+                result[pid] = []
+            result[pid].append({
+                'step_number':      row['step_number'],
+                'step_title':       row['step_title'] or '',
+                'explanation_html': row['explanation_html'] or row['explanation_text'] or ''
+            })
+        return jsonify({'steps': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+
+# ── 공통 유틸 ────────────────────────────────────────────────────
+
+REPORTS_FILE = 'error_reports.jsonl'
+ADMIN_KEY_FILE = 'admin.key'
+
+
+def _load_admin_key():
+    if os.path.exists(ADMIN_KEY_FILE):
+        with open(ADMIN_KEY_FILE, 'r') as f:
+            return f.read().strip()
+    return None
+
+
+def _check_admin_key():
+    key = request.args.get('key') or request.headers.get('X-Admin-Key')
+    expected = _load_admin_key()
+    if not expected or key != expected:
+        return False
+    return True
+
+
+def _read_reports():
+    if not os.path.exists(REPORTS_FILE):
+        return []
+    reports = []
+    with open(REPORTS_FILE, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    reports.append(json.loads(line))
+                except json.JSONDecodeError:
+                    pass
+    return reports
+
+
+def _write_reports(reports):
+    with open(REPORTS_FILE, 'w', encoding='utf-8') as f:
+        for r in reports:
+            f.write(json.dumps(r, ensure_ascii=False) + '\n')
+
+
+def _get_sol_path(problem_id):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    m = re.match(r'^(\d{4})', problem_id)
+    if m:
+        candidate = os.path.join(base_dir, 'Sol', m.group(1), f'{problem_id}.md')
+        if os.path.exists(candidate):
+            return candidate
+    candidate = os.path.join(base_dir, 'Sol', f'{problem_id}.md')
+    return candidate if os.path.exists(candidate) else None
+
+
+def _extract_step_block(md_content, step_number):
+    """MD 내용에서 특정 step 블록 추출 (## [Step N] 부터 다음 ## [Step 또는 파일 끝까지)"""
+    pattern = rf'(## \[Step {step_number}\][^\n]*\n.*?)(?=## \[Step \d+\]|\Z)'
+    m = re.search(pattern, md_content, re.DOTALL)
+    return m.group(1).rstrip() if m else None
+
+
+def _parse_step_block(block):
+    """step 블록에서 필드 추출 (build_db.py와 동일한 로직)"""
+    step_title_m = re.match(r'## \[Step \d+\]([^\n]*)', block)
+    step_title = step_title_m.group(1).strip() if step_title_m else ''
+
+    trigger_m = re.search(r'- \*\*Trigger\*\*:\s*(.*?)\n- \*\*Action\*\*', block, re.DOTALL)
+    action_m = re.search(r'- \*\*Action\*\*:\s*(?:\[(.*?)\])?\s*(.*?)\n- \*\*Result\*\*', block, re.DOTALL)
+    result_m = re.search(r'- \*\*Result\*\*:\s*(.*?)\n>', block, re.DOTALL)
+    if not all([trigger_m, action_m, result_m]):
+        trigger_m = re.search(r'- \*\*Trigger\*\*:\s*(.*?)\n', block)
+        action_m = re.search(r'- \*\*Action\*\*:\s*(?:\[(.*?)\])?\s*(.*?)\n', block)
+        result_m = re.search(r'- \*\*Result\*\*:\s*(.*?)\n', block)
+
+    action_concept_id = ''
+    action_text = ''
+    result_text = ''
+    if action_m:
+        action_concept_id = (action_m.group(1) or '').strip()
+        action_text = re.sub(r'\s*\n\s*', ' ', (action_m.group(2) or '').strip())
+    if result_m:
+        result_text = re.sub(r'\s*\n\s*', ' ', result_m.group(1).strip())
+
+    explanation_text = ''
+    explanation_html = ''
+    exp_m = re.search(r'> \*\*📝 해설.*?\n(.*)', block, re.DOTALL)
+    if exp_m:
+        exp_lines = exp_m.group(1).strip().split('\n')
+        exp_lines = [l[2:] if l.startswith('> ') else (l[1:] if l.startswith('>') else l) for l in exp_lines]
+        explanation_text = '\n'.join(exp_lines).strip()
+        temp = explanation_text
+        math_dict = {}
+        counter = [0]
+
+        def replacer(m):
+            token = f'XMATH{counter[0]}X'
+            math_dict[token] = m.group(0)
+            counter[0] += 1
+            return token
+
+        temp = re.sub(r'(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[^\$\n]+?\$|\\\([\s\S]*?\\\))', replacer, temp)
+        parsed = markdown_module.markdown(temp, extensions=['nl2br'])
+        for token, math_content in math_dict.items():
+            parsed = parsed.replace(token, html_module.escape(math_content))
+        allowed = ['b', 'i', 'strong', 'em', 'ul', 'li', 'br', 'p', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'blockquote']
+        explanation_html = bleach_module.clean(parsed, tags=allowed)
+
+    return {
+        'step_title': step_title,
+        'action_concept_id': action_concept_id,
+        'action_text': action_text,
+        'result_text': result_text,
+        'explanation_text': explanation_text,
+        'explanation_html': explanation_html,
+    }
+
+
+# ── 사용자: 오류 제보 API ─────────────────────────────────────────
+
+@app.route('/api/report_error', methods=['POST'])
+def report_error():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': '요청 데이터가 없습니다.'}), 400
+
+    required = ['problem_id', 'step_id', 'reported_fields', 'user_message']
+    for field in required:
+        if not data.get(field):
+            return jsonify({'error': f'{field} 누락'}), 400
+
+    record = {
+        'timestamp': datetime.now().isoformat(),
+        'problem_id': data['problem_id'],
+        'step_id': int(data['step_id']),
+        'step_number': data.get('step_number', ''),
+        'action_concept_id': data.get('action_concept_id', ''),
+        'standard_name': data.get('standard_name', ''),
+        'step_title': data.get('step_title', ''),
+        'reported_fields': data['reported_fields'],
+        'user_message': data['user_message'],
+        'status': 'pending',
+    }
+    try:
+        with open(REPORTS_FILE, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(record, ensure_ascii=False) + '\n')
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/pending_reports')
+def pending_reports():
+    step_id = request.args.get('step_id')
+    if not step_id:
+        return jsonify({'error': 'step_id 파라미터 필요'}), 400
+    try:
+        step_id_int = int(step_id)
+    except ValueError:
+        return jsonify({'error': '유효하지 않은 step_id'}), 400
+
+    all_reports = _read_reports()
+    result = [r for r in all_reports
+              if r.get('step_id') == step_id_int and r.get('status') == 'pending']
+    result.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    return jsonify({'reports': result, 'count': len(result)})
+
+
+# ── 관리자 API ───────────────────────────────────────────────────
+
+@app.route('/admin')
+def admin_page():
+    if not _check_admin_key():
+        return '접근 거부: 유효하지 않은 관리자 키입니다.', 403
+    return render_template('admin.html')
+
+
+@app.route('/api/admin/reports')
+def admin_reports():
+    if not _check_admin_key():
+        return jsonify({'error': '접근 거부'}), 403
+
+    status_filter = request.args.get('status', 'all')
+    all_reports = _read_reports()
+
+    if status_filter != 'all':
+        all_reports = [r for r in all_reports if r.get('status') == status_filter]
+
+    all_reports.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    return jsonify({'reports': all_reports, 'count': len(all_reports)})
+
+
+@app.route('/api/admin/step_detail/<int:step_id>')
+def admin_step_detail(step_id):
+    if not _check_admin_key():
+        return jsonify({'error': '접근 거부'}), 403
+
+    conn = get_db_connection()
+    try:
+        row = conn.execute('''
+            SELECT s.step_id, s.problem_id, s.step_number, s.step_title,
+                   s.explanation_text, s.explanation_html,
+                   s.action_concept_id, s.action_text, s.result_text,
+                   c.standard_name, c.ref_code
+            FROM steps s
+            LEFT JOIN concepts c ON s.action_concept_id = c.id
+            WHERE s.step_id = ?
+        ''', (step_id,)).fetchone()
+    finally:
+        conn.close()
+
+    if not row:
+        return jsonify({'error': f'step_id {step_id} 없음'}), 404
+
+    sol_path = _get_sol_path(row['problem_id'])
+    raw_md = None
+    if sol_path:
+        with open(sol_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        raw_md = _extract_step_block(content, row['step_number'])
+
+    return jsonify({
+        'raw_md': raw_md or '',
+        'db_row': {
+            'step_title': row['step_title'] or '',
+            'explanation_text': row['explanation_text'] or '',
+            'explanation_html': row['explanation_html'] or '',
+            'action_concept_id': row['action_concept_id'] or '',
+            'standard_name': row['standard_name'] or '',
+            'ref_code': row['ref_code'] or '',
+        }
+    })
+
+
+@app.route('/api/admin/apply', methods=['POST'])
+def admin_apply():
+    if not _check_admin_key():
+        return jsonify({'error': '접근 거부'}), 403
+
+    data = request.get_json()
+    step_id = data.get('step_id')
+    problem_id = data.get('problem_id')
+    step_number = data.get('step_number')
+    report_timestamp = data.get('report_timestamp')
+    corrected_md = data.get('corrected_md', '').strip()
+
+    if not all([step_id, problem_id, step_number, corrected_md]):
+        return jsonify({'error': '필수 필드 누락'}), 400
+
+    # ① Sol/ MD 파일 업데이트
+    sol_path = _get_sol_path(problem_id)
+    if not sol_path:
+        return jsonify({'error': f'Sol 파일 없음: {problem_id}'}), 404
+
+    with open(sol_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    old_block = _extract_step_block(content, step_number)
+    if old_block is None:
+        return jsonify({'error': f'Step {step_number} 블록을 찾을 수 없음'}), 400
+
+    new_block = corrected_md.rstrip()
+    new_content = content.replace(old_block, new_block, 1)
+
+    with open(sol_path, 'w', encoding='utf-8') as f:
+        f.write(new_content)
+
+    # ② 수정된 블록 파싱 → DB UPDATE
+    parsed = _parse_step_block(new_block)
+    conn = get_db_connection()
+    try:
+        conn.execute('''
+            UPDATE steps
+            SET step_title=?, explanation_text=?, explanation_html=?,
+                action_concept_id=?, action_text=?, result_text=?
+            WHERE step_id=?
+        ''', (
+            parsed['step_title'],
+            parsed['explanation_text'],
+            parsed['explanation_html'],
+            parsed['action_concept_id'],
+            parsed['action_text'],
+            parsed['result_text'],
+            step_id,
+        ))
+        conn.commit()
+    finally:
+        conn.close()
+
+    # ③ JSONL 상태 업데이트
+    if report_timestamp:
+        all_reports = _read_reports()
+        updated = False
+        for r in all_reports:
+            if r.get('timestamp') == report_timestamp and r.get('step_id') == int(step_id):
+                r['status'] = 'reviewed'
+                updated = True
+        if updated:
+            _write_reports(all_reports)
+
+    return jsonify({'ok': True, 'note': '벡터는 [벡터 재빌드] 버튼으로 별도 갱신 필요'})
+
+
+@app.route('/api/admin/dismiss', methods=['POST'])
+def admin_dismiss():
+    if not _check_admin_key():
+        return jsonify({'error': '접근 거부'}), 403
+
+    data = request.get_json()
+    step_id = data.get('step_id')
+    report_timestamp = data.get('report_timestamp')
+
+    if not report_timestamp:
+        return jsonify({'error': 'report_timestamp 누락'}), 400
+
+    all_reports = _read_reports()
+    updated = False
+    for r in all_reports:
+        if r.get('timestamp') == report_timestamp and r.get('step_id') == int(step_id or 0):
+            r['status'] = 'reviewed'
+            updated = True
+    if updated:
+        _write_reports(all_reports)
+        return jsonify({'ok': True})
+    return jsonify({'error': '해당 제보를 찾을 수 없음'}), 404
+
+
+@app.route('/api/admin/rebuild_vectors', methods=['POST'])
+def admin_rebuild_vectors():
+    if not _check_admin_key():
+        return jsonify({'error': '접근 거부'}), 403
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    script = os.path.join(base_dir, 'build_vectors.py')
+    if not os.path.exists(script):
+        return jsonify({'error': 'build_vectors.py 없음'}), 404
+
+    subprocess.Popen(['python3', script], cwd=base_dir)
+    return jsonify({'ok': True, 'message': '벡터 재빌드가 백그라운드에서 시작됐습니다.'})
+
 
 if __name__ == '__main__':
     # Run the Flask app on port 5050 to avoid conflicts
