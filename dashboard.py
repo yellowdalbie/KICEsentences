@@ -56,10 +56,12 @@ def serve_pdf(filename):
 
 @app.route('/thumbnail/<problem_id>')
 def serve_thumbnail(problem_id):
+    # Normalize to NFC for consistent lookup
+    problem_id = unicodedata.normalize('NFC', problem_id)
     thumb_path = os.path.join(THUMBNAIL_DIR, f'{problem_id}.png')
-    if not os.path.exists(thumb_path):
-        return '', 404
-    return send_file(thumb_path, mimetype='image/png')
+    if os.path.exists(thumb_path):
+        return send_file(thumb_path, mimetype='image/png')
+    return '', 404
 
 
 @app.route('/api/similar_steps/<int:step_id>')
