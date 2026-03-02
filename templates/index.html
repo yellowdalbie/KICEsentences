@@ -397,16 +397,25 @@
                 </div>
             </div>
         </div>
-        <div id="print-preview-scroll-area">
-            <div id="print-preview-content">
-                <div id="print-preview-body">
-                    <!-- Images appended here -->
+        <div id="print-preview-layout">
+            <div id="print-sidebar" class="no-print">
+                <div class="sidebar-title">문항 순서</div>
+                <ul id="sidebar-order-list"></ul>
+            </div>
+            <div id="print-preview-scroll-area">
+                <div id="print-preview-content">
+                    <div id="print-preview-body">
+                        <!-- Images appended here -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // 오프라인 패키지 모드 플래그 (Flask에서 주입)
+        const KICE_OFFLINE = {{ 'true' if offline_mode else 'false' }};
+
         // Tab Navigation Logic
         const viewSections = document.querySelectorAll('.view-section');
         const logoBtn = document.querySelector('.logo');
@@ -865,7 +874,7 @@
                     const rawExplanation = row.explanation_html || row.explanation_text || '해설 내용이 없습니다.';
                     let html = '';
 
-                    const reportSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+                    const reportSvg = KICE_OFFLINE ? '' : `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
                     const fullConcept = (row.ref_code || row.action_concept_id || '') + ' ' + (row.standard_name || '');
 
                     let textStyle = '';
@@ -1171,6 +1180,7 @@
         fetchConceptsTree();
     </script>
 
+    {% if not offline_mode %}
     <!-- ── 오류 제보 사이드 패널 ──────────────────────────── -->
     <div id="concept-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;"
         onclick="closeConceptPicker()"></div>
@@ -1636,6 +1646,7 @@
             openConceptPicker(ctx);
         });
     </script>
+    {% endif %}{# /offline_mode #}
     <!-- Include Cart Logic -->
     <script src="{{ url_for('static', filename='cart.js') }}"></script>
     <!-- Custom Alert Modal -->

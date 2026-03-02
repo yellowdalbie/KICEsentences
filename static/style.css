@@ -857,6 +857,28 @@ body {
     border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 500;
+    position: relative;
+}
+
+/* Thumbnail tooltip shown on cart item hover */
+.cart-thumb-tooltip {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    background: #1e293b;
+    border: 1px solid rgba(167, 139, 250, 0.5);
+    border-radius: 8px;
+    padding: 5px;
+    pointer-events: none;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+}
+
+.cart-thumb-tooltip img {
+    display: block;
+    max-width: 220px;
+    max-height: 180px;
+    border-radius: 4px;
+    object-fit: contain;
 }
 
 .cart-item-remove {
@@ -916,6 +938,100 @@ body {
     align-items: center;
     z-index: 10;
     flex-shrink: 0;
+}
+
+/* Print preview 2-column layout: sidebar + scroll area */
+#print-preview-layout {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+#print-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: #0f172a;
+    border-right: 1px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 14px 10px;
+}
+
+.sidebar-title {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    padding: 0 2px;
+}
+
+#sidebar-order-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 6px;
+    padding: 6px 8px;
+    cursor: grab;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    user-select: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.sidebar-item:active {
+    cursor: grabbing;
+}
+
+.sidebar-item:hover {
+    background: rgba(167, 139, 250, 0.12);
+    border-color: rgba(167, 139, 250, 0.25);
+}
+
+.sidebar-item.dragging {
+    opacity: 0.35;
+}
+
+/* 끼워넣기 삽입 위치 표시: 타겟 위쪽 + 이전 아이템 아래쪽 경계선 */
+.sidebar-item.drag-insert-before {
+    border-top: 2px solid #a78bfa;
+}
+
+.sidebar-item.drag-insert-after-prev {
+    border-bottom: 2px solid #a78bfa;
+}
+
+.sidebar-item-num {
+    background: #1e293b;
+    color: #94a3b8;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 0.7rem;
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sidebar-item-pid {
+    font-size: 0.73rem;
+    color: #c4b5fd;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #print-preview-scroll-area {
@@ -1354,6 +1470,11 @@ body {
         width: 100% !important;
         height: auto !important;
         background: transparent !important;
+    }
+
+    #print-preview-layout {
+        display: block !important;
+        overflow: visible !important;
     }
 
     #print-preview-scroll-area {

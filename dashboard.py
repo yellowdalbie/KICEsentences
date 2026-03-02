@@ -19,6 +19,9 @@ THUMBNAIL_DIR = os.path.join('static', 'thumbnails')
 VECTORS_FILE = 'kice_step_vectors.npz'
 os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
+# 오프라인 패키지 모드: 관리자 패널 및 오류 제보 기능 비활성화
+OFFLINE_MODE = os.environ.get('OFFLINE_MODE', '0') == '1'
+
 # ── 텍스트 임베딩 모델 및 벡터 인덱스 로드 ──────────────────────
 print("[로딩 중] 한국어 문장 임베딩 모델...")
 model = SentenceTransformer('dragonkue/BGE-m3-ko')
@@ -50,7 +53,7 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', offline_mode=OFFLINE_MODE)
 
 @app.route('/pdf/<path:filename>')
 def serve_pdf(filename):
@@ -1003,6 +1006,8 @@ def _parse_step_block(block):
 
 @app.route('/api/report_error', methods=['POST'])
 def report_error():
+    if OFFLINE_MODE:
+        return '', 404
     data = request.get_json()
     if not data:
         return jsonify({'error': '요청 데이터가 없습니다.'}), 400
@@ -1035,6 +1040,8 @@ def report_error():
 @app.route('/api/step_reports')
 def step_reports():
     """사용자용: 해당 step의 모든 기존 제보 반환 (중복 제보 방지 안내용)"""
+    if OFFLINE_MODE:
+        return '', 404
     step_id = request.args.get('step_id')
     if not step_id:
         return jsonify({'error': 'step_id 파라미터 필요'}), 400
@@ -1053,6 +1060,8 @@ def step_reports():
 
 @app.route('/admin')
 def admin_page():
+    if OFFLINE_MODE:
+        return '', 404
     if not _check_admin_key():
         return '접근 거부: 유효하지 않은 관리자 키입니다.', 403
     return render_template('admin.html')
@@ -1060,6 +1069,8 @@ def admin_page():
 
 @app.route('/api/admin/reports')
 def admin_reports():
+    if OFFLINE_MODE:
+        return '', 404
     if not _check_admin_key():
         return jsonify({'error': '접근 거부'}), 403
 
@@ -1070,6 +1081,8 @@ def admin_reports():
 
 @app.route('/api/admin/step_detail/<int:step_id>')
 def admin_step_detail(step_id):
+    if OFFLINE_MODE:
+        return '', 404
     if not _check_admin_key():
         return jsonify({'error': '접근 거부'}), 403
 
@@ -1122,6 +1135,8 @@ def admin_step_detail(step_id):
 @app.route('/api/admin/delete_report', methods=['POST'])
 def admin_delete_report():
     """관리자용: JSONL에서 제보 레코드 완전 삭제"""
+    if OFFLINE_MODE:
+        return '', 404
     if not _check_admin_key():
         return jsonify({'error': '접근 거부'}), 403
 
