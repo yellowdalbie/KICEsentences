@@ -373,6 +373,48 @@ body {
     padding: 0 0.2rem;
 }
 
+#sidebar-order-list li {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+#sidebar-order-list li:active {
+    cursor: grabbing;
+}
+
+#sidebar-order-list li.dragging {
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(0.98);
+}
+
+/* Enhancing drag-and-drop dropzone visualization */
+#sidebar-order-list li.drag-insert-before {
+    margin-top: 24px;
+    border-top: 2px dashed var(--accent-blue);
+    position: relative;
+}
+
+#sidebar-order-list li.drag-insert-before::before {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(139, 92, 246, 0.3);
+    border-radius: 2px;
+}
+
+/* #sidebar-order-list li.drag-insert-after-prev removed here, we only use 'before' to create gaps */
 .sidebar-search input {
     flex: 1;
     background: rgba(0, 0, 0, 0.2);
@@ -435,6 +477,21 @@ body {
     text-align: left;
 }
 
+.sidebar-item-pid {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* End dropzone for easily moving to the end of the list */
+.drag-drop-zone-end.drag-over {
+    height: 30px !important;
+    border: 2px dashed var(--accent-blue);
+    background: rgba(139, 92, 246, 0.1);
+    border-radius: 6px;
+    margin-top: 6px;
+}
+
 .search-table th {
     padding: 1rem;
     color: var(--text-muted);
@@ -449,6 +506,29 @@ body {
     padding: 1rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 0.95rem;
+}
+
+/* Fix problem ID column width and prevent text wrapping */
+.search-table th:nth-child(1),
+.search-table td:nth-child(1) {
+    width: 140px;
+    min-width: 140px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* Give maximum space to the explanation column */
+.search-table th:nth-child(2),
+.search-table td:nth-child(2) {
+    width: auto;
+}
+
+/* Reduce the concept column width */
+.search-table th:nth-child(3),
+.search-table td:nth-child(3) {
+    width: 20%;
+    min-width: 120px;
+    text-align: center;
 }
 
 .search-table tr:hover td {
@@ -720,7 +800,7 @@ body {
     display: none;
     flex: 1;
     flex-direction: column;
-    overflow-y: hidden;
+    overflow-y: auto;
     /* Inner content handles scroll */
 }
 
@@ -1374,7 +1454,8 @@ body {
     gap: 12px;
     grid-template-rows: none;
     overflow: visible;
-    min-width: 0; /* flex min-width:auto 로 인한 열 불균등 방지 */
+    min-width: 0;
+    /* flex min-width:auto 로 인한 열 불균등 방지 */
 }
 
 /* 해설지 문항 블록 */
@@ -1382,6 +1463,7 @@ body {
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
 }
+
 .csat-exp-item:last-child {
     border-bottom: none;
 }
@@ -1433,8 +1515,13 @@ body {
 
 /* 인쇄 시 스텝 블록 줄바꿈 방지 */
 @media print {
-    .csat-exp-item  { break-inside: avoid; }
-    .csat-exp-step  { break-inside: avoid; }
+    .csat-exp-item {
+        break-inside: avoid;
+    }
+
+    .csat-exp-step {
+        break-inside: avoid;
+    }
 }
 
 /* ========================================================================= */

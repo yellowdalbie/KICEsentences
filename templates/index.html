@@ -141,9 +141,9 @@
                         <table class="search-table" id="exp-detail-table" style="display:none;">
                             <thead>
                                 <tr>
-                                    <th style="width: 15%; text-align: center;">문항번호</th>
-                                    <th style="width: 55%; text-align: center;">해설 단계별 요약</th>
-                                    <th style="width: 30%; text-align: center;">성취기준</th>
+                                    <th>문항번호</th>
+                                    <th>해설 단계별 요약</th>
+                                    <th>성취기준</th>
                                 </tr>
                             </thead>
                             <tbody id="exp-detail-tbody">
@@ -266,9 +266,9 @@
                             <table class="search-table" id="concept-search-table" style="display:none;">
                                 <thead>
                                     <tr>
-                                        <th style="width: 15%; text-align: center;">문항번호</th>
-                                        <th style="width: 55%; text-align: center;">해설 단계별 요약</th>
-                                        <th style="width: 30%; text-align: center;">성취기준</th>
+                                        <th>문항번호</th>
+                                        <th>해설 단계별 요약</th>
+                                        <th>성취기준</th>
                                     </tr>
                                 </thead>
                                 <tbody id="concept-search-tbody">
@@ -326,9 +326,9 @@
                     <table class="search-table" id="main-search-table" style="display:none;">
                         <thead>
                             <tr>
-                                <th style="width: 15%; text-align: center;">문항번호</th>
-                                <th style="width: 55%; text-align: center;">해설 단계별 요약</th>
-                                <th style="width: 30%; text-align: center;">성취기준</th>
+                                <th>문항번호</th>
+                                <th>해설 단계별 요약</th>
+                                <th>성취기준</th>
                             </tr>
                         </thead>
                         <tbody id="search-tbody">
@@ -401,6 +401,8 @@
             <div id="print-sidebar" class="no-print">
                 <div class="sidebar-title">문항 순서</div>
                 <ul id="sidebar-order-list"></ul>
+                <!-- Drop zone for the very end -->
+                <div id="sidebar-order-end-dropzone" class="drag-drop-zone-end" style="height: 20px; transition: height 0.2s;"></div>
             </div>
             <div id="print-preview-scroll-area">
                 <div id="print-preview-content">
@@ -590,8 +592,8 @@
 
             const subjectOrder = ['중학교 수학', '공통수학', '대수', '미적분I', '확률과 통계'];
 
-            // Sort subjects according to subjectOrder
-            const subjects = Object.keys(data).filter(s => s !== '기타').sort((a, b) => {
+            // Sort subjects according to subjectOrder, filtering out '기타' and '중학교 수학'
+            const subjects = Object.keys(data).filter(s => s !== '기타' && s !== '중학교 수학').sort((a, b) => {
                 const idxA = subjectOrder.indexOf(a);
                 const idxB = subjectOrder.indexOf(b);
                 if (idxA === -1 && idxB === -1) return a.localeCompare(b);
@@ -644,8 +646,17 @@
                     document.querySelectorAll('.obs-nav-folder-title, .obs-nav-item').forEach(el => el.classList.remove('active'));
                     subjTitle.classList.add('active');
 
+                    const isOpening = unitsContainer.classList.contains('collapsed');
                     unitsContainer.classList.toggle('collapsed');
                     subjTitle.querySelector('.obs-nav-toggle').classList.toggle('collapsed');
+
+                    // If opening the folder, auto-select the first unit
+                    if (isOpening) {
+                        const firstUnit = unitsContainer.querySelector('.concept-unit-item');
+                        if (firstUnit) {
+                            firstUnit.click();
+                        }
+                    }
                 });
 
                 subjDiv.appendChild(subjTitle);

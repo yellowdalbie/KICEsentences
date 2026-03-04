@@ -17,9 +17,9 @@ const sidebarOrderList = document.getElementById('sidebar-order-list');
 
 // Module-level preview state (enables drag-and-drop reorder without re-fetching)
 let _previewLoadedItems = [];
-let _previewAnswerOpt   = 'none';
-let _previewExpOpt      = 'none';
-let _dragSrcIdx         = null;
+let _previewAnswerOpt = 'none';
+let _previewExpOpt = 'none';
+let _dragSrcIdx = null;
 
 // ── 전역 썸네일 tooltip (document.body에 직접 붙여 transform 영향 차단) ──
 let _cartThumbTooltipEl = null;
@@ -40,7 +40,7 @@ function showCartThumbTooltip(pid, anchorEl) {
     tooltip.style.display = 'block';
     requestAnimationFrame(() => {
         const rect = anchorEl.getBoundingClientRect();
-        let top  = rect.bottom + 6;
+        let top = rect.bottom + 6;
         let left = rect.left;
         if (top + tooltip.offsetHeight > window.innerHeight) {
             top = rect.top - tooltip.offsetHeight - 6;
@@ -48,7 +48,7 @@ function showCartThumbTooltip(pid, anchorEl) {
         if (left + tooltip.offsetWidth > window.innerWidth) {
             left = window.innerWidth - tooltip.offsetWidth - 8;
         }
-        tooltip.style.top  = Math.max(4, top) + 'px';
+        tooltip.style.top = Math.max(4, top) + 'px';
         tooltip.style.left = Math.max(4, left) + 'px';
     });
 }
@@ -176,7 +176,7 @@ async function openPrintPreview() {
     ids.sort();
 
     _previewAnswerOpt = document.getElementById('answer-display-opt').value;
-    _previewExpOpt    = document.getElementById('explanation-display-opt').value;
+    _previewExpOpt = document.getElementById('explanation-display-opt').value;
 
     try {
         // 1. Fetch Answers
@@ -208,10 +208,10 @@ async function openPrintPreview() {
             const isLong = (imgInfo.height / imgInfo.width) > 1.0;
             loadedItems.push({
                 pid,
-                src:    `/thumbnail/${pid}`,
+                src: `/thumbnail/${pid}`,
                 isLong,
                 answer: answers[pid] || '',
-                steps:  stepsData[pid] || []
+                steps: stepsData[pid] || []
             });
         }
 
@@ -233,6 +233,8 @@ async function openPrintPreview() {
 // ── 기능 2: 사이드바 렌더링 + 드래그앤드롭 ──
 function renderSidebar() {
     sidebarOrderList.innerHTML = '';
+
+    const endDropzone = document.getElementById('sidebar-order-end-dropzone');
 
     _previewLoadedItems.forEach((item, idx) => {
         const li = document.createElement('li');
@@ -261,11 +263,11 @@ function renderSidebar() {
             clearDragInsertIndicators();
             // 타겟 아이템 위쪽 경계 강조
             li.classList.add('drag-insert-before');
-            // 타겟 바로 위 아이템 아래쪽 경계 강조
-            const prevSibling = li.previousElementSibling;
-            if (prevSibling && prevSibling.classList.contains('sidebar-item')) {
-                prevSibling.classList.add('drag-insert-after-prev');
-            }
+            // 타겟 바로 위 아이템 아래쪽 강조 제거 (파란 대시선 공간 여유를 위해 before만 활용)
+            // const prevSibling = li.previousElementSibling;
+            // if (prevSibling && prevSibling.classList.contains('sidebar-item')) {
+            //     prevSibling.classList.add('drag-insert-after-prev');
+            // }
         });
 
         li.addEventListener('dragleave', () => {
@@ -291,13 +293,42 @@ function renderSidebar() {
 
         sidebarOrderList.appendChild(li);
     });
+
+    // ── 맨 끝으로 이동하기 위한 end-dropzone 이벤트 처리 ──
+    if (endDropzone) {
+        endDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            clearDragInsertIndicators();
+            endDropzone.classList.add('drag-over');
+        });
+
+        endDropzone.addEventListener('dragleave', () => {
+            endDropzone.classList.remove('drag-over');
+        });
+
+        endDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            endDropzone.classList.remove('drag-over');
+
+            if (_dragSrcIdx === null) return;
+
+            // 맨 마지막으로 이동
+            const moved = _previewLoadedItems.splice(_dragSrcIdx, 1)[0];
+            _previewLoadedItems.push(moved);
+            _dragSrcIdx = null;
+
+            renderSidebar();
+            renderPreviewPages();
+        });
+    }
 }
 
 // ── 페이지 렌더링 (순서 변경 시 재호출) ──
 async function renderPreviewPages() {
-    const items      = _previewLoadedItems;
-    const answerOpt  = _previewAnswerOpt;
-    const expOpt     = _previewExpOpt;
+    const items = _previewLoadedItems;
+    const answerOpt = _previewAnswerOpt;
+    const expOpt = _previewExpOpt;
 
     // examNumber 재할당 (순서 기반)
     items.forEach((item, index) => {
@@ -513,7 +544,7 @@ async function renderPreviewPages() {
         renderMathInElement(printModalBody, {
             delimiters: [
                 { left: '$$', right: '$$', display: true },
-                { left: '$',  right: '$',  display: false }
+                { left: '$', right: '$', display: false }
             ]
         });
     }
@@ -564,7 +595,7 @@ async function buildExplanationPages(expItems, problemPageCount) {
             renderMathInElement(el, {
                 delimiters: [
                     { left: '$$', right: '$$', display: true },
-                    { left: '$',  right: '$',  display: false }
+                    { left: '$', right: '$', display: false }
                 ]
             });
         }
@@ -587,10 +618,10 @@ async function buildExplanationPages(expItems, problemPageCount) {
     document.body.appendChild(tempPage);
     await new Promise(resolve => requestAnimationFrame(resolve));
 
-    const headerHeight  = tempPage.querySelector('.csat-header-page1').offsetHeight;
-    const footerHeight  = tempPage.querySelector('.csat-footer').offsetHeight;
-    const pageHeight    = tempPage.offsetHeight;
-    const usableColHeightFirst  = pageHeight - headerHeight - footerHeight - 20;
+    const headerHeight = tempPage.querySelector('.csat-header-page1').offsetHeight;
+    const footerHeight = tempPage.querySelector('.csat-footer').offsetHeight;
+    const pageHeight = tempPage.offsetHeight;
+    const usableColHeightFirst = pageHeight - headerHeight - footerHeight - 20;
     const usableColHeightNormal = pageHeight - 80 - footerHeight - 20;
     tempPage.remove();
 
