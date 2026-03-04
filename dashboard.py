@@ -1161,4 +1161,4 @@ def admin_delete_report():
 
 if __name__ == '__main__':
     # Run the Flask app on port 5050 to avoid conflicts
-    app.run(port=5050, debug=False)
+    app.run(host='0.0.0.0', port=5050, debug=False)
