@@ -1,426 +1,47 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KICE 오류 제보 관리</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #0f172a; color: #e2e8f0; min-height: 100vh;
-    font-size: 14px; line-height: 1.5;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KICE LYNX Admin</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #101010;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
 
-  /* 상단 헤더 */
-  .header {
-    background: #1a1a2e; border-bottom: 1px solid rgba(255,255,255,0.08);
-    padding: 0.9rem 1.5rem; display: flex; align-items: center;
-    justify-content: space-between; position: sticky; top: 0; z-index: 100;
-  }
-  .header-title { color: #f59e0b; font-size: 1rem; font-weight: 700; }
-  .header-actions { display: flex; gap: 0.6rem; align-items: center; }
-  .btn { padding: 0.45rem 0.9rem; border-radius: 6px; border: none; cursor: pointer;
-    font-size: 0.82rem; font-weight: 500; transition: all 0.15s; }
-  .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2);
-    color: #94a3b8; }
-  .btn-outline:hover { border-color: rgba(255,255,255,0.4); color: #e2e8f0; }
-  .btn-red { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
-    color: #f87171; }
-  .btn-red:hover { background: rgba(239,68,68,0.3); }
-  .btn-red:disabled { opacity: 0.4; cursor: not-allowed; }
+    .msg {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #a3a3a3;
+    }
 
-  /* 본문 레이아웃 */
-  .main-layout {
-    display: grid; grid-template-columns: 320px 1fr;
-    height: calc(100vh - 57px); overflow: hidden;
-  }
+    .btn {
+      padding: 0.8rem 1.5rem;
+      background: transparent;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
 
-  /* 왼쪽: 제보 목록 */
-  .report-list-panel {
-    border-right: 1px solid rgba(255,255,255,0.06);
-    overflow-y: auto; background: #111827;
-  }
-  .report-list-empty {
-    padding: 2rem; text-align: center; color: #475569; font-size: 0.85rem;
-  }
-  .report-item {
-    padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
-    cursor: pointer; transition: background 0.12s; user-select: none;
-  }
-  .report-item:hover { background: rgba(255,255,255,0.04); }
-  .report-item.active { background: rgba(245,158,11,0.08); border-left: 3px solid #f59e0b; }
-  .report-item .prob-id { font-weight: 600; color: #e2e8f0; font-size: 0.88rem; }
-  .report-item .step-info { font-size: 0.78rem; color: #94a3b8; margin-top: 0.15rem; }
-  .report-item .meta-row {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 0.4rem; gap: 0.4rem; flex-wrap: wrap;
-  }
-  .report-item .tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-  .tag-field {
-    background: rgba(245,158,11,0.15); color: #fbbf24;
-    border: 1px solid rgba(245,158,11,0.3); padding: 1px 6px;
-    border-radius: 4px; font-size: 0.72rem;
-  }
-  .ts { font-size: 0.72rem; color: #475569; }
-
-  /* 오른쪽: 상세 패널 */
-  .report-detail-panel {
-    overflow-y: auto; padding: 1.5rem;
-    display: flex; flex-direction: column; gap: 1.25rem;
-  }
-  .detail-empty {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100%; color: #475569; font-size: 0.88rem; text-align: center; gap: 0.75rem;
-  }
-
-  /* 섹션 카드 */
-  .card {
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px; padding: 1rem 1.25rem;
-  }
-  .card-title {
-    font-size: 0.78rem; color: #64748b; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;
-  }
-
-  /* AI 프롬프트 영역 */
-  .prompt-box {
-    background: #0a0e1a; border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 8px; padding: 0.85rem 1rem;
-    font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem;
-    color: #94a3b8; white-space: pre-wrap; word-break: break-word;
-    max-height: 340px; overflow-y: auto; line-height: 1.6;
-  }
-
-  /* 썸네일 툴팁 */
-  .pid-thumb-wrap { position: relative; display: inline-block; }
-  .pid-thumb-wrap:hover .pid-thumb-tooltip { display: block; }
-  .pid-thumb-tooltip {
-    display: none; position: absolute; z-index: 200;
-    bottom: calc(100% + 6px); left: 0;
-    background: #1a1a2e; border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px; padding: 0.4rem; box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    pointer-events: none;
-  }
-  .pid-thumb-tooltip img { display: block; width: 320px; height: auto; border-radius: 4px; }
-
-  /* 상태 메시지 */
-  .status-msg { font-size: 0.8rem; padding: 0.45rem 0.75rem; border-radius: 6px; display: inline-block; }
-  .status-msg.ok { background: rgba(16,185,129,0.15); color: #6ee7b7; }
-  .status-msg.err { background: rgba(239,68,68,0.15); color: #f87171; }
-
-  /* 삭제 버튼 영역 */
-  .delete-zone {
-    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-  }
-
-  /* 스크롤바 */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-</style>
+    .btn:hover {
+      background: rgba(56, 189, 248, 0.1);
+    }
+  </style>
 </head>
+
 <body>
-
-<!-- 상단 헤더 -->
-<div class="header">
-  <div style="display:flex;align-items:center;gap:1rem;">
-    <span class="header-title">⚠️ KICE 오류 제보 관리</span>
-    <span id="stats-badge" style="font-size:0.78rem;color:#64748b;"></span>
-  </div>
-  <div class="header-actions">
-    <a href="/" class="btn btn-outline">← 메인으로</a>
-  </div>
-</div>
-
-<!-- 본문 -->
-<div class="main-layout">
-
-  <!-- 왼쪽: 제보 목록 -->
-  <div class="report-list-panel" id="report-list-panel">
-    <div class="report-list-empty">불러오는 중...</div>
-  </div>
-
-  <!-- 오른쪽: 상세 -->
-  <div class="report-detail-panel" id="report-detail-panel">
-    <div class="detail-empty">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
-        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-        <rect x="9" y="3" width="6" height="4" rx="1" ry="1"/>
-      </svg>
-      <span>왼쪽에서 제보를 선택하세요</span>
-    </div>
-  </div>
-
-</div>
-
-<script>
-  const ADMIN_KEY = new URLSearchParams(window.location.search).get('key') || '';
-
-  function adminHeaders() {
-    return { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY };
-  }
-
-  let _allReports = [];
-  let _selectedReport = null;
-  const FIELD_LABELS = { standard_name: '성취기준', step_title: '단계별 요약', explanation: '해설' };
-
-  // ── 제보 목록 로드 ───────────────────────────────────────────
-  function loadReports() {
-    fetch(`/api/admin/reports?key=${ADMIN_KEY}`)
-      .then(r => { if (!r.ok) throw r; return r.json(); })
-      .then(data => {
-        _allReports = data.reports || [];
-        renderList(_allReports);
-        document.getElementById('stats-badge').textContent =
-          _allReports.length ? `총 ${_allReports.length}건` : '';
-      })
-      .catch(() => {
-        document.getElementById('report-list-panel').innerHTML =
-          '<div class="report-list-empty">로드 실패</div>';
-      });
-  }
-
-  // ── 목록 렌더링 ──────────────────────────────────────────────
-  function renderList(reports) {
-    const panel = document.getElementById('report-list-panel');
-    if (!reports.length) {
-      panel.innerHTML = '<div class="report-list-empty">제보 내역이 없습니다.</div>';
-      return;
-    }
-    panel.innerHTML = '';
-    reports.forEach(r => {
-      const item = document.createElement('div');
-      item.className = 'report-item' +
-        (_selectedReport && r.timestamp === _selectedReport.timestamp ? ' active' : '');
-
-      const tags = (r.reported_fields || [])
-        .map(f => `<span class="tag-field">${FIELD_LABELS[f] || escHtml(f)}</span>`).join('');
-      const ts = r.timestamp
-        ? new Date(r.timestamp).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })
-        : '';
-
-      item.innerHTML = `
-        <div class="prob-id">${escHtml(r.problem_id)}</div>
-        <div class="step-info">Step ${escHtml(String(r.step_number))}  ·  ${escHtml(r.standard_name || r.action_concept_id || '')}</div>
-        <div class="meta-row">
-          <div class="tags">${tags}</div>
-          <span class="ts">${ts}</span>
-        </div>`;
-
-      item.addEventListener('click', () => selectReport(r, item));
-      panel.appendChild(item);
-    });
-  }
-
-  // ── 제보 선택 ────────────────────────────────────────────────
-  function selectReport(report, itemEl) {
-    _selectedReport = report;
-    document.querySelectorAll('.report-item').forEach(el => el.classList.remove('active'));
-    itemEl.classList.add('active');
-    renderDetail(report);
-  }
-
-  // ── 상세 렌더링 ──────────────────────────────────────────────
-  function renderDetail(report) {
-    const panel = document.getElementById('report-detail-panel');
-
-    const tags = (report.reported_fields || [])
-      .map(f => `<span class="tag-field">${FIELD_LABELS[f] || escHtml(f)}</span>`).join(' ');
-    const ts = report.timestamp ? new Date(report.timestamp).toLocaleString('ko-KR') : '';
-
-    panel.innerHTML = `
-      <!-- A. 제보 정보 -->
-      <div class="card">
-        <div class="card-title">제보 정보</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem 1rem;font-size:0.83rem;">
-          <div>
-            <span style="color:#64748b;">문항</span>
-            <div style="margin-top:0.15rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
-              <span class="pid-thumb-wrap" style="color:#e2e8f0;font-weight:600;">
-                ${escHtml(report.problem_id)}
-                <div class="pid-thumb-tooltip">
-                  <img src="/thumbnail/${encodeURIComponent(report.problem_id)}" alt="${escHtml(report.problem_id)}">
-                </div>
-              </span>
-              <span style="color:#94a3b8;">· Step ${escHtml(String(report.step_number))}</span>
-            </div>
-          </div>
-          <div><span style="color:#64748b;">일시</span><div style="color:#e2e8f0;margin-top:0.15rem;">${ts}</div></div>
-          <div style="grid-column:1/-1;">
-            <span style="color:#64748b;">성취기준</span>
-            <div id="detail-concept-display" style="color:#94a3b8;margin-top:0.15rem;font-size:0.78rem;">${escHtml(report.action_concept_id || '로드 중...')}</div>
-          </div>
-        </div>
-        <div style="margin-top:0.75rem;">
-          <span style="color:#64748b;font-size:0.78rem;">보고된 항목</span>
-          <div style="margin-top:0.35rem;display:flex;gap:0.35rem;flex-wrap:wrap;">${tags}</div>
-        </div>
-        <div style="margin-top:0.75rem;">
-          <span style="color:#64748b;font-size:0.78rem;">제보 내용</span>
-          <div style="margin-top:0.35rem;background:rgba(0,0,0,0.2);padding:0.65rem 0.85rem;border-radius:7px;color:#cbd5e1;white-space:pre-wrap;line-height:1.6;font-size:0.83rem;">${escHtml(report.user_message || '')}</div>
-        </div>
-      </div>
-
-      <!-- B. AI 수정 요청 프롬프트 -->
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-          <div class="card-title" style="margin-bottom:0;">수정 요청 사항</div>
-          <button class="btn btn-outline" style="font-size:0.76rem;padding:0.3rem 0.7rem;" onclick="copyPrompt()">복사</button>
-        </div>
-        <div id="prompt-box" class="prompt-box">프롬프트 생성 중...</div>
-      </div>
-
-      <!-- C. 삭제 -->
-      <div class="card">
-        <div class="delete-zone">
-          <button class="btn btn-red" id="delete-btn" onclick="deleteReport()">이 제보 삭제</button>
-          <span id="action-status-msg"></span>
-        </div>
-        <p style="margin-top:0.6rem;font-size:0.75rem;color:#475569;">
-          삭제하면 JSONL에서 완전히 제거되며 복구할 수 없습니다.<br>
-          로컬에서 수정 완료 후 git push → 서버 git pull 이후 삭제하세요.
-        </p>
-      </div>
-    `;
-
-    // step_detail 로드 → 성취기준 + 프롬프트
-    if (report.step_id) {
-      fetch(`/api/admin/step_detail/${report.step_id}?key=${ADMIN_KEY}`)
-        .then(r => { if (!r.ok) throw r; return r.json(); })
-        .then(data => {
-          const conceptEl = document.getElementById('detail-concept-display');
-          if (conceptEl) {
-            const refCode = (data.db_row && data.db_row.ref_code) || '';
-            const stdName = (data.db_row && data.db_row.standard_name) || '';
-            conceptEl.textContent = refCode && stdName
-              ? `${refCode} ${stdName}`
-              : (report.action_concept_id || '(없음)');
-          }
-          const promptBox = document.getElementById('prompt-box');
-          if (promptBox) promptBox.textContent = buildAiPrompt(report, data);
-        })
-        .catch(() => {
-          const promptBox = document.getElementById('prompt-box');
-          if (promptBox) promptBox.textContent = '스텝 정보 로드 실패';
-        });
-    }
-  }
-
-  // ── 프롬프트 복사 ─────────────────────────────────────────────
-  function copyPrompt() {
-    const box = document.getElementById('prompt-box');
-    if (!box) return;
-    navigator.clipboard.writeText(box.textContent)
-      .then(() => showActionMsg('클립보드에 복사됐습니다.', 'ok'))
-      .catch(() => showActionMsg('복사 실패', 'err'));
-  }
-
-  // ── AI 프롬프트 생성 ──────────────────────────────────────────
-  function buildAiPrompt(report, data) {
-    const pid = report.problem_id || '';
-    const stepNum = report.step_number || '';
-    const fields = report.reported_fields || [];
-    const db = (data && data.db_row) || {};
-
-    const fieldDescriptions = [];
-    if (fields.includes('step_title'))
-      fieldDescriptions.push(`스텝 타이틀(${db.step_title || ''})`);
-    if (fields.includes('standard_name')) {
-      const ref = db.ref_code || '';
-      const std = db.standard_name || '';
-      fieldDescriptions.push(`성취기준(현재: ${ref} ${std})`);
-    }
-    if (fields.includes('explanation'))
-      fieldDescriptions.push('해설');
-    const fieldDesc = fieldDescriptions.join('과 ');
-
-    const fieldLabels = [];
-    if (fields.includes('step_title')) fieldLabels.push('스텝 타이틀');
-    if (fields.includes('standard_name')) fieldLabels.push('성취기준');
-    if (fields.includes('explanation')) fieldLabels.push('해설');
-    const fieldLabel = fieldLabels.join(', ');
-
-    const sol = (data && data.sol_content) || '(해설 파일 없음)';
-    const mdref = (data && data.mdref_content) || '(원본 문항 파일 없음)';
-    const userMsg = report.user_message || '';
-
-    return `아래는 ${pid}의 현재 해설 내용입니다:
-
-${sol}
-
----
-
-아래는 원본 문항 내용입니다:
-
-${mdref}
-
----
-
-위 해설에서 [Step ${stepNum}]의 ${fieldDesc}에 대한 오류가 의심됩니다.
-
-수정 의견:
-${userMsg}
-
-@concepts.json, @AI_Sol_Instructions.md를 참고하여, [Step ${stepNum}]의 ${fieldLabel}만 수정하고 같은 Step 내 다른 항목과 다른 Step들은 그대로 유지하면서 ${pid}.md를 온전히 재작성해주세요.`;
-  }
-
-  // ── 제보 삭제 ─────────────────────────────────────────────────
-  function deleteReport() {
-    if (!_selectedReport) return;
-    if (!confirm(`[${_selectedReport.problem_id} Step ${_selectedReport.step_number}] 제보를 삭제합니다.\n이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`)) return;
-
-    const btn = document.getElementById('delete-btn');
-    if (btn) { btn.disabled = true; btn.textContent = '삭제 중...'; }
-
-    fetch(`/api/admin/delete_report?key=${ADMIN_KEY}`, {
-      method: 'POST',
-      headers: adminHeaders(),
-      body: JSON.stringify({
-        step_id: _selectedReport.step_id,
-        report_timestamp: _selectedReport.timestamp,
-      }),
-    })
-    .then(r => { if (!r.ok) throw r; return r.json(); })
-    .then(data => {
-      if (data.ok) {
-        _allReports = _allReports.filter(r => r.timestamp !== _selectedReport.timestamp);
-        _selectedReport = null;
-        renderList(_allReports);
-        document.getElementById('report-detail-panel').innerHTML =
-          '<div class="detail-empty"><span>제보가 삭제됐습니다.</span></div>';
-        document.getElementById('stats-badge').textContent =
-          _allReports.length ? `총 ${_allReports.length}건` : '';
-      } else {
-        if (btn) { btn.disabled = false; btn.textContent = '이 제보 삭제'; }
-        showActionMsg('오류: ' + (data.error || '실패'), 'err');
-      }
-    })
-    .catch(() => {
-      if (btn) { btn.disabled = false; btn.textContent = '이 제보 삭제'; }
-      showActionMsg('네트워크 오류', 'err');
-    });
-  }
-
-  // ── 상태 메시지 ──────────────────────────────────────────────
-  function showActionMsg(text, type) {
-    const el = document.getElementById('action-status-msg');
-    if (!el) return;
-    el.textContent = text;
-    el.className = 'status-msg ' + (type || '');
-    setTimeout(() => { if (el) el.textContent = ''; }, 5000);
-  }
-
-  // ── HTML 이스케이프 ──────────────────────────────────────────
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  }
-
-  // ── 초기 로드 ────────────────────────────────────────────────
-  loadReports();
-</script>
+  <div class="msg">제보 관리 기능이 폐기되었습니다. (KICE LYNX V2 디자인 개편)</div>
+  <a href="/" class="btn">대시보드로 돌아가기</a>
 </body>
+
 </html>

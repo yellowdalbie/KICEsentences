@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mockup 5: Laboratory / Clean Room</title>
+    <style>
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Paperozi-Bold';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #F8FAFC;
+            color: #334155;
+            font-family: 'Paperozi', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Outline & Whitespace heavily emphasized */
+        .sidebar {
+            width: 280px;
+            padding: 2.5rem 2rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #E2E8F0;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-family: 'Paperozi-Bold';
+            color: #0F172A;
+            margin-bottom: 2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .logo::after {
+            content: 'Lab.';
+            color: #475569;
+            font-weight: normal;
+            margin-left: 4px;
+            font-size: 0.8rem;
+        }
+
+        .search-box {
+            border: 1px solid #CBD5E1;
+            border-radius: 4px;
+            padding: 0.6rem 0.8rem;
+            width: 100%;
+            box-sizing: border-box;
+            background: transparent;
+            color: #334155;
+            font-family: inherit;
+            font-size: 0.85rem;
+            margin-bottom: 2.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #475569;
+        }
+
+        .nav-link {
+            font-size: 0.85rem;
+            color: #64748B;
+            margin-bottom: 0.6rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            color: #0F172A;
+        }
+
+        .nav-link.active {
+            color: #0F172A;
+            font-family: 'Paperozi-Bold';
+        }
+
+        .divider {
+            height: 1px;
+            background: #E2E8F0;
+            margin: 1.5rem 0;
+        }
+
+        .tree-subject {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94A3B8;
+            font-family: 'Paperozi-Bold';
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        .unit-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .unit-list li {
+            padding: 0.4rem 0.6rem;
+            margin-bottom: 0.2rem;
+            font-size: 0.85rem;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid transparent;
+        }
+
+        .unit-list li:hover {
+            border-color: #E2E8F0;
+        }
+
+        .unit-list li.active {
+            border-color: #CBD5E1;
+            color: #0F172A;
+            font-family: 'Paperozi-Bold';
+            background: #F1F5F9;
+        }
+
+        .main {
+            flex: 1;
+            padding: 3rem 4rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #0F172A;
+            font-family: 'Paperozi-Bold';
+            margin: 0 0 0.5rem 0;
+            font-weight: normal;
+        }
+
+        .meta {
+            font-size: 0.85rem;
+            color: #64748B;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.8rem;
+        }
+
+        .analysis-table th {
+            text-align: left;
+            padding: 0 1rem 0.5rem 1rem;
+            font-size: 0.75rem;
+            color: #94A3B8;
+            font-family: 'Paperozi-Bold';
+            border-bottom: 1px solid #E2E8F0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .analysis-table td {
+            padding: 1.5rem 1rem;
+            background: #FFFFFF;
+            border-top: 1px solid #F1F5F9;
+            border-bottom: 1px solid #F1F5F9;
+            vertical-align: top;
+        }
+
+        .analysis-table td:first-child {
+            border-left: 1px solid #F1F5F9;
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+
+        .analysis-table td:last-child {
+            border-right: 1px solid #F1F5F9;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .analysis-table tr:hover td {
+            border-color: #E2E8F0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .pid {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #475569;
+            font-weight: bold;
+        }
+
+        .step-container {
+            margin-bottom: 1rem;
+        }
+
+        .step-container:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-marker {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #CBD5E1;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .step-text {
+            font-size: 0.85rem;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .std-text {
+            font-size: 0.8rem;
+            color: #64748B;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo">KICEsentences</div>
+
+        <input type="text" class="search-box" placeholder="Search parameters...">
+
+        <div class="nav-link"><span style="width:16px;text-align:center;">○</span> Keywords</div>
+        <div class="nav-link"><span style="width:16px;text-align:center;">○</span> Expressions</div>
+        <div class="nav-link active"><span style="width:16px;text-align:center;">●</span> Standards</div>
+
+        <div class="divider"></div>
+
+        <div class="tree-subject">Math Common</div>
+        <ul class="unit-list">
+            <li class="active">1. Polynomials</li>
+            <li>2. Equations & Inequalities</li>
+            <li>3. Geometry</li>
+        </ul>
+
+        <div class="divider" style="background:transparent;"></div>
+        <div class="tree-subject">Algebra</div>
+    </div>
+
+    <div class="main">
+        <div class="header">
+            <h1>1. Polynomials</h1>
+            <div class="meta">Extracted logic units: 142 • Last verified: 24h ago</div>
+        </div>
+
+        <table class="analysis-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Identifier</th>
+                    <th style="width: 55%;">Logic Breakdown</th>
+                    <th style="width: 30%;">Reference Standard</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="pid">2026.9M_C22</div>
+                    </td>
+                    <td>
+                        <div class="step-container">
+                            <span class="step-marker"></span>
+                            <span class="step-text">다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여 식을 세운다.</span>
+                        </div>
+                        <div class="step-container">
+                            <span class="step-marker"></span>
+                            <span class="step-text">주어진 두 조건식을 연립하여 일차방정식의 해를 구한다.</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="std-text">[9수01-04] 다항식의 덧셈, 뺄셈, 곱셈과 나눗셈을 할 수 있다.</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="pid">2025.S_C14</div>
+                    </td>
+                    <td>
+                        <div class="step-container">
+                            <span class="step-marker"></span>
+                            <span class="step-text">다항식의 인수분해를 위해 조립제법을 사용하여 근을 찾는다.</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="std-text">[10수01-05] 인수분해 공식을 이용하여 다항식을 인수분해할 수 있다.</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

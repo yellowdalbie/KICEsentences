@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mockup 9: Master-Detail Split</title>
+    <style>
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Paperozi-Bold';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Paperozi', sans-serif;
+            background: #FFFFFF;
+            color: #2C3E50;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar {
+            height: 50px;
+            background: #2C3E50;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .branding {
+            font-family: 'Paperozi-Bold';
+            font-size: 1.2rem;
+        }
+
+        .view-toggles {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            background: #34495E;
+            border: 1px solid #1ABC9C;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .toggle-btn.active {
+            background: #1ABC9C;
+            font-family: 'Paperozi-Bold';
+            border-color: #16A085;
+        }
+
+        .split-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Master List (Left) */
+        .master-pane {
+            width: 350px;
+            background: #F8F9FA;
+            border-right: 1px solid #E2E8F0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-header {
+            padding: 15px;
+            border-bottom: 1px solid #E2E8F0;
+            background: white;
+        }
+
+        .list-search {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #CBD5E1;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .list-items {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            padding: 15px;
+            border-bottom: 1px solid #E2E8F0;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .list-item:hover {
+            background: #F1F5F9;
+        }
+
+        .list-item.selected {
+            background: #E0F2FE;
+            border-left: 4px solid #3498DB;
+            padding-left: 11px;
+        }
+
+        .item-pid {
+            font-family: 'Paperozi-Bold';
+            font-size: 1rem;
+            margin-bottom: 4px;
+            color: #2C3E50;
+        }
+
+        .item-snippet {
+            font-size: 0.8rem;
+            color: #7F8C8D;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            color: #95A5A6;
+        }
+
+        /* Detail View (Right) */
+        .detail-pane {
+            flex: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .detail-header {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ECF0F1;
+            padding-bottom: 20px;
+        }
+
+        .detail-subject {
+            font-size: 0.85rem;
+            color: #1ABC9C;
+            text-transform: uppercase;
+            font-family: 'Paperozi-Bold';
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .detail-title {
+            font-size: 2.5rem;
+            font-family: 'Paperozi-Bold';
+            margin: 0 0 10px 0;
+            color: #2C3E50;
+        }
+
+        .detail-standard {
+            background: #F8F9FA;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-left: 4px solid #1ABC9C;
+            font-size: 0.95rem;
+            color: #34495E;
+        }
+
+        .detail-content {
+            margin-top: 30px;
+        }
+
+        .step-row {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .step-label {
+            width: 80px;
+            font-family: 'Paperozi-Bold';
+            color: #3498DB;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .step-box {
+            flex: 1;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: #2C3E50;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toolbar">
+        <div class="branding">KICEsentences Split-View</div>
+        <div class="view-toggles">
+            <button class="toggle-btn">Standards</button>
+            <button class="toggle-btn active">Problems</button>
+        </div>
+    </div>
+
+    <div class="split-container">
+        <!-- Master List -->
+        <div class="master-pane">
+            <div class="list-header">
+                <input type="text" class="list-search" placeholder="Type to filter problems...">
+                <div style="font-size: 0.75rem; color: #7F8C8D; margin-top: 10px;">142 results found in Math Common
+                </div>
+            </div>
+            <div class="list-items">
+                <div class="list-item selected">
+                    <div class="item-pid">2026.9모_공22</div>
+                    <div class="item-snippet">다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여...</div>
+                    <div class="item-meta"><span>1. 다항식</span> <span>2 Steps</span></div>
+                </div>
+                <div class="list-item">
+                    <div class="item-pid">2025.수능_공14</div>
+                    <div class="item-snippet">다항식의 인수분해를 위해 조립제법을 사용하여 근을...</div>
+                    <div class="item-meta"><span>1. 다항식</span> <span>1 Step</span></div>
+                </div>
+                <div class="list-item">
+                    <div class="item-pid">2024.9모_공12</div>
+                    <div class="item-snippet">곱셈공식의 변형을 이용하여 주어진 식의 값을 구한다...</div>
+                    <div class="item-meta"><span>1. 다항식</span> <span>2 Steps</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail View -->
+        <div class="detail-pane">
+            <div class="detail-header">
+                <div class="detail-subject">공통수학 > 1. 다항식</div>
+                <h1 class="detail-title">2026.9모_공22</h1>
+                <div class="detail-standard">
+                    <strong>관련 성취기준:</strong> [9수01-04] 다항식의 덧셈, 뺄셈, 곱셈과 나눗셈을 할 수 있다.
+                </div>
+            </div>
+
+            <div class="detail-content">
+                <div class="step-row">
+                    <div class="step-label">Step 1</div>
+                    <div class="step-box">
+                        다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여 식을 세운다.
+                    </div>
+                </div>
+                <div class="step-row">
+                    <div class="step-label">Step 2</div>
+                    <div class="step-box">
+                        주어진 두 조건식을 연립하여 일차방정식의 해를 구한다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

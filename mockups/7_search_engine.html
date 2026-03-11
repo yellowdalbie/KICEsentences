@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mockup 7: The Search Engine</title>
+    <style>
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Paperozi-Bold';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Paperozi', sans-serif;
+            background: #ffffff;
+            color: #202124;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-top {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            padding: 1rem 2rem;
+            box-sizing: border-box;
+            font-size: 0.85rem;
+        }
+
+        .header-top a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: #5f6368;
+            cursor: pointer;
+        }
+
+        .header-top a:hover {
+            text-decoration: underline;
+        }
+
+        .search-container {
+            margin-top: 15vh;
+            text-align: center;
+            width: 100%;
+            max-width: 700px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        h1.brand {
+            font-size: 4rem;
+            color: #1a73e8;
+            font-family: 'Paperozi-Bold';
+            margin: 0 0 2rem 0;
+            letter-spacing: -2px;
+        }
+
+        h1.brand span {
+            color: #ea4335;
+        }
+
+        h1.brand span:nth-child(2) {
+            color: #fbbc05;
+        }
+
+        h1.brand span:nth-child(3) {
+            color: #34a853;
+        }
+
+        .search-bar-wrap {
+            display: flex;
+            align-items: center;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            padding: 0 20px;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+            height: 48px;
+            width: 100%;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .search-bar-wrap:hover {
+            box-shadow: 0 1px 8px rgba(32, 33, 36, 0.35);
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 1.1rem;
+            font-family: inherit;
+            margin-left: 10px;
+            color: #202124;
+        }
+
+        .icon {
+            color: #9aa0a6;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .chips-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            background: #f8f9fa;
+            border: 1px solid #f8f9fa;
+            color: #3c4043;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            border: 1px solid #dadce0;
+            color: #202124;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chip.active {
+            background: #e8f0fe;
+            color: #1967d2;
+            border: 1px solid #e8f0fe;
+            font-family: 'Paperozi-Bold';
+        }
+
+        .results-container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 3rem;
+            padding: 0 20px 5rem 20px;
+            box-sizing: border-box;
+            text-align: left;
+        }
+
+        .result-stats {
+            color: #70757a;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-item {
+            margin-bottom: 2.5rem;
+        }
+
+        .result-pid {
+            font-size: 1.25rem;
+            color: #1a0dab;
+            text-decoration: none;
+            font-family: 'Paperozi-Bold';
+            cursor: pointer;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+
+        .result-pid:hover {
+            text-decoration: underline;
+        }
+
+        .result-url {
+            font-size: 0.85rem;
+            color: #202124;
+            margin-bottom: 6px;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-std {
+            background: #e6f4ea;
+            color: #137333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .result-desc {
+            font-size: 0.95rem;
+            color: #4d5156;
+            line-height: 1.58;
+        }
+
+        .result-desc strong {
+            color: #202124;
+        }
+
+        .step-label {
+            color: #5f6368;
+            font-weight: bold;
+            font-size: 0.8rem;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header-top">
+        <a>Docs</a>
+        <a>About</a>
+        <a
+            style="font-family:'Paperozi-Bold'; background:#1a73e8; color:white; padding:6px 16px; border-radius:4px; margin-left:20px; margin-top:-6px;">Sign
+            in</a>
+    </div>
+
+    <div class="search-container">
+        <h1 class="brand">KICE<span>s</span><span>e</span>n<span>t</span>ences</h1>
+        <div class="search-bar-wrap">
+            <span class="icon">🔍</span>
+            <input type="text" class="search-input" value="1. 다항식">
+            <span class="icon">✕</span>
+        </div>
+        <div class="chips-container">
+            <div class="chip">전체 검색</div>
+            <div class="chip active">공통수학</div>
+            <div class="chip">대수</div>
+            <div class="chip">미적분I</div>
+            <div class="chip">확률과 통계</div>
+        </div>
+    </div>
+
+    <div class="results-container">
+        <div class="result-stats">약 142개의 결과 (0.34초)</div>
+
+        <div class="result-item">
+            <div class="result-url">
+                KICE Database > 공통수학 > 1.다항식
+            </div>
+            <a class="result-pid">2026학년도 9월 모의평가 공통 22번</a>
+            <div style="margin-bottom: 6px;"><span class="result-std">[9수01-04] 다항식의 덧셈, 뺄셈, 곱셈과 나눗셈을 할 수 있다.</span>
+            </div>
+            <div class="result-desc">
+                <span class="step-label">Step 1.</span> 다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여 식을 세운다.<br>
+                <span class="step-label">Step 2.</span> 주어진 두 조건식을 연립하여 일차방정식의 해를 구한다.
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-url">
+                KICE Database > 공통수학 > 1.다항식
+            </div>
+            <a class="result-pid">2025학년도 수능 공통 14번</a>
+            <div style="margin-bottom: 6px;"><span class="result-std">[10수01-05] 인수분해 공식을 이용하여 다항식을 인수분해할 수 있다.</span>
+            </div>
+            <div class="result-desc">
+                <span class="step-label">Step 1.</span> 다항식의 인수분해를 위해 조립제법을 사용하여 근을 찾는다.
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

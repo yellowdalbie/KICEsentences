@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mockup 2: Notion Enterprise</title>
+    <style>
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Paperozi-Bold';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #37352F;
+            font-family: 'Paperozi', sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #F7F7F5;
+            border-right: 1px solid #EBECE9;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-family: 'Paperozi-Bold';
+            font-size: 1.1rem;
+            color: #37352F;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: #37352F;
+            border-radius: 4px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-box {
+            width: 100%;
+            border: 1px solid #EBECE9;
+            background: #FFFFFF;
+            border-radius: 6px;
+            padding: 0.5rem 0.5rem 0.5rem 2rem;
+            box-sizing: border-box;
+            font-family: 'Paperozi';
+            font-size: 0.9rem;
+            color: #37352F;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #9B9A97;
+        }
+
+        .nav-item {
+            padding: 0.4rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #37352F;
+            transition: background 0.1s;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover {
+            background: #EFEFED;
+        }
+
+        .nav-item.active {
+            background: #EFEFED;
+            font-family: 'Paperozi-Bold';
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            color: #9B9A97;
+            font-family: 'Paperozi-Bold';
+            text-transform: uppercase;
+            margin: 1.5rem 0 0.5rem 0.5rem;
+        }
+
+        .folder {
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #37352F;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .folder:hover {
+            background: #EFEFED;
+        }
+
+        .toggle {
+            font-size: 0.6rem;
+            color: #9B9A97;
+            transition: transform 0.2s;
+        }
+
+        .folder-list {
+            padding-left: 1.5rem;
+            list-style: none;
+            margin: 0;
+        }
+
+        .folder-list li {
+            padding: 0.3rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+
+        .folder-list li:hover {
+            background: #EFEFED;
+        }
+
+        .folder-list li.active {
+            background: #EAEAEA;
+            font-family: 'Paperozi-Bold';
+        }
+
+        .main {
+            flex: 1;
+            padding: 2rem 5rem;
+            overflow-y: auto;
+            background: #FFFFFF;
+        }
+
+        h1 {
+            font-family: 'Paperozi-Bold';
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .card {
+            border: 1px solid #EBECE9;
+            border-radius: 8px;
+            padding: 1px;
+            background: #FFFFFF;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            border-bottom: 1px solid #EBECE9;
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
+            color: #9B9A97;
+            font-family: 'Paperozi';
+            font-weight: normal;
+        }
+
+        td {
+            border-bottom: 1px solid #EBECE9;
+            padding: 1rem;
+            font-size: 0.9rem;
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .pid {
+            background: #F7F7F5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #EBECE9;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .step-label {
+            background: #EBECED;
+            color: #37352F;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: 'Paperozi-Bold';
+            margin-right: 6px;
+        }
+
+        .step-block {
+            margin-bottom: 0.8rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">K</div>KICEsentences
+        </div>
+
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-box" placeholder="Search...">
+        </div>
+
+        <div class="nav-item">📚 키워드 검색</div>
+        <div class="nav-item">📝 표현 검색</div>
+        <div class="nav-item active">📐 성취기준 단위</div>
+
+        <div class="section-title">SUBJECTS</div>
+        <div class="folder">
+            <span class="toggle">▼</span> 공통수학
+        </div>
+        <ul class="folder-list">
+            <li class="active">1. 다항식</li>
+            <li>2. 방정식과 부등식</li>
+            <li>3. 도형의 방정식</li>
+        </ul>
+        <div class="folder">
+            <span class="toggle">▶</span> 대수
+        </div>
+        <div class="folder">
+            <span class="toggle">▶</span> 미적분I
+        </div>
+    </div>
+
+    <div class="main">
+        <h1>공통수학 / 1. 다항식</h1>
+        <p style="color: #9B9A97; margin-bottom: 2rem;">2024년 2월 업데이트 • 142 문항</p>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">문제 번호</th>
+                        <th style="width: 55%;">해설 및 분석</th>
+                        <th style="width: 30%;">관련 성취기준</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="pid">2026.9모_공22</span></td>
+                        <td>
+                            <div class="step-block">
+                                <span class="step-label">Step 1</span> 다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여 식을 세운다.
+                            </div>
+                            <div class="step-block">
+                                <span class="step-label">Step 2</span> 주어진 두 조건식을 연립하여 일차방정식의 해를 구한다.
+                            </div>
+                        </td>
+                        <td>[9수01-04] 다항식의 덧셈, 뺄셈, 곱셈과 나눗셈을 할 수 있다.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="pid">2025.수능_공14</span></td>
+                        <td>
+                            <div class="step-block">
+                                <span class="step-label">Step 1</span> 다항식의 인수분해를 위해 조립제법을 사용하여 근을 찾는다.
+                            </div>
+                        </td>
+                        <td>[10수01-05] 인수분해 공식을 이용하여 다항식을 인수분해할 수 있다.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

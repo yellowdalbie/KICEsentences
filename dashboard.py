@@ -769,6 +769,70 @@ def search_expression():
         "results": matched_files
     })
 
+@app.route('/api/search_probid')
+def search_probid():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify({"results": []})
+        
+    conn = get_db_connection()
+    # Fetch all records since we need to do complex regex matching and the DB might be small enough.
+    # Alternatively, we just fetch distinct problem_ids and do Python filtering.
+    all_results = [dict(row) for row in conn.execute('''
+        SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text, s.explanation_html,
+               (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
+               COALESCE(s.step_title, '') AS trigger_text, 
+               s.step_title,
+               '' AS normalized_text,
+               s.action_concept_id, 
+               c.standard_name, 
+               c.ref_code
+        FROM steps s
+        LEFT JOIN concepts c ON s.action_concept_id = c.id
+        ORDER BY s.problem_id DESC, s.step_number ASC
+    ''').fetchall()]
+    conn.close()
+
+    # Normalization helper
+    def normalize_string(s):
+        # Remove spaces, commas, "번", "학년도", "년" to make matching easier
+        s = re.sub(r'[\s,번]', '', s)
+        s = s.replace('학년도', '').replace('년', '')
+        # Convert standalone 9월/6월 to 9모/6모
+        s = s.replace('9월', '9모').replace('6월', '6모')
+        # Map common shortened forms
+        s = s.replace('확률과통계', '확').replace('확통', '확')
+        s = s.replace('미적분', '미').replace('미적', '미')
+        s = s.replace('기하', '기')
+        s = s.replace('공통', '공')
+        return s
+
+    norm_query = normalize_string(query)
+
+    def is_subsequence(sub, string):
+        it = iter(string)
+        return all(c in it for c in sub)
+
+    matched_results = []
+
+    for row in all_results:
+        pid = row['problem_id']
+        norm_pid = normalize_string(pid)
+
+        # 쿼리가 순수 1~2자리 숫자(문항번호)인 경우: 마지막 _ 이후 숫자와 정확히 비교
+        # 예) "30" or "30번"(→"30")이 "2023.수능_10"의 '3','0'에 잘못 매칭되는 것 방지
+        if norm_query.isdigit() and len(norm_query) <= 2:
+            last_part = norm_pid.rsplit('_', 1)[-1]  # e.g. "공30", "10", "미적28"
+            trailing_num = re.search(r'(\d+)$', last_part)
+            if trailing_num and trailing_num.group(1) == norm_query:
+                matched_results.append(row)
+        else:
+            # 복합 쿼리(연도+시험+문항): 순서 포함 부분열 매칭
+            if is_subsequence(norm_query, norm_pid):
+                matched_results.append(row)
+
+    return jsonify({"results": matched_results})
+
 @app.route('/docs/search_rules')
 def serve_search_rules():
     rules_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Docs', 'search_rules.md')
@@ -877,7 +941,6 @@ def problem_steps_bulk():
 
 # ── 공통 유틸 ────────────────────────────────────────────────────
 
-REPORTS_FILE = 'error_reports.jsonl'
 ADMIN_KEY_FILE = 'admin.key'
 
 
@@ -895,26 +958,6 @@ def _check_admin_key():
         return False
     return True
 
-
-def _read_reports():
-    if not os.path.exists(REPORTS_FILE):
-        return []
-    reports = []
-    with open(REPORTS_FILE, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                try:
-                    reports.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
-    return reports
-
-
-def _write_reports(reports):
-    with open(REPORTS_FILE, 'w', encoding='utf-8') as f:
-        for r in reports:
-            f.write(json.dumps(r, ensure_ascii=False) + '\n')
 
 
 def _get_sol_path(problem_id):
@@ -1001,61 +1044,6 @@ def _parse_step_block(block):
         'explanation_html': explanation_html,
     }
 
-
-# ── 사용자: 오류 제보 API ─────────────────────────────────────────
-
-@app.route('/api/report_error', methods=['POST'])
-def report_error():
-    if OFFLINE_MODE:
-        return '', 404
-    data = request.get_json()
-    if not data:
-        return jsonify({'error': '요청 데이터가 없습니다.'}), 400
-
-    required = ['problem_id', 'step_id', 'reported_fields', 'user_message']
-    for field in required:
-        if not data.get(field):
-            return jsonify({'error': f'{field} 누락'}), 400
-
-    record = {
-        'timestamp': datetime.now().isoformat(),
-        'problem_id': data['problem_id'],
-        'step_id': int(data['step_id']),
-        'step_number': data.get('step_number', ''),
-        'action_concept_id': data.get('action_concept_id', ''),
-        'standard_name': data.get('standard_name', ''),
-        'step_title': data.get('step_title', ''),
-        'reported_fields': data['reported_fields'],
-        'user_message': data['user_message'],
-        'status': 'pending',
-    }
-    try:
-        with open(REPORTS_FILE, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(record, ensure_ascii=False) + '\n')
-        return jsonify({'ok': True})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/step_reports')
-def step_reports():
-    """사용자용: 해당 step의 모든 기존 제보 반환 (중복 제보 방지 안내용)"""
-    if OFFLINE_MODE:
-        return '', 404
-    step_id = request.args.get('step_id')
-    if not step_id:
-        return jsonify({'error': 'step_id 파라미터 필요'}), 400
-    try:
-        step_id_int = int(step_id)
-    except ValueError:
-        return jsonify({'error': '유효하지 않은 step_id'}), 400
-
-    all_reports = _read_reports()
-    result = [r for r in all_reports if r.get('step_id') == step_id_int]
-    result.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-    return jsonify({'reports': result, 'count': len(result)})
-
-
 # ── 관리자 API ───────────────────────────────────────────────────
 
 @app.route('/admin')
@@ -1065,19 +1053,6 @@ def admin_page():
     if not _check_admin_key():
         return '접근 거부: 유효하지 않은 관리자 키입니다.', 403
     return render_template('admin.html')
-
-
-@app.route('/api/admin/reports')
-def admin_reports():
-    if OFFLINE_MODE:
-        return '', 404
-    if not _check_admin_key():
-        return jsonify({'error': '접근 거부'}), 403
-
-    all_reports = _read_reports()
-    all_reports.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-    return jsonify({'reports': all_reports, 'count': len(all_reports)})
-
 
 @app.route('/api/admin/step_detail/<int:step_id>')
 def admin_step_detail(step_id):
@@ -1132,31 +1107,91 @@ def admin_step_detail(step_id):
     })
 
 
-@app.route('/api/admin/delete_report', methods=['POST'])
-def admin_delete_report():
-    """관리자용: JSONL에서 제보 레코드 완전 삭제"""
-    if OFFLINE_MODE:
-        return '', 404
-    if not _check_admin_key():
-        return jsonify({'error': '접근 거부'}), 403
+@app.route('/api/double_cart', methods=['POST'])
+def double_cart():
+    """
+    "더블" 기능: 카트의 각 문항에 대해 가장 유사한 쌍둥이 문항을 찾아 반환.
+    - 유사도: 두 문항 사이에서 코사인 유사도 >= 0.85 인 스텝 쌍의 수
+    - 동일 시험 회차 문항 제외 (예: 2026.6모_* 패턴)
+    - 충돌 해소: 전체 쌍을 점수 내림차순 정렬 후 그리디 확정
+    """
+    if _vec_data is None:
+        return jsonify({'error': '벡터 인덱스가 없습니다.'}), 503
 
     data = request.get_json()
-    report_timestamp = data.get('report_timestamp')
-    step_id = data.get('step_id')
+    cart_ids = [str(pid) for pid in (data.get('problem_ids') or [])]
+    if not cart_ids:
+        return jsonify({'added': [], 'unmatched': []})
 
-    if not report_timestamp:
-        return jsonify({'error': 'report_timestamp 누락'}), 400
+    COSINE_THRESHOLD = 0.85
+    cart_set = set(cart_ids)
 
-    all_reports = _read_reports()
-    before = len(all_reports)
-    all_reports = [
-        r for r in all_reports
-        if not (r.get('timestamp') == report_timestamp and r.get('step_id') == int(step_id or 0))
-    ]
-    if len(all_reports) < before:
-        _write_reports(all_reports)
-        return jsonify({'ok': True})
-    return jsonify({'error': '해당 제보를 찾을 수 없음'}), 404
+    # 시험 회차 접두어 추출 (e.g. "2026.6모", "2025수능", "2014.9모A")
+    def exam_prefix(pid):
+        # 마지막 _ 이전 부분 (문항번호 제거)
+        return pid.rsplit('_', 1)[0]
+
+    cart_prefixes = {exam_prefix(pid) for pid in cart_ids}
+
+    # _vec_data 배열
+    all_step_ids   = _vec_data['step_ids']    # (N,)
+    all_vectors    = _vec_data['vectors']      # (N, D)
+    all_prob_ids   = _vec_data['problem_ids']  # (N,) str
+
+    # 원본 문항별 스텝 인덱스 맵
+    def steps_for_prob(pid):
+        return np.where(all_prob_ids == pid)[0]
+
+    # 후보 문항 목록: 카트에 없고, 동일 시험 회차 아닌 문항들
+    unique_candidate_pids = list({
+        str(pid) for pid in all_prob_ids
+        if str(pid) not in cart_set and exam_prefix(str(pid)) not in cart_prefixes
+    })
+
+    if not unique_candidate_pids:
+        return jsonify({'added': [], 'unmatched': cart_ids})
+
+    # 모든 (원본, 후보) 쌍의 매칭 점수 계산
+    all_pairs = []  # (score, source_pid, candidate_pid)
+
+    for src_pid in cart_ids:
+        src_indices = steps_for_prob(src_pid)
+        if len(src_indices) == 0:
+            continue
+        src_vecs = all_vectors[src_indices]  # (S, D)
+
+        for cand_pid in unique_candidate_pids:
+            cand_indices = steps_for_prob(cand_pid)
+            if len(cand_indices) == 0:
+                continue
+            cand_vecs = all_vectors[cand_indices]  # (C, D)
+
+            # 코사인 유사도 행렬: (S, C)
+            sim_matrix = cosine_similarity(src_vecs, cand_vecs)
+
+            # 원본의 각 스텝에 대해, 후보 스텝 중 >= THRESHOLD 인 것이 하나라도 있으면 "매칭"
+            matched_src_steps = int(np.sum(np.any(sim_matrix >= COSINE_THRESHOLD, axis=1)))
+            if matched_src_steps > 0:
+                all_pairs.append((matched_src_steps, src_pid, cand_pid))
+
+    # 점수 내림차순 정렬
+    all_pairs.sort(key=lambda x: x[0], reverse=True)
+
+    # 그리디 확정
+    used_sources    = set()
+    used_candidates = set()
+    added           = []
+
+    for score, src_pid, cand_pid in all_pairs:
+        if src_pid in used_sources or cand_pid in used_candidates:
+            continue
+        used_sources.add(src_pid)
+        used_candidates.add(cand_pid)
+        added.append({'original': src_pid, 'match': cand_pid, 'score': score})
+
+    unmatched = [pid for pid in cart_ids if pid not in used_sources]
+
+    return jsonify({'added': added, 'unmatched': unmatched})
 
 
 if __name__ == '__main__':

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mockup 3: Bloomberg Terminal</title>
+    <style>
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0B1120;
+            color: #94A3B8;
+            font-family: 'Consolas', 'Courier New', monospace;
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: #0B1120;
+            border-right: 1px solid #1E293B;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            color: #F8FAFC;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid #1E293B;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #10B981;
+        }
+
+        .search-box {
+            width: 100%;
+            border: 1px solid #334155;
+            background: #0F172A;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            color: #F8FAFC;
+            font-family: inherit;
+            margin-bottom: 1.5rem;
+            border-radius: 2px;
+        }
+
+        .search-box:focus {
+            border-color: #F97316;
+            outline: none;
+        }
+
+        .tab-group {
+            display: flex;
+            margin-bottom: 2rem;
+            border: 1px solid #1E293B;
+            border-radius: 2px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem 0;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: #64748B;
+            background: #0F172A;
+            text-transform: uppercase;
+        }
+
+        .tab:not(:last-child) {
+            border-right: 1px solid #1E293B;
+        }
+
+        .tab.active {
+            background: #1E293B;
+            color: #F8FAFC;
+            font-weight: bold;
+            border-bottom: 2px solid #F97316;
+        }
+
+        .folder-title {
+            font-size: 0.85rem;
+            color: #F8FAFC;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .folder-title.opened {
+            color: #F97316;
+        }
+
+        .folder-list {
+            padding-left: 1rem;
+            list-style: none;
+            margin: 0 0 1rem 0;
+            border-left: 1px solid #1E293B;
+            margin-left: 0.5rem;
+        }
+
+        .folder-list li {
+            padding: 0.2rem 0;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: #94A3B8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .folder-list li:hover {
+            color: #F8FAFC;
+        }
+
+        .folder-list li.active {
+            color: #10B981;
+        }
+
+        .folder-list li.active::before {
+            content: '> ';
+            color: #10B981;
+        }
+
+        .badge {
+            background: #1E293B;
+            color: #64748B;
+            padding: 0 4px;
+            font-size: 0.7rem;
+            border-radius: 2px;
+        }
+
+        .main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background-color: #0B1120;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #1E293B;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: #F8FAFC;
+            font-weight: normal;
+            text-transform: uppercase;
+        }
+
+        .stats {
+            color: #10B981;
+            font-size: 0.85rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            padding: 0.5rem;
+            background: #0F172A;
+            color: #64748B;
+            font-weight: normal;
+            border-bottom: 1px solid #334155;
+            text-transform: uppercase;
+        }
+
+        .data-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #1E293B;
+            vertical-align: top;
+            color: #E2E8F0;
+            font-family: 'Paperozi', sans-serif;
+        }
+
+        .data-table tr:hover {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .pid {
+            color: #F97316;
+            font-family: monospace;
+        }
+
+        .step {
+            display: block;
+            margin-bottom: 0.4rem;
+            padding-left: 1rem;
+            border-left: 2px solid #334155;
+            line-height: 1.4;
+        }
+
+        .step-num {
+            color: #10B981;
+            font-family: monospace;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+        }
+
+        .concept-col {
+            color: #94A3B8;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        /* 스크롤바 커스텀 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0B1120;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1E293B;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo">KICE<span>_TERMINAL</span></div>
+
+        <input type="text" class="search-box" placeholder="QUERY_STRING...">
+
+        <div class="tab-group">
+            <div class="tab">KWD</div>
+            <div class="tab">EXP</div>
+            <div class="tab active">STND</div>
+        </div>
+
+        <div class="folder-title opened">[-] MATH_COMMON</div>
+        <ul class="folder-list">
+            <li class="active"><span>01_POLYNOMIAL</span> <span class="badge">142</span></li>
+            <li><span>02_EQUATION</span> <span class="badge">98</span></li>
+            <li><span>03_GEOMETRY</span> <span class="badge">215</span></li>
+        </ul>
+        <div class="folder-title">[+] MATH_ALGEBRA</div>
+        <div class="folder-title">[+] MATH_CALCULUS_1</div>
+    </div>
+
+    <div class="main">
+        <div class="header-bar">
+            <h1>DATA_VIEW: MATH_COMMON / 01_POLYNOMIAL</h1>
+            <div class="stats">ROWS: 142 | LAST_UPDATED: 2026-03-04 18:25:00 UTC</div>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">ID</th>
+                    <th style="width: 55%;">ANALYSIS_STEPS</th>
+                    <th style="width: 30%;">STANDARD_REF</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="pid">2026.9모_공22</span></td>
+                    <td>
+                        <div class="step"><span class="step-num">S01</span>다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여 식을 세운다.
+                        </div>
+                        <div class="step"><span class="step-num">S02</span>주어진 두 조건식을 연립하여 일차방정식의 해를 구한다.</div>
+                    </td>
+                    <td class="concept-col">[9수01-04] 다항식의 덧셈, 뺄셈, 곱셈과 나눗셈을 할 수 있다.</td>
+                </tr>
+                <tr>
+                    <td><span class="pid">2025.수능_공14</span></td>
+                    <td>
+                        <div class="step"><span class="step-num">S01</span>다항식의 인수분해를 위해 조립제법을 사용하여 근을 찾는다.</div>
+                    </td>
+                    <td class="concept-col">[10수01-05] 인수분해 공식을 이용하여 다항식을 인수분해할 수 있다.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>

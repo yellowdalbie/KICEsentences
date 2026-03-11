@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mockup 8: Overview Dashboard</title>
+    <style>
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Paperozi-Bold';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Paperozi', sans-serif;
+            background: #E5E7EB;
+            color: #1F2937;
+            height: 100vh;
+            display: flex;
+        }
+
+        .side-icons {
+            width: 70px;
+            background: #111827;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem 0;
+            gap: 2rem;
+            border-right: 1px solid #374151;
+        }
+
+        .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #374151;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .icon:hover,
+        .icon.active {
+            background: #3B82F6;
+        }
+
+        .icon.logo {
+            background: transparent;
+            font-family: 'Paperozi-Bold';
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .main-dashboard {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-family: 'Paperozi-Bold';
+            color: #111827;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            align-items: center;
+        }
+
+        .filter-bar input {
+            border: none;
+            outline: none;
+            padding: 4px;
+            font-family: inherit;
+        }
+
+        .filter-bar select {
+            border: 1px solid #D1D5DB;
+            padding: 4px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .masonry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #F3F4F6;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #F3F4F6;
+            padding-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-family: 'Paperozi-Bold';
+            color: #111827;
+        }
+
+        .badge {
+            background: #FDE68A;
+            color: #92400E;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-family: 'Paperozi-Bold';
+        }
+
+        .std-text {
+            font-size: 0.8rem;
+            color: #6B7280;
+            background: #F9FAFB;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 3px solid #3B82F6;
+        }
+
+        .step-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .step {
+            display: flex;
+            gap: 10px;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            background: #111827;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-family: 'Paperozi-Bold';
+        }
+
+        .step-txt {
+            font-size: 0.9rem;
+            color: #374151;
+            line-height: 1.4;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #D1D5DB;
+            background: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #F3F4F6;
+        }
+
+        .btn.primary {
+            background: #3B82F6;
+            color: white;
+            border: none;
+        }
+
+        .btn.primary:hover {
+            background: #2563EB;
+        }
+
+        /* Widget cards for stats */
+        .widget-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .widget {
+            background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .widget h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            font-weight: normal;
+            opacity: 0.8;
+        }
+
+        .widget .val {
+            font-size: 2.5rem;
+            font-family: 'Paperozi-Bold';
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="side-icons">
+        <div class="icon logo">K</div>
+        <div class="icon active">S</div>
+        <div class="icon">K</div>
+        <div class="icon">E</div>
+        <div class="icon" style="margin-top:auto">⚙</div>
+    </div>
+
+    <div class="main-dashboard">
+        <div class="top-header">
+            <h1>Dashboard Overview</h1>
+            <div class="filter-bar">
+                <span>🔍</span>
+                <input type="text" placeholder="Search...">
+                <select>
+                    <option>공통수학</option>
+                </select>
+                <select>
+                    <option>1. 다항식</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="widget-row">
+            <div class="widget">
+                <h3>Total Extracted</h3>
+                <p class="val">1,482</p>
+            </div>
+            <div class="widget" style="background: linear-gradient(135deg, #065F46, #10B981);">
+                <h3>Common Math</h3>
+                <p class="val">142</p>
+            </div>
+            <div class="widget" style="background: white; color: #111827; border: 1px solid #E5E7EB;">
+                <h3 style="color: #6B7280;">Recent Mappings</h3>
+                <p class="val" style="color: #111827;">+24</p>
+            </div>
+        </div>
+
+        <div class="masonry-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">2026.9모_공22</span>
+                    <span class="badge">다항식</span>
+                </div>
+                <div class="std-text">[9수01-04] 다항식의 덧셈, 뺄셈, 곱셈과 나눗셈을 할 수 있다.</div>
+                <div class="step-list">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-txt">다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여 식을 세운다.</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-txt">주어진 두 조건식을 연립하여 일차방정식의 해를 구한다.</div>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="btn">Edit</button>
+                    <button class="btn primary">View Details</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">2025.수능_공14</span>
+                    <span class="badge">다항식</span>
+                </div>
+                <div class="std-text">[10수01-05] 인수분해 공식을 이용하여 다항식을 인수분해할 수 있다.</div>
+                <div class="step-list">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-txt">다항식의 인수분해를 위해 조립제법을 사용하여 근을 찾는다.</div>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="btn">Edit</button>
+                    <button class="btn primary">View Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

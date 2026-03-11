@@ -7,7 +7,6 @@ const cartBadge = document.getElementById('cart-badge');
 const cartEmptyMsg = document.getElementById('cart-empty-msg');
 const cartToggleBtn = document.getElementById('cart-toggle-btn');
 const problemCart = document.getElementById('problem-cart');
-const cartClearBtn = document.getElementById('cart-clear-btn');
 const cartPreviewBtn = document.getElementById('cart-preview-btn');
 
 // Print Modal elements
@@ -15,11 +14,11 @@ const printModal = document.getElementById('print-preview-modal');
 const printModalBody = document.getElementById('print-preview-body');
 const sidebarOrderList = document.getElementById('sidebar-order-list');
 
-// Module-level preview state (enables drag-and-drop reorder without re-fetching)
+// Module-level preview state
 let _previewLoadedItems = [];
 let _previewAnswerOpt = 'none';
 let _previewExpOpt = 'none';
-let _dragSrcIdx = null;
+let _selectedSidebarIdx = null;
 
 // ── 전역 썸네일 tooltip (document.body에 직접 붙여 transform 영향 차단) ──
 let _cartThumbTooltipEl = null;
@@ -57,16 +56,11 @@ function hideCartThumbTooltip() {
     if (_cartThumbTooltipEl) _cartThumbTooltipEl.style.display = 'none';
 }
 
-// ── 드래그 삽입 위치 표시 초기화 ──
-function clearDragInsertIndicators() {
-    document.querySelectorAll('.sidebar-item').forEach(el => {
-        el.classList.remove('drag-insert-before', 'drag-insert-after-prev');
-    });
-}
-
 // Toggle cart slide
 cartToggleBtn.addEventListener('click', () => {
     problemCart.classList.toggle('open');
+    // 사이드바 닫힐 때 남아있는 썸네일 툴팁 제거
+    if (!problemCart.classList.contains('open')) hideCartThumbTooltip();
 });
 
 function updateCartUI() {
@@ -97,6 +91,7 @@ function updateCartUI() {
             // Remove from cart on click
             tag.querySelector('.cart-item-remove').addEventListener('click', (e) => {
                 e.stopPropagation();
+                hideCartThumbTooltip(); // × 클릭 시 DOM 제거 전에 툴팁 먼저 숨김
                 toggleCartItem(pid);
             });
 
@@ -148,10 +143,101 @@ function refreshTableCartVisuals() {
 }
 
 // Clear cart
-cartClearBtn.addEventListener('click', () => {
+function clearCart() {
+    closeKebabMenu();
     cartProblemIds.clear();
     updateCartUI();
+}
+
+// Kebab menu toggle
+function toggleKebabMenu(e) {
+    e.stopPropagation();
+    const menu = document.getElementById('cart-kebab-menu');
+    const isOpen = menu.style.display === 'block';
+    menu.style.display = isOpen ? 'none' : 'block';
+}
+
+function closeKebabMenu() {
+    const menu = document.getElementById('cart-kebab-menu');
+    if (menu) menu.style.display = 'none';
+}
+
+// Close kebab menu on outside click
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('#cart-kebab-btn') && !e.target.closest('#cart-kebab-menu')) {
+        closeKebabMenu();
+    }
 });
+
+// "더블" 기능: 각 카트 문항에 대해 가장 유사한 쌍둥이 문항 자동 추가
+async function doubleCart() {
+    closeKebabMenu();
+    if (cartProblemIds.size === 0) {
+        showCustomAlert('장바구니가 비어 있습니다.');
+        return;
+    }
+
+    const ids = Array.from(cartProblemIds);
+    const kebabBtn = document.getElementById('cart-kebab-btn');
+    if (kebabBtn) { kebabBtn.textContent = '⏳'; kebabBtn.disabled = true; }
+
+    try {
+        const res = await fetch('/api/double_cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ problem_ids: ids })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+            showCustomAlert('더블 오류: ' + data.error);
+            return;
+        }
+
+        // 매칭된 문항들 카트에 추가
+        const newlyAdded = [];
+        (data.added || []).forEach(({ match }) => {
+            if (!cartProblemIds.has(match)) {
+                cartProblemIds.add(match);
+                newlyAdded.push(match);
+            }
+        });
+
+        updateCartUI();
+
+        // 새로 추가된 항목 잠깐 강조
+        setTimeout(() => {
+            newlyAdded.forEach(pid => {
+                document.querySelectorAll('.cart-item-tag').forEach(tag => {
+                    if (tag.querySelector('span')?.textContent === pid) {
+                        tag.style.transition = 'background 0s';
+                        tag.style.background = 'rgba(6,182,212,0.25)';
+                        setTimeout(() => {
+                            tag.style.transition = 'background 1.5s';
+                            tag.style.background = '';
+                        }, 800);
+                    }
+                });
+            });
+        }, 100);
+
+        const unmatchedCount = (data.unmatched || []).length;
+        if (unmatchedCount > 0) {
+            showCustomAlert(`${newlyAdded.length}개 유사 문항을 추가했습니다.\n(${unmatchedCount}개는 유사 문항을 찾지 못했습니다.)`);
+        }
+
+    } catch (e) {
+        showCustomAlert('더블 기능 오류: ' + e.message);
+    } finally {
+        if (kebabBtn) { kebabBtn.textContent = '⋮'; kebabBtn.disabled = false; }
+    }
+}
+
+// Expose globally
+window.clearCart = clearCart;
+window.toggleKebabMenu = toggleKebabMenu;
+window.doubleCart = doubleCart;
+
 
 // Print Preview Logic
 cartPreviewBtn.addEventListener('click', () => {
@@ -230,98 +316,66 @@ async function openPrintPreview() {
     }
 }
 
-// ── 기능 2: 사이드바 렌더링 + 드래그앤드롭 ──
+// ── 사이드바 렌더링 (클릭 선택 → 위아래 버튼 표시) ──
 function renderSidebar() {
     sidebarOrderList.innerHTML = '';
-
-    const endDropzone = document.getElementById('sidebar-order-end-dropzone');
+    const total = _previewLoadedItems.length;
 
     _previewLoadedItems.forEach((item, idx) => {
+        const isSelected = _selectedSidebarIdx === idx;
         const li = document.createElement('li');
-        li.className = 'sidebar-item';
-        li.draggable = true;
+        li.className = 'sidebar-item' + (isSelected ? ' selected' : '');
         li.dataset.idx = idx;
         li.innerHTML = `
-            <span class="sidebar-item-num">${idx + 1}</span>
-            <span class="sidebar-item-pid">${item.pid}</span>
+            <button class="sidebar-move-up" title="위로" ${idx === 0 ? 'disabled' : ''}>▲ 위로</button>
+            <div class="sidebar-item-row">
+                <span class="sidebar-item-num">${idx + 1}</span>
+                <span class="sidebar-item-pid">${item.pid}</span>
+                <button class="sidebar-item-remove" title="제거">×</button>
+            </div>
+            <button class="sidebar-move-down" title="아래로" ${idx === total - 1 ? 'disabled' : ''}>▼ 아래로</button>
         `;
 
-        li.addEventListener('dragstart', (e) => {
-            _dragSrcIdx = idx;
-            li.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
+        // 항목 클릭 시 선택 (버튼 클릭은 제외)
+        li.addEventListener('click', (e) => {
+            if (e.target.closest('.sidebar-move-up, .sidebar-move-down, .sidebar-item-remove')) return;
+            _selectedSidebarIdx = idx;
+            renderSidebar();
         });
 
-        li.addEventListener('dragend', () => {
-            li.classList.remove('dragging');
-            clearDragInsertIndicators();
+        li.querySelector('.sidebar-move-up').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (idx === 0) return;
+            [_previewLoadedItems[idx - 1], _previewLoadedItems[idx]] =
+                [_previewLoadedItems[idx], _previewLoadedItems[idx - 1]];
+            _selectedSidebarIdx = idx - 1;
+            renderSidebar();
+            renderPreviewPages();
         });
 
-        li.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            clearDragInsertIndicators();
-            // 타겟 아이템 위쪽 경계 강조
-            li.classList.add('drag-insert-before');
-            // 타겟 바로 위 아이템 아래쪽 강조 제거 (파란 대시선 공간 여유를 위해 before만 활용)
-            // const prevSibling = li.previousElementSibling;
-            // if (prevSibling && prevSibling.classList.contains('sidebar-item')) {
-            //     prevSibling.classList.add('drag-insert-after-prev');
-            // }
+        li.querySelector('.sidebar-move-down').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (idx === total - 1) return;
+            [_previewLoadedItems[idx], _previewLoadedItems[idx + 1]] =
+                [_previewLoadedItems[idx + 1], _previewLoadedItems[idx]];
+            _selectedSidebarIdx = idx + 1;
+            renderSidebar();
+            renderPreviewPages();
         });
 
-        li.addEventListener('dragleave', () => {
-            clearDragInsertIndicators();
-        });
-
-        li.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if (_dragSrcIdx === null || _dragSrcIdx === idx) {
-                _dragSrcIdx = null;
-                return;
+        li.querySelector('.sidebar-item-remove').addEventListener('click', (e) => {
+            e.stopPropagation();
+            _previewLoadedItems.splice(idx, 1);
+            if (_selectedSidebarIdx !== null) {
+                if (_selectedSidebarIdx === idx) _selectedSidebarIdx = null;
+                else if (_selectedSidebarIdx > idx) _selectedSidebarIdx--;
             }
-
-            // 순서 재배열
-            const moved = _previewLoadedItems.splice(_dragSrcIdx, 1)[0];
-            _previewLoadedItems.splice(idx, 0, moved);
-            _dragSrcIdx = null;
-
-            // 사이드바 + 페이지 재렌더링
             renderSidebar();
             renderPreviewPages();
         });
 
         sidebarOrderList.appendChild(li);
     });
-
-    // ── 맨 끝으로 이동하기 위한 end-dropzone 이벤트 처리 ──
-    if (endDropzone) {
-        endDropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            clearDragInsertIndicators();
-            endDropzone.classList.add('drag-over');
-        });
-
-        endDropzone.addEventListener('dragleave', () => {
-            endDropzone.classList.remove('drag-over');
-        });
-
-        endDropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            endDropzone.classList.remove('drag-over');
-
-            if (_dragSrcIdx === null) return;
-
-            // 맨 마지막으로 이동
-            const moved = _previewLoadedItems.splice(_dragSrcIdx, 1)[0];
-            _previewLoadedItems.push(moved);
-            _dragSrcIdx = null;
-
-            renderSidebar();
-            renderPreviewPages();
-        });
-    }
 }
 
 // ── 페이지 렌더링 (순서 변경 시 재호출) ──
@@ -378,7 +432,7 @@ async function renderPreviewPages() {
 
     // 정답표 (end 옵션)
     if (answerOpt === 'end') {
-        let tableHtml = `<div style="text-align:center; font-size:1.1rem; font-weight:bold; margin-bottom:10px; border:2px solid black; padding:4px;">정답표</div>`;
+        let tableHtml = `<div style="text-align:center; font-size:1.1rem; font-weight:bold; margin-bottom:10px; border:2px solid #111; padding:4px; color:#111; background:#fff;">정답표</div>`;
         const colsPerBlock = 5;
         for (let i = 0; i < items.length; i += colsPerBlock) {
             const chunk = items.slice(i, i + colsPerBlock);
@@ -550,7 +604,7 @@ async function renderPreviewPages() {
     }
 }
 
-// ── 해설 아이템 HTML 생성 헬퍼 ──
+// ── 해설 아이템 전체 HTML (csat-exp-item 래퍼 포함) ──
 function buildExpItemHtml(item) {
     const stepsHtml = item.steps.map(step => `
         <div class="csat-exp-step">
@@ -558,39 +612,124 @@ function buildExpItemHtml(item) {
             <div class="csat-exp-step-body">${step.explanation_html}</div>
         </div>
     `).join('');
-
-    const ansHtml = item.answer
-        ? `<span class="csat-exp-answer">${item.answer}</span>`
-        : '';
-
+    const ansHtml = item.answer ? `<span class="csat-exp-answer">${item.answer}</span>` : '';
     return `
-        <div class="csat-exp-item-header">
-            <div class="csat-exp-item-header-left">
-                <span class="csat-num-box">${item.examNumber}</span>
-                <span class="csat-db-id-tag">${item.pid}</span>
+        <div class="csat-exp-item">
+            <div class="csat-exp-item-header">
+                <div class="csat-exp-item-header-left">
+                    <span class="csat-num-box">${item.examNumber}</span>
+                    <span class="csat-db-id-tag">${item.pid}</span>
+                </div>
+                ${ansHtml}
             </div>
-            ${ansHtml}
+            <div class="csat-exp-item-steps">${stepsHtml}</div>
         </div>
-        <div class="csat-exp-item-steps">${stepsHtml}</div>
     `;
 }
 
-// ── 해설지 페이지 배열 생성 (DOM 측정 기반 2단 흐름) ──
-async function buildExplanationPages(expItems, problemPageCount) {
-    // 1단계: 측정용 컨테이너 준비 (csat-col 실효 너비와 동일하게)
-    const measureContainer = document.createElement('div');
-    measureContainer.style.cssText =
-        'position:absolute; left:-9999px; top:0; visibility:hidden; ' +
-        'width:calc((210mm - 30mm - 21px) / 2); overflow:visible;';
-    document.body.appendChild(measureContainer);
+// ── step 분할 청크 HTML (긴 해설을 step 단위로 쪼갤 때 사용) ──
+function buildExpChunkHtml(item, stepIndices, isFirstChunk) {
+    const stepsHtml = stepIndices.map(sIdx => {
+        const step = item.steps[sIdx];
+        return `
+            <div class="csat-exp-step">
+                <div class="csat-exp-step-title">Step ${step.step_number}${step.step_title ? ' — ' + step.step_title : ''}</div>
+                <div class="csat-exp-step-body">${step.explanation_html}</div>
+            </div>
+        `;
+    }).join('');
 
-    // 2단계: 각 해설 아이템 DOM 생성 및 KaTeX 렌더링
-    const measuredItems = [];
+    if (isFirstChunk) {
+        const ansHtml = item.answer ? `<span class="csat-exp-answer">${item.answer}</span>` : '';
+        return `
+            <div class="csat-exp-item">
+                <div class="csat-exp-item-header">
+                    <div class="csat-exp-item-header-left">
+                        <span class="csat-num-box">${item.examNumber}</span>
+                        <span class="csat-db-id-tag">${item.pid}</span>
+                    </div>
+                    ${ansHtml}
+                </div>
+                <div class="csat-exp-item-steps">${stepsHtml}</div>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="csat-exp-item csat-exp-item-cont">
+                <div class="csat-exp-item-steps">${stepsHtml}</div>
+            </div>
+        `;
+    }
+}
+
+// ── 해설지 페이지 배열 생성 (정밀 DOM 측정 기반) ──
+async function buildExplanationPages(expItems, problemPageCount) {
+
+    // ── 1단계: 실제 csat-page/csat-col 치수를 DOM으로 직접 측정 ──
+    // 레퍼런스 페이지를 실제 DOM에 삽입해 브라우저가 mm→px 변환을 정확히 처리하게 함
+    const refPage = document.createElement('div');
+    refPage.className = 'csat-page';
+    refPage.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;pointer-events:none;';
+    refPage.innerHTML = `
+        <div class="csat-header-normal">
+            <span class="page-num">2</span>
+            <span class="h-main">수학 영역</span>
+            <span class="h-type">홀수형</span>
+        </div>
+        <div class="csat-columns">
+            <div class="csat-col csat-exp-col"><div id="__probe__"></div></div>
+            <div class="csat-vline"></div>
+            <div class="csat-col csat-exp-col"></div>
+        </div>
+        <div class="csat-footer"><div class="footer-page-box"></div></div>
+    `;
+    document.body.appendChild(refPage);
+
+    // 첫 페이지용 헤더 높이 측정 (별도 요소)
+    const refHdr1 = document.createElement('div');
+    refHdr1.className = 'csat-header-page1';
+    refHdr1.style.cssText = `position:absolute;left:-9999px;top:0;visibility:hidden;width:${refPage.offsetWidth}px;`;
+    refHdr1.innerHTML = `
+        <div class="h1-top"><span class="exam-title">해설지</span></div>
+        <div class="h1-main-wrapper"><div class="h1-main">수학 영역</div></div>
+        <div class="h1-divider"></div>
+    `;
+    document.body.appendChild(refHdr1);
+
+    // 레이아웃 2회 확정 대기 (KaTeX 등 비동기 요소 안정화)
+    await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => requestAnimationFrame(r));
+
+    const pageH      = refPage.offsetHeight;
+    const hdrNormalH = refPage.querySelector('.csat-header-normal').offsetHeight;
+    const hdrFirstH  = refHdr1.offsetHeight;
+    const footerH    = refPage.querySelector('.csat-footer').offsetHeight;
+    // 프로브 div의 offsetWidth = csat-col 내부 콘텐츠 실제 너비 (padding 제외)
+    const innerColW  = refPage.querySelector('#__probe__').offsetWidth;
+
+    refPage.remove();
+    refHdr1.remove();
+
+    // 안전 마진: 소수점 반올림 + KaTeX 렌더링 편차 흡수
+    const SAFETY = 80;
+    const usableFirst  = pageH - hdrFirstH  - footerH - SAFETY;
+    const usableNormal = pageH - hdrNormalH - footerH - SAFETY;
+
+    // ── 2단계: 아이템 높이 측정 (정확한 내부 너비로) ──
+    const measureCol = document.createElement('div');
+    // csat-exp-col과 동일한 너비·구조로 설정
+    measureCol.style.cssText = `
+        position:absolute;left:-9999px;top:0;visibility:hidden;
+        width:${innerColW}px;overflow:visible;
+    `;
+    document.body.appendChild(measureCol);
+
+    const itemEls = [];
     for (const item of expItems) {
-        const el = document.createElement('div');
-        el.className = 'csat-exp-item';
-        el.innerHTML = buildExpItemHtml(item);
-        measureContainer.appendChild(el);
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = buildExpItemHtml(item);
+        const el = wrapper.firstElementChild; // .csat-exp-item
+        measureCol.appendChild(el);
         if (window.renderMathInElement) {
             renderMathInElement(el, {
                 delimiters: [
@@ -599,60 +738,108 @@ async function buildExplanationPages(expItems, problemPageCount) {
                 ]
             });
         }
-        measuredItems.push({ item, el });
+        itemEls.push(el);
     }
 
-    // 3단계: 브라우저 레이아웃 완료 후 기준 높이 측정
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    // 레이아웃 확정 대기
+    await new Promise(r => requestAnimationFrame(r));
+    await new Promise(r => requestAnimationFrame(r));
 
-    const tempPage = document.createElement('div');
-    tempPage.className = 'csat-page';
-    tempPage.style.cssText = 'position:absolute; left:-9999px; visibility:hidden;';
-    tempPage.innerHTML = `
-        <div class="csat-header-page1">
-            <div class="h1-top"></div>
-            <div class="h1-main-wrapper"></div>
-            <div class="h1-divider"></div>
-        </div>
-        <div class="csat-footer"></div>`;
-    document.body.appendChild(tempPage);
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    // ── 3단계: 배치 단위(unit) 결정 ──
+    // csat-exp-col의 gap:12px 를 각 아이템 높이에 더함
+    const COL_GAP    = 12;
+    const HDR_MB     = 6;  // .csat-exp-item-header margin-bottom
+    const ITEM_PB    = 10; // .csat-exp-item padding-bottom
+    const STEP_MB    = 7;  // .csat-exp-step margin-bottom
 
-    const headerHeight = tempPage.querySelector('.csat-header-page1').offsetHeight;
-    const footerHeight = tempPage.querySelector('.csat-footer').offsetHeight;
-    const pageHeight = tempPage.offsetHeight;
-    const usableColHeightFirst = pageHeight - headerHeight - footerHeight - 20;
-    const usableColHeightNormal = pageHeight - 80 - footerHeight - 20;
-    tempPage.remove();
-
-    // 각 아이템 높이 기록
-    for (const { item, el } of measuredItems) {
-        item.measuredHeight = el.offsetHeight + 12;
-    }
-
-    measureContainer.remove();
-
-    // 4단계: 배치 알고리즘
+    // ── 3+4단계 통합: 인라인 분할 + bin-packing ──
+    // 각 문항을 현재 단의 남은 공간에 맞춰 분할하고 이어서 배치
     const expPagesList = [];
-    let curPage = { isFirst: true, cols: [{ items: [], usedHeight: 0 }, { items: [], usedHeight: 0 }] };
+    let curPage = { isFirst: true, cols: [{ units: [], usedH: 0 }, { units: [], usedH: 0 }] };
     expPagesList.push(curPage);
     let colIdx = 0;
 
-    for (const { item } of measuredItems) {
-        const colLimit = curPage.isFirst ? usableColHeightFirst : usableColHeightNormal;
-        if (curPage.cols[colIdx].usedHeight + item.measuredHeight > colLimit) {
-            colIdx++;
-            if (colIdx > 1) {
-                curPage = { isFirst: false, cols: [{ items: [], usedHeight: 0 }, { items: [], usedHeight: 0 }] };
-                expPagesList.push(curPage);
-                colIdx = 0;
+    const colLimit    = () => curPage.isFirst ? usableFirst : usableNormal;
+    const colUsed     = () => curPage.cols[colIdx].usedH;
+    const colRemaining= () => colLimit() - colUsed();
+    const addUnit     = (html, h) => {
+        curPage.cols[colIdx].units.push({ html, height: h });
+        curPage.cols[colIdx].usedH += h;
+    };
+    const nextCol = () => {
+        colIdx++;
+        if (colIdx > 1) {
+            curPage = { isFirst: false, cols: [{ units: [], usedH: 0 }, { units: [], usedH: 0 }] };
+            expPagesList.push(curPage);
+            colIdx = 0;
+        }
+    };
+
+    for (let i = 0; i < expItems.length; i++) {
+        const item  = expItems[i];
+        const el    = itemEls[i];
+        const fullH = el.offsetHeight + COL_GAP;
+
+        // 전체가 현재 단의 남은 공간에 들어가면 단일 유닛으로 배치
+        if (colUsed() + fullH <= colLimit()) {
+            addUnit(buildExpItemHtml(item), fullH);
+            continue;
+        }
+
+        // 현재 단에 이미 내용이 있고 다음 단에 통째로 들어갈 수 있으면 이동
+        if (colUsed() > 0 && fullH <= usableNormal) {
+            nextCol();
+            addUnit(buildExpItemHtml(item), fullH);
+            continue;
+        }
+
+        // 단 하나에도 통째로 들어가지 않으면 step 단위로 분할하여 배치
+        const headerEl = el.querySelector('.csat-exp-item-header');
+        const headerH  = (headerEl ? headerEl.offsetHeight : 0) + HDR_MB;
+        const stepEls  = Array.from(el.querySelectorAll('.csat-exp-step'));
+        const stepHs   = stepEls.map(se => se.offsetHeight + STEP_MB);
+
+        let isFirstChunk  = true;
+        let chunkStepIdxs = [];
+        let chunkH        = 0;
+
+        for (let s = 0; s < stepEls.length; s++) {
+            const stepH    = stepHs[s];
+            const overhead = isFirstChunk ? headerH + ITEM_PB + COL_GAP : ITEM_PB + COL_GAP;
+
+            if (chunkStepIdxs.length === 0) {
+                // 새 청크 시작: overhead + stepH가 현재 단에 들어가는지 확인
+                // isFirstChunk=true이면 overhead에 문항번호 헤더가 포함되어 있으므로
+                // 남은 공간이 부족하면 문항번호와 함께 다음 단으로 이동
+                if (overhead + stepH > colRemaining() && colUsed() > 0) {
+                    nextCol();
+                }
+                chunkStepIdxs = [s];
+                chunkH = overhead + stepH;
+            } else {
+                if (chunkH + stepH > colRemaining()) {
+                    // 현재 청크 flush 후 다음 단으로 이어서
+                    addUnit(buildExpChunkHtml(item, chunkStepIdxs, isFirstChunk), chunkH);
+                    isFirstChunk  = false;
+                    nextCol();
+                    chunkStepIdxs = [s];
+                    chunkH        = ITEM_PB + COL_GAP + stepH;
+                } else {
+                    chunkStepIdxs.push(s);
+                    chunkH += stepH;
+                }
             }
         }
-        curPage.cols[colIdx].items.push(item);
-        curPage.cols[colIdx].usedHeight += item.measuredHeight;
+
+        // 마지막 청크 flush
+        if (chunkStepIdxs.length > 0) {
+            addUnit(buildExpChunkHtml(item, chunkStepIdxs, isFirstChunk), chunkH);
+        }
     }
 
-    // 5단계: 해설지 DOM 렌더링
+    measureCol.remove();
+
+    // ── 5단계: 해설지 DOM 렌더링 ──
     const result = [];
     const totalPages = problemPageCount + expPagesList.length;
 
@@ -692,11 +879,11 @@ async function buildExplanationPages(expItems, problemPageCount) {
             const colDiv = document.createElement('div');
             colDiv.className = 'csat-col csat-exp-col';
 
-            col.items.forEach(item => {
-                const el = document.createElement('div');
-                el.className = 'csat-exp-item';
-                el.innerHTML = buildExpItemHtml(item);
-                colDiv.appendChild(el);
+            col.units.forEach(unit => {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = unit.html;
+                // unit.html의 최상위 요소(csat-exp-item)를 직접 삽입
+                while (wrapper.firstChild) colDiv.appendChild(wrapper.firstChild);
             });
 
             colsDiv.appendChild(colDiv);
@@ -736,12 +923,21 @@ function loadAndMeasureImage(src) {
     });
 }
 
+function setPrintPill(btn) {
+    const target = btn.dataset.target;
+    document.querySelectorAll(`.print-pill[data-target="${target}"]`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(target).value = btn.dataset.value;
+    openPrintPreview();
+}
+
 function closePrintPreview() {
     printModal.style.display = 'none';
     document.body.style.overflow = ''; // Restore background scrolling
     printModalBody.innerHTML = ''; // clear memory
     // 모듈 변수 초기화
     _previewLoadedItems = [];
+    _selectedSidebarIdx = null;
 }
 
 // Custom Alert Functions

@@ -15,121 +15,107 @@
 
 <body>
     <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <nav class="sidebar">
-            <div class="logo" style="cursor: pointer;" data-view="overview">
-                <div class="logo-icon"></div>
-                <h2>KICE 수학 검색</h2>
-            </div>
-            <!-- Sidebar Tabs -->
-            <div class="sidebar-tabs">
-                <button class="sidebar-tab active" data-tab="tab-keyword">개념유사도</button>
-                <button class="sidebar-tab" data-tab="tab-expression">기출표현</button>
-                <button class="sidebar-tab" data-tab="tab-unit">성취기준</button>
+        <!-- Top Navigation & Search -->
+        <header class="top-nav-container">
+            <div class="logo brand-container" style="cursor: pointer;" data-view="overview">
+                <span class="brand-kice">KICE</span>
+                <h1 class="brand" style="margin-top: -10px;">LYNX</h1>
+                <div class="brand-subtitle" style="margin-top: 5px;">Linking Yields & Nodes of eXams</div>
             </div>
 
-            <!-- Tab 1: 개념유사도 (Keyword/Similarity) -->
-            <div id="tab-keyword" class="sidebar-tab-content active">
-                <div class="sidebar-search">
-                    <input type="text" id="search-input" placeholder="해설 개념 검색 (예: 미분가능성)">
-                    <button id="search-btn" aria-label="검색">
-                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+            <!-- Search Mode Selector -->
+            <div class="search-mode-pills">
+                <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
+                <button class="search-pill" data-tab="tab-expression">기출표현</button>
+                <button class="search-pill" data-tab="tab-unit">성취기준</button>
+                <button class="search-pill" data-tab="tab-probid">문항번호</button>
+            </div>
+
+            <!-- 1. Keyword Search Input -->
+            <div id="tab-keyword" class="huge-search-wrapper active">
+                <div style="position: relative;">
+                    <input type="text" id="search-input" class="huge-search-input" placeholder="">
+                    <button id="search-btn" class="search-icon-btn" aria-label="검색">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                     </button>
                 </div>
-
-                <!-- Keyword Search Guide (Semantic) -->
-                <div id="keyword-search-guide"
-                    style="padding: 1rem; margin: 0.5rem 1rem; background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 8px; font-size: 0.85rem; display: block;">
-                    <div style="margin-bottom: 0.8rem;">
-                        <strong style="color: #a78bfa;">🔍 AI 유연한 검색 가이드</strong>
-                    </div>
-                    <ul style="padding-left: 1.2rem; color: var(--text-muted); margin-bottom: 0px; line-height: 1.6;">
-                        <li style="margin-bottom: 4px;"><strong>핵심 주제</strong>: <code>지수함수의 그래프</code>,
-                            <code>수열의 합</code>
-                        </li>
-                        <li style="margin-bottom: 4px;"><strong>문장형 질문</strong>: <code>삼각함수의 주기와 최대최소 구하기</code></li>
-                        <li style="margin-bottom: 4px;"><strong>특징</strong>: AI가 해설의 <strong>의미와 맥락</strong>을 분석하여 가장
-                            유사한 문항을 찾아냅니다.</li>
-                    </ul>
+                <div class="search-helper-text" id="keyword-search-guide">
+                    <span>AI 핵심 주제 / 문장형 질문 의미 탐색</span>
                 </div>
             </div>
 
-            <!-- Tab 2: 기출표현 (Expression) -->
-            <div id="tab-expression" class="sidebar-tab-content" style="flex: 1;">
-                <div class="sidebar-search">
-                    <input type="text" id="expression-search-input" placeholder="표현 검색 (예: 최대/최소)">
-                    <button id="expression-search-btn" aria-label="표현 검색" class="expression-btn">
-                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+            <!-- 2. Expression Search Input -->
+            <div id="tab-expression" class="huge-search-wrapper">
+                <div style="position: relative;">
+                    <input type="text" id="expression-search-input" class="huge-search-input"
+                        placeholder="">
+                    <button id="expression-search-btn" class="search-icon-btn" aria-label="표현 검색">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                     </button>
                 </div>
-
-                <!-- Expression Search Guide (Visible before search) -->
-                <div id="expression-search-guide"
-                    style="padding: 1rem; margin: 0.5rem 1rem; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; font-size: 0.85rem; display: block;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                        <strong style="color: #10b981;">💡 검색 규칙 가이드</strong>
-                        <a href="/docs/search_rules" id="view-search-rules-link" target="_blank"
-                            style="color: #3b82f6; text-decoration: none; font-size: 0.8rem; border-bottom: 1px dashed #3b82f6;">설명서
-                            열기 ↗</a>
-                    </div>
-                    <ul style="padding-left: 1.2rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6;">
-                        <li style="margin-bottom: 4px;"><strong>AND</strong>: <code>극댓값 미분</code> (공백)</li>
-                        <li style="margin-bottom: 4px;"><strong>OR</strong>: <code>등차 | 등비</code> (파이프)</li>
-                        <li style="margin-bottom: 4px;"><strong>NOT</strong>: <code>-삼각함수</code> (하이픈)</li>
-                        <li style="margin-bottom: 4px;"><strong>구문</strong>: <code>"두 실근"</code> (따옴표)</li>
-                        <li style="margin-bottom: 4px;"><strong>경로</strong>: <code>path:2025</code></li>
-                    </ul>
-                    <div style="color: #10b981; font-weight: 500; margin-bottom: 0.4rem; font-size: 0.8rem;">빠른 예시 클릭!
-                    </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="quick-query-tags">
-                        <span class="quick-query-tag" data-query="극댓값 | 극솟값"
-                            style="background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem; transition: background 0.2s;">극댓값
-                            | 극솟값</span>
-                        <span class="quick-query-tag" data-query="-삼각함수"
-                            style="background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem; transition: background 0.2s;">-삼각함수</span>
-                        <span class="quick-query-tag" data-query='path:2025 "오직 하나"'
-                            style="background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 4px; cursor: pointer; color: #a7f3d0; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem; transition: background 0.2s;">path:2025
-                            "오직 하나"</span>
-                    </div>
-                </div>
-
-                <!-- Expression Snippet List (Visible during/after search) -->
-                <div id="expression-snippet-container"
-                    style="display: none; flex: 1; flex-direction: column; overflow: hidden;">
-                    <div id="expression-count-header"
-                        style="padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 500; color: #10b981; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.15);">
-                        검색 결과: 0건
-                    </div>
-                    <!-- Scrollable list -->
-                    <div id="expression-snippet-list"
-                        style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 0.6rem 1rem; padding-bottom: 2rem;">
-                        <!-- Custom JS populated cards go here -->
-                    </div>
+                <div class="search-helper-text" id="expression-search-guide">
+                    <span>AND: 공백 | OR: 파이프(|) | NOT: 하이픈(-) | 구문: "따옴표" | 경로: path:</span>
+                    <a href="/docs/search_rules" target="_blank"
+                        style="color:var(--accent-cyan); display:flex; align-items:center;" title="설명서 열기">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </a>
                 </div>
             </div>
 
-            <!-- Tab 3: 성취기준 (Unit) -->
-            <div id="tab-unit" class="sidebar-tab-content">
-                <div class="obs-file-explorer" style="flex: 1; overflow-y: auto;">
-                    <div id="concept-tree" class="tree-content">
-                        <!-- Populated by JS -->
-                        <p class="placeholder-text" style="padding: 1rem 0; font-size: 0.9rem;">불러오는 중...</p>
-                    </div>
+            <!-- 3. Unit Search Selection (No input, just tree activation) -->
+            <div id="tab-unit" class="huge-search-wrapper">
+                <div style="text-align:center; color: var(--text-muted); font-size: 1.1rem; padding: 1rem;">
+                    아래에서 과목과 단원을 선택하여 특정 성취기준에 해당하는 문항을 탐색하세요.
                 </div>
             </div>
-        </nav>
+
+            <!-- 4. Problem ID Search Input -->
+            <div id="tab-probid" class="huge-search-wrapper">
+                <div style="position: relative;">
+                    <input type="text" id="probid-search-input" class="huge-search-input"
+                        placeholder="">
+                    <button id="probid-search-btn" class="search-icon-btn" aria-label="문항 검색">
+                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="search-helper-text">
+                    <span>특정 문항 식별자로 즉시 이동</span>
+                </div>
+            </div>
+        </header>
 
         <!-- Main Content Area -->
         <main class="main-content">
+
+            <!-- View: Expression Snippets List (replaces the sidebar snippet list) -->
+            <section id="view-expression-snippets" class="view-section">
+                <div id="expression-snippet-container" class="glass" style="display: none; padding: 1.5rem;">
+                    <h3 id="expression-count-header"
+                        style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+                        검색 결과: 0건</h3>
+                    <div id="expression-snippet-list"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; max-height: 600px; overflow-y: auto; padding-right: 0.5rem;">
+                        <!-- Custom JS populated cards go here -->
+                    </div>
+                </div>
+            </section>
 
             <!-- View: Expression Split-View Detail -->
             <section id="view-expression-detail" class="view-section">
@@ -141,9 +127,9 @@
                         <table class="search-table" id="exp-detail-table" style="display:none;">
                             <thead>
                                 <tr>
-                                    <th>문항번호</th>
-                                    <th>해설 단계별 요약</th>
-                                    <th>성취기준</th>
+                                    <th class="col-probid">문항번호</th>
+                                    <th class="col-step">해설 단계별 요약</th>
+                                    <th class="col-concept">성취기준</th>
                                 </tr>
                             </thead>
                             <tbody id="exp-detail-tbody">
@@ -168,37 +154,43 @@
 
             <!-- View 1: Overview -->
             <section id="view-overview" class="view-section active">
-                <div class="chart-card glass" style="padding: 1.5rem; margin-top: 1rem;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.8rem;">
-                        <h3 style="font-size: 1.15rem; color: #a78bfa;">분석 진행 상황</h3>
-                        <div id="total-progress-text"
-                            style="font-size: 1.2rem; font-weight: 600; color: var(--text-main);">- / -</div>
-                    </div>
+                <div
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; align-items: start;">
+                    <div class="chart-card glass" style="padding: 1.5rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.8rem;">
+                            <h3
+                                style="font-size: 1.15rem; color: var(--text-main); margin-bottom: 0; padding-bottom: 0; border: none;">
+                                분석 진행 상황</h3>
+                            <div id="total-progress-text"
+                                style="font-size: 1.2rem; font-weight: 600; color: var(--text-main);">- / -</div>
+                        </div>
 
-                    <!-- Total Progress Bar -->
-                    <div
-                        style="width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; margin-bottom: 2rem; overflow: hidden; border: 1px solid rgba(139, 92, 246, 0.2);">
-                        <div id="total-progress-bar"
-                            style="width: 0%; height: 100%; background: linear-gradient(90deg, #8b5cf6, #d8b4fe); transition: width 0.8s ease-out;">
+                        <!-- Total Progress Bar -->
+                        <div
+                            style="width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; margin-bottom: 2rem; overflow: hidden; border: 1px solid rgba(217, 70, 239, 0.2);">
+                            <div id="total-progress-bar"
+                                style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-magenta), var(--accent-cyan)); transition: width 0.8s ease-out;">
+                            </div>
+                        </div>
+
+                        <div id="yearly-progress-container" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                            <!-- Row 1: 2026-2022 -->
+                            <div id="yearly-row-1" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
+                            <!-- Row 2: Others -->
+                            <div id="yearly-row-2" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
                         </div>
                     </div>
 
-                    <div id="yearly-progress-container" style="display: flex; flex-direction: column; gap: 1.2rem;">
-                        <!-- Row 1: 2026-2022 -->
-                        <div id="yearly-row-1" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
-                        <!-- Row 2: Others -->
-                        <div id="yearly-row-2" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
-                    </div>
-                </div>
-
-                <div class="charts-grid" style="grid-template-columns: 1fr; gap: 1.5rem; margin-top: 1.5rem;">
                     <div class="chart-card glass" style="padding: 1.5rem;">
-                        <h3 style="margin-bottom: 1.2rem; color: #a78bfa; font-size: 1.2rem;">💡 검색 및 분석 활용 가이드</h3>
+                        <h3
+                            style="margin-bottom: 1.2rem; color: var(--text-main); font-size: 1.2rem;">
+                            검색 및 분석 활용 가이드</h3>
 
                         <div
-                            style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-                            <strong style="color: #f87171; display: block; margin-bottom: 0.5rem;">⚠️ 미적분II 및 기하 과목 분석
+                            style="background: rgba(217, 70, 239, 0.06); border: 1px solid rgba(217, 70, 239, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                            <strong style="color: #f472b6; display: block; margin-bottom: 0.5rem;">미적분II 및 기하
+                                과목 분석
                                 안내</strong>
                             <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
                                 미적분II와 기하는 <strong>'기출표현'</strong> 탭을 통한 문항의 텍스트 검색만 가능합니다.<br>
@@ -207,14 +199,12 @@
                         </div>
 
                         <div
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
                             <div
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
-                                    style="color: #a78bfa; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
-                                    <span
-                                        style="background: rgba(167, 139, 250, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
-                                    </span> 개념유사도
+                                    style="color: #e879f9; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    개념유사도
                                 </h4>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">AI가 해설의 맥락을
                                     분석하여 검색어와 핵심 원리가 가장 비슷한 문항을 추천합니다.</p>
@@ -222,10 +212,8 @@
                             <div
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
-                                    style="color: #c4b5fd; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
-                                    <span
-                                        style="background: rgba(196, 181, 253, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
-                                    </span> 기출표현
+                                    style="color: #a855f7; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    기출표현
                                 </h4>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">문제에 실린
                                     구체적인 수식, 조건, 단어 등 원본 텍스트를 정밀하게 검색합니다.</p>
@@ -233,14 +221,20 @@
                             <div
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
-                                    style="color: #ddd6fe; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
-                                    <span
-                                        style="background: rgba(221, 214, 254, 0.15); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;">
-                                    </span> 성취기준
+                                    style="color: #818cf8; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    성취기준
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">교육과정의 성취기준을
-                                    선택하면
-                                    해당 성취기준에 해당하는 문항을 탐색할 수 있습니다.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">교육과정의 성취기준
+                                    폴더를 탐색하여 특정 단원에 해당하는 문항을 찾습니다.</p>
+                            </div>
+                            <div
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                <h4
+                                    style="color: #22d3ee; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    문항번호
+                                </h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">수능·모의평가 문항번호를
+                                    직접 입력(예: 2026.9모_공22)하여 빠르게 검색합니다.</p>
                             </div>
                         </div>
                     </div>
@@ -249,16 +243,28 @@
 
             <!-- View: Concepts Tree -->
             <section id="view-concepts" class="view-section">
-                <div class="split-view-container">
-                    <!-- Complete Results Area -->
-                    <div class="concept-results-panel glass">
-                        <h3 id="concept-results-title">선택된 개념: 없음</h3>
-                        <p class="kpi-desc" id="concept-results-desc">좌측 분류에서 단원명을 클릭하면 해당 단원의 개념 목록이 나타나며, 개념을 선택하면 관련
-                            문항이 검색됩니다.</p>
+                <div class="split-pane-layout active">
+                    <!-- Left: Tree -->
+                    <div class="pane-box pane-left">
+                        <h3 class="pane-title"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
+                                stroke-width="2" fill="none">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                                </path>
+                            </svg> 과목 및 단원</h3>
+                        <div class="pane-content obs-file-explorer" id="concept-tree">
+                            <p class="placeholder-text" style="padding: 1rem 0; font-size: 0.9rem;">불러오는 중...</p>
+                        </div>
+                    </div>
 
-                        <div id="concept-results-content" class="results-container mt-3">
+                    <!-- Right: Results -->
+                    <div class="pane-box pane-right">
+                        <h3 class="pane-title" id="concept-results-title">선택된 단원: 없음</h3>
+                        <div class="pane-content">
+                            <p class="kpi-desc" id="concept-results-desc">좌측 분류에서 단원명을 클릭하면 해당 단원의 성취기준 목록이 나타납니다.</p>
+
                             <!-- Selected unit's concepts list -->
-                            <ul id="unit-concepts-list" class="concept-badge-list" style="display:none;"></ul>
+                            <ul id="unit-concepts-list" class="concept-badge-list"
+                                style="display:none; margin-top: 1rem;"></ul>
 
                             <hr class="fade-hr" id="concept-divider" style="display:none;">
 
@@ -266,9 +272,9 @@
                             <table class="search-table" id="concept-search-table" style="display:none;">
                                 <thead>
                                     <tr>
-                                        <th>문항번호</th>
-                                        <th>해설 단계별 요약</th>
-                                        <th>성취기준</th>
+                                        <th class="col-probid">문항번호</th>
+                                        <th class="col-step">해설 단계별 요약</th>
+                                        <th class="col-concept">성취기준</th>
                                     </tr>
                                 </thead>
                                 <tbody id="concept-search-tbody">
@@ -290,31 +296,37 @@
                     <div id="search-history-nav" style="
                         display: none;
                         align-items: center; gap: 0.75rem;
-                        padding: 0.6rem 1rem; margin-bottom: 0.5rem;
-                        background: rgba(139,92,246,0.08);
-                        border-radius: 8px; border: 1px solid rgba(139,92,246,0.2);
+                        padding: 0.5rem 0.9rem; margin-bottom: 0.5rem;
+                        background: rgba(217,70,239,0.06);
+                        border-radius: 8px;
+                        border: 1px solid rgba(217,70,239,0.18);
+                        backdrop-filter: blur(8px);
                     ">
                         <button id="history-back-btn" onclick="navigateHistory(-1)" style="
-                            background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3);
-                            color: #a78bfa; border-radius: 6px; width: 28px; height: 28px;
-                            cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
-                        " title="이전 검색">
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5"
+                            background: rgba(217,70,239,0.12); border: 1px solid rgba(217,70,239,0.25);
+                            color: var(--accent-magenta); border-radius: 6px; width: 26px; height: 26px;
+                            cursor: pointer; display: flex; align-items: center; justify-content: center;
+                            transition: all 0.15s; flex-shrink: 0;
+                        " onmouseover="this.style.background='rgba(217,70,239,0.25)'"
+                            onmouseout="this.style.background='rgba(217,70,239,0.12)'" title="이전 검색">
+                            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5"
                                 fill="none" stroke-linecap="round">
                                 <polyline points="15 18 9 12 15 6" />
                             </svg>
                         </button>
                         <span id="search-history-label" style="
-                            flex: 1; font-size: 0.83rem; color: #c4b5fd;
+                            flex: 1; font-size: 0.82rem; color: var(--accent-cyan);
                             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                            text-align: center;
+                            text-align: center; letter-spacing: 0.02em;
                         "></span>
                         <button id="history-fwd-btn" onclick="navigateHistory(1)" style="
-                            background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.3);
-                            color: #a78bfa; border-radius: 6px; width: 28px; height: 28px;
-                            cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
-                        " title="다음 검색">
-                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5"
+                            background: rgba(217,70,239,0.12); border: 1px solid rgba(217,70,239,0.25);
+                            color: var(--accent-magenta); border-radius: 6px; width: 26px; height: 26px;
+                            cursor: pointer; display: flex; align-items: center; justify-content: center;
+                            transition: all 0.15s; flex-shrink: 0;
+                        " onmouseover="this.style.background='rgba(217,70,239,0.25)'"
+                            onmouseout="this.style.background='rgba(217,70,239,0.12)'" title="다음 검색">
+                            <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5"
                                 fill="none" stroke-linecap="round">
                                 <polyline points="9 18 15 12 9 6" />
                             </svg>
@@ -326,9 +338,9 @@
                     <table class="search-table" id="main-search-table" style="display:none;">
                         <thead>
                             <tr>
-                                <th>문항번호</th>
-                                <th>해설 단계별 요약</th>
-                                <th>성취기준</th>
+                                <th class="col-probid">문항번호</th>
+                                <th class="col-step">해설 단계별 요약</th>
+                                <th class="col-concept">성취기준</th>
                             </tr>
                         </thead>
                         <tbody id="search-tbody">
@@ -347,16 +359,70 @@
             <span id="cart-badge">0</span>
             <svg id="cart-toggle-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
                 fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="18 15 12 9 6 15"></polyline>
+                <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         </div>
-        <div class="cart-header">
-            <h3 style="margin: 0; font-size: 1rem; color: #a78bfa;">담은 문항 목록</h3>
-            <div style="display: flex; gap: 8px;">
-                <button id="cart-clear-btn" class="cart-btn"
-                    style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">비우기</button>
-                <button id="cart-preview-btn" class="cart-btn"
-                    style="background: var(--accent-blue); color: white;">미리보기</button>
+        <div class="cart-header" style="flex-direction: column; gap: 0.6rem; align-items: stretch;">
+            <h3 style="margin: 0; font-size: 0.95rem; color: var(--accent-cyan); letter-spacing: 0.03em;">담은 문항 목록</h3>
+            <div style="display: flex; gap: 6px; align-items: stretch;">
+                <button id="cart-preview-btn" class="cart-btn" style="
+                    flex: 1;
+                    background: linear-gradient(90deg, rgba(217,70,239,0.2), rgba(6,182,212,0.2));
+                    color: var(--text-main);
+                    border: 1px solid rgba(6,182,212,0.35);
+                    border-radius: 8px;
+                    padding: 0.5rem 0;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    letter-spacing: 0.04em;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                " onmouseover="this.style.background='linear-gradient(90deg,rgba(217,70,239,0.4),rgba(6,182,212,0.4))'"
+                    onmouseout="this.style.background='linear-gradient(90deg,rgba(217,70,239,0.2),rgba(6,182,212,0.2))'">
+                    미리보기 / 인쇄
+                </button>
+                <!-- ⋮ kebab menu -->
+                <div style="position: relative;">
+                    <button id="cart-kebab-btn" title="더보기" style="
+                        background: rgba(255,255,255,0.06);
+                        border: 1px solid rgba(255,255,255,0.12);
+                        border-radius: 8px;
+                        color: var(--text-muted);
+                        width: 34px; height: 100%;
+                        cursor: pointer; font-size: 1.1rem;
+                        display: flex; align-items: center; justify-content: center;
+                        transition: all 0.2s;
+                    " onclick="toggleKebabMenu(event)">⋮</button>
+                    <div id="cart-kebab-menu" style="
+                        display: none; position: absolute; right: 0; top: calc(100% + 4px);
+                        background: rgba(20,16,28,0.95);
+                        backdrop-filter: blur(16px);
+                        border: 1px solid rgba(217,70,239,0.25);
+                        border-radius: 8px;
+                        box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 16px rgba(217,70,239,0.1);
+                        min-width: 150px; z-index: 200; overflow: hidden;
+                    ">
+                        <button onclick="doubleCart()" style="
+                            display: block; width: 100%; padding: 0.6rem 1rem;
+                            background: none; border: none; text-align: left;
+                            color: var(--accent-cyan); font-size: 0.83rem; cursor: pointer;
+                            transition: background 0.15s;
+                        " onmouseover="this.style.background='rgba(6,182,212,0.1)'"
+                            onmouseout="this.style.background='none'">
+                            🔗 더블 — 유사 문항 자동 추가
+                        </button>
+                        <div style="height: 1px; background: rgba(255,255,255,0.07); margin: 0 8px;"></div>
+                        <button onclick="clearCart()" style="
+                            display: block; width: 100%; padding: 0.6rem 1rem;
+                            background: none; border: none; text-align: left;
+                            color: #f87171; font-size: 0.83rem; cursor: pointer;
+                            transition: background 0.15s;
+                        " onmouseover="this.style.background='rgba(239,68,68,0.1)'"
+                            onmouseout="this.style.background='none'">
+                            🗑 전체 비우기
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <div id="cart-items-container">
@@ -369,31 +435,29 @@
     <div id="print-preview-modal" style="display: none;">
         <div id="print-preview-backdrop"></div>
         <div id="print-preview-header" class="no-print">
-            <h2 style="margin: 0; font-size: 1.25rem; color: #f8fafc;">인쇄 미리보기</h2>
-            <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                    <label for="answer-display-opt" style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;">정답
-                        표시:</label>
-                    <select id="answer-display-opt" onchange="openPrintPreview()">
-                        <option value="none" selected>표시 안 함</option>
-                        <option value="inline">각 문항에 표시</option>
-                        <option value="end">마지막 장에 모아서 표시</option>
-                    </select>
+            <h2 class="print-header-title">인쇄 미리보기</h2>
+            <input type="hidden" id="answer-display-opt" value="none">
+            <input type="hidden" id="explanation-display-opt" value="none">
+            <div class="print-header-controls">
+                <div class="print-header-pill-group">
+                    <span class="print-header-pill-label">정답 표기</span>
+                    <div class="print-header-pills">
+                        <button class="print-pill active" data-target="answer-display-opt" data-value="none" onclick="setPrintPill(this)">미표기</button>
+                        <button class="print-pill" data-target="answer-display-opt" data-value="inline" onclick="setPrintPill(this)">각 문항</button>
+                        <button class="print-pill" data-target="answer-display-opt" data-value="end" onclick="setPrintPill(this)">문제지 끝</button>
+                    </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                    <label for="explanation-display-opt"
-                           style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;">해설 표시:</label>
-                    <select id="explanation-display-opt" onchange="openPrintPreview()">
-                        <option value="none" selected>작성 안 함</option>
-                        <option value="separate">문제지 끝에 해설 추가</option>
-                    </select>
+                <div class="print-header-pill-divider"></div>
+                <div class="print-header-pill-group">
+                    <span class="print-header-pill-label">해설</span>
+                    <div class="print-header-pills">
+                        <button class="print-pill active" data-target="explanation-display-opt" data-value="none" onclick="setPrintPill(this)">미작성</button>
+                        <button class="print-pill" data-target="explanation-display-opt" data-value="separate" onclick="setPrintPill(this)">작성</button>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 12px;">
-                    <button class="cart-btn" style="background: var(--accent-purple); color: white;"
-                        onclick="window.print()">PDF 저장</button>
-                    <button class="cart-btn"
-                        style="background: rgba(255,255,255,0.1); color: #f8fafc; border: 1px solid rgba(255,255,255,0.2);"
-                        onclick="closePrintPreview()">닫기</button>
+                <div class="print-header-actions">
+                    <button class="print-btn-pdf" onclick="window.print()">PDF 저장</button>
+                    <button class="print-btn-close" onclick="closePrintPreview()">닫기</button>
                 </div>
             </div>
         </div>
@@ -401,8 +465,6 @@
             <div id="print-sidebar" class="no-print">
                 <div class="sidebar-title">문항 순서</div>
                 <ul id="sidebar-order-list"></ul>
-                <!-- Drop zone for the very end -->
-                <div id="sidebar-order-end-dropzone" class="drag-drop-zone-end" style="height: 20px; transition: height 0.2s;"></div>
             </div>
             <div id="print-preview-scroll-area">
                 <div id="print-preview-content">
@@ -421,20 +483,58 @@
         // Tab Navigation Logic
         const viewSections = document.querySelectorAll('.view-section');
         const logoBtn = document.querySelector('.logo');
-        const conceptTree = document.getElementById('concept-tree');
+
+        const searchPills = document.querySelectorAll('.search-pill');
+        const searchWrappers = document.querySelectorAll('.huge-search-wrapper');
 
         function switchView(viewName) {
-            // Remove active classes from dynamically created subjects/folders when switching away
             if (viewName !== 'concepts') {
                 document.querySelectorAll('.obs-nav-folder-title, .obs-nav-item').forEach(el => el.classList.remove('active'));
             }
-
-            // Switch main sections
             viewSections.forEach(sec => {
                 sec.classList.remove('active');
                 if (sec.id === 'view-' + viewName) sec.classList.add('active');
             });
         }
+
+        searchPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                searchPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+
+                const targetTab = pill.getAttribute('data-tab');
+                searchWrappers.forEach(w => w.classList.remove('active'));
+                const targetWrapper = document.getElementById(targetTab);
+                if (targetWrapper) targetWrapper.classList.add('active');
+
+                // Update typing animations
+                if (window.typeWriters) {
+                    Object.values(window.typeWriters).forEach(tw => tw.stop());
+                    if (window.typeWriters[targetTab]) {
+                        window.typeWriters[targetTab].start();
+                    }
+                }
+
+                if (targetTab === 'tab-unit') {
+                    switchView('concepts');
+                } else if (targetTab === 'tab-expression') {
+                    // Start fresh if they just clicked the tab, could show earlier results but let's reset to overview until search is run
+                    const snippetContainer = document.getElementById('expression-snippet-container');
+                    if (snippetContainer.style.display === 'block') {
+                        switchView('expression-snippets');
+                    } else {
+                        switchView('overview');
+                    }
+                } else {
+                    const searchTable = document.getElementById('main-search-table');
+                    if (searchTable.style.display !== 'none' && targetTab === 'tab-keyword') {
+                        switchView('search');
+                    } else {
+                        switchView('overview');
+                    }
+                }
+            });
+        });
 
         logoBtn.addEventListener('click', () => {
             switchView('overview');
@@ -500,12 +600,117 @@
             }
         }
 
+        // Typing Animations
+        class Typewriter {
+            constructor(element, texts, baseSpeed = 80, isLongSentence = false) {
+                this.element = element;
+                this.texts = texts;
+                this.textIndex = 0;
+                this.charIndex = 0;
+                this.isDeleting = false;
+                this.timer = null;
+                this.isActive = false;
+                this.originalPlaceholder = element ? (element.getAttribute('placeholder') || '') : '';
+                this.baseSpeed = baseSpeed;
+                this.isLongSentence = isLongSentence;
+            }
+
+            start() {
+                if (!this.element) return;
+                this.isActive = true;
+                this.element.setAttribute('placeholder', '');
+                this.type();
+            }
+
+            stop() {
+                if (!this.element) return;
+                this.isActive = false;
+                clearTimeout(this.timer);
+                this.element.setAttribute('placeholder', this.originalPlaceholder);
+                this.textIndex = 0;
+                this.charIndex = 0;
+                this.isDeleting = false;
+            }
+
+            type() {
+                if (!this.isActive || !this.element) return;
+
+                const currentText = this.texts[this.textIndex];
+
+                if (this.isDeleting) {
+                    this.charIndex--;
+                } else {
+                    this.charIndex++;
+                }
+
+                this.element.setAttribute('placeholder', currentText.substring(0, this.charIndex));
+
+                let typeSpeed = this.isDeleting ? (this.isLongSentence ? 15 : 30) : (this.isLongSentence ? 40 : this.baseSpeed);
+
+                if (!this.isDeleting && this.charIndex === currentText.length) {
+                    typeSpeed = this.isLongSentence ? 3500 : 2500; // Pause at end
+                    this.isDeleting = true;
+                } else if (this.isDeleting && this.charIndex === 0) {
+                    this.isDeleting = false;
+                    this.textIndex = (this.textIndex + 1) % this.texts.length;
+                    typeSpeed = 500; // Pause before next word
+                }
+
+                this.timer = setTimeout(() => this.type(), typeSpeed);
+            }
+        }
+
+        window.typeWriters = {
+            'tab-keyword': new Typewriter(document.getElementById('search-input'), [
+                "정적분으로 정의된 함수에서 극값 조건을 활용하기",
+                "유리수와 무리수",
+                "다항식의 나눗셈",
+                "삼각함수의 그래프와 삼각방정식의 실근"
+            ], 60, true),
+            'tab-expression': new Typewriter(document.getElementById('expression-search-input'), [
+                "직각삼각형 AND 외접원",
+                "(최댓값 OR 최솟값) NOT 절댓값",
+                "\"서로 다른 두 실근\"",
+                "path:2025 \"오직 하나\""
+            ], 60, false),
+            'tab-probid': new Typewriter(document.getElementById('probid-search-input'), [
+                "20번",
+                "2026.9모_공22",
+                "2025.수능_미적28",
+                "2024년 15번",
+                "2026 수능 확 28"
+            ], 60, false)
+        };
+
+        // Start initial animation based on active tab
+        setTimeout(() => {
+            const initialTab = document.querySelector('.search-pill.active')?.getAttribute('data-tab');
+            if (initialTab && window.typeWriters[initialTab]) {
+                window.typeWriters[initialTab].start();
+            }
+            // Stop when user focuses input
+            Object.values(window.typeWriters).forEach(tw => {
+                if (tw.element) {
+                    tw.element.addEventListener('focus', () => tw.stop());
+                    tw.element.addEventListener('blur', () => {
+                        if (tw.element.value.trim() === '' && document.querySelector(`.search-pill[data-tab="${Object.keys(window.typeWriters).find(k => window.typeWriters[k] === tw)}"]`)?.classList.contains('active')) {
+                            tw.start();
+                        }
+                    });
+                }
+            });
+        }, 100);
+
         // Search Logic
         const searchInput = document.getElementById('search-input');
         const searchBtn = document.getElementById('search-btn');
         const searchTable = document.getElementById('main-search-table');
         const searchTbody = document.getElementById('search-tbody');
         const placeholderText = document.querySelector('.placeholder-text');
+
+        // Probid Search Elements
+        const probidInput = document.getElementById('probid-search-input');
+        const probidBtn = document.getElementById('probid-search-btn');
 
         let searchCurrentQuery = '';
 
@@ -519,6 +724,10 @@
             // Loading state
             const placeholderMsg = document.getElementById('search-placeholder-msg');
             if (placeholderMsg) placeholderMsg.style.display = 'block';
+
+            // 검색 시작 시 검색 도움말 숨김
+            const kwGuide = document.getElementById('keyword-search-guide');
+            if (kwGuide) kwGuide.style.display = 'none';
 
             placeholderMsg.innerText = 'Searching...';
             searchTable.style.display = 'none';
@@ -574,6 +783,56 @@
                 }
             }
         }
+
+        async function performProbidSearch(queryInput) {
+            const query = typeof queryInput === 'string' ? queryInput : probidInput.value.trim();
+            if (!query) return;
+
+            switchView('search');
+
+            const placeholderMsg = document.getElementById('search-placeholder-msg');
+            if (placeholderMsg) placeholderMsg.style.display = 'block';
+            placeholderMsg.innerText = 'Searching...';
+            searchTable.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/search_probid?q=' + encodeURIComponent(query));
+                const data = await response.json();
+
+                if (data.results.length === 0) {
+                    if (placeholderMsg) placeholderMsg.innerText = 'No results found for "' + query + '".';
+                } else {
+                    if (placeholderMsg) placeholderMsg.style.display = 'none';
+                    const groups = {};
+                    data.results.forEach(row => {
+                        if (!groups[row.problem_id]) groups[row.problem_id] = [];
+                        groups[row.problem_id].push(row);
+                    });
+
+                    const doRender = () => {
+                        renderMainTable(groups, undefined, {}, 'main-search-table', 'search-tbody', new Set());
+                    };
+
+                    doRender();
+                    pushHistory(query, doRender);
+                }
+
+                if (window.renderMathInElement) {
+                    renderMathInElement(searchTbody, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }] });
+                }
+            } catch (error) {
+                console.error("Probid Search failed", error);
+                if (placeholderMsg) {
+                    placeholderMsg.style.display = 'block';
+                    placeholderMsg.innerText = "Error: " + String(error);
+                }
+            }
+        }
+
+        if (probidBtn) probidBtn.addEventListener('click', performProbidSearch);
+        if (probidInput) probidInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performProbidSearch();
+        });
 
         async function fetchConceptsTree() {
             try {
@@ -765,7 +1024,7 @@
                 globalTooltip.style.overflow = 'hidden';
             } else {
                 globalTooltip.style.padding = '1.25rem';
-                globalTooltip.style.maxWidth = '500px';
+                globalTooltip.style.maxWidth = trigger.hasAttribute('data-tooltip-wide') ? '650px' : '500px';
                 globalTooltip.style.width = 'max-content';
                 globalTooltip.style.overflow = 'visible';
             }
@@ -817,10 +1076,11 @@
 
         document.addEventListener('mouseout', (e) => {
             const trigger = e.target.closest('.tooltip-trigger');
-            if (trigger) {
-                globalTooltip.style.visibility = 'hidden';
-                globalTooltip.style.opacity = '0';
-            }
+            if (!trigger) return;
+            // Don't hide if the mouse is moving to a child element inside the same trigger
+            if (trigger.contains(e.relatedTarget)) return;
+            globalTooltip.style.visibility = 'hidden';
+            globalTooltip.style.opacity = '0';
         });
 
         // ── 검색 히스토리 ─────────────────────────────────────
@@ -867,7 +1127,7 @@
 
             // If orderedProbIds isn't provided, use groups keys as-is
             const pids = orderedProbIds || Object.keys(groups);
-            const linkSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+            const linkSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
 
             pids.forEach(pid => {
                 let rows = groups[pid];
@@ -881,52 +1141,55 @@
 
                 rows.forEach((row, index) => {
                     const tr = document.createElement('tr');
+                    tr.dataset.probGroup = pid; // for group hover
                     const safeTrigger = row.trigger_text || '';
                     const rawExplanation = row.explanation_html || row.explanation_text || '해설 내용이 없습니다.';
                     let html = '';
 
-                    const reportSvg = KICE_OFFLINE ? '' : `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
                     const fullConcept = (row.ref_code || row.action_concept_id || '') + ' ' + (row.standard_name || '');
 
                     let textStyle = '';
                     if (matchStepIds && matchStepIds.has(String(row.step_id))) {
-                        textStyle = 'color: #c4b5fd; font-weight: 600;';
+                        textStyle = 'color: var(--accent-cyan); font-weight: 600;';
                     }
 
                     if (index === 0) {
                         const pdfImg = `<img src="/thumbnail/${pid}" style="width:480px;height:auto;display:block;border-radius:4px;" alt="${pid}">`;
-                        html += `<td rowspan="${rowCount}" style="vertical-align:top; border-right: 1px solid rgba(255, 255, 255, 0.05);">
-                            <span class="tag tag-blue prob-id-trigger tooltip-trigger" style="cursor:pointer; user-select:none;" data-prob-id="${pid}" data-tooltip="${encodeURIComponent(pdfImg)}" onclick="toggleCartItem('${pid}')">${pid}</span>`;
+                        html += `<td class="col-probid" rowspan="${rowCount}" style="border-right: 1px solid rgba(255, 255, 255, 0.05);">
+                            <span class="prob-id-glass-tag prob-id-trigger tooltip-trigger" style="cursor:pointer; user-select:none;" data-prob-id="${pid}" data-tooltip="${encodeURIComponent(pdfImg)}" onclick="toggleCartItem('${pid}')">${pid}</span>`;
 
                         if (score && score.cos_similarity !== undefined) {
                             const pct = Math.round((score.cos_similarity || 0) * 100);
                             const barColor = score.same_concept
-                                ? 'linear-gradient(90deg,#7c3aed,#a78bfa)'
-                                : (pct >= 70 ? 'linear-gradient(90deg,#0d9488,#34d399)' : 'linear-gradient(90deg,#1e3a5f,#3b82f6)');
+                                ? 'linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta))'
+                                : (pct >= 70 ? 'linear-gradient(90deg, rgba(6, 182, 212, 0.5), var(--accent-cyan))' : 'linear-gradient(90deg, rgba(217, 70, 239, 0.5), var(--accent-magenta))');
                             const badge = score.same_concept
-                                ? `<span class="tag" style="background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed44;font-size:0.7rem;">동일개념</span>` : '';
-                            html += `<div style="margin-top:0.4rem;font-size:0.72rem;color:#64748b;display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;">
+                                ? `<span class="tag" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); font-size: 0.7rem;">동일개념</span>` : '';
+                            html += `<div style="margin-top:0.4rem;font-size:0.72rem;color:var(--text-muted);display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;">
                                         <span style="display:inline-block;height:4px;width:${Math.min(pct, 60)}px;border-radius:2px;background:${barColor};vertical-align:middle;"></span>
-                                        <span>${pct}%</span>${badge}
+                                        <span style="color:var(--text-main); font-family:'Courier New', monospace;">${pct}%</span>${badge}
                                     </div>`;
                         }
                         html += `</td>`;
                     }
 
                     html += `
-                        <td class="latex-font" style="white-space:normal;">
-                            <div class="tooltip-trigger" data-tooltip="${encodeURIComponent(rawExplanation)}"
-                                 style="display:flex;align-items:flex-start;gap:0.5rem;">
-                                ${row.step_id ? `<span class="step-title-clickable" title="유사 스텝 검색"
-                                    data-step-id="${row.step_id}"
-                                    data-step-title="${encodeURIComponent(row.step_title || safeTrigger)}"
-                                    data-concept-id="${row.action_concept_id || ''}"
-                                    style="opacity:0.45;cursor:pointer;flex-shrink:0;color:#a78bfa;margin-top:2px;"
-                                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">${linkSvg}</span>` : ''}
-                                <span style="flex:1; transition: all 0.2s; ${textStyle}">${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
+                        <td class="col-step latex-font">
+                            <div class="tooltip-trigger" data-tooltip="${encodeURIComponent(rawExplanation)}" data-tooltip-wide="true"
+                                 style="display:grid; grid-template-columns: 20px 1fr; gap: 4px; align-items: start; width:100%;">
+                                <span style="display:flex; align-items:center; justify-content:center; padding-top:2px;">
+                                    ${row.step_id ? `<span class="step-title-clickable" title="유사 스텝 검색"
+                                        data-step-id="${row.step_id}"
+                                        data-step-title="${encodeURIComponent(row.step_title || safeTrigger)}"
+                                        data-concept-id="${row.action_concept_id || ''}"
+                                        style="opacity:0.6;cursor:pointer;color:var(--accent-magenta);"
+                                        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">${linkSvg}</span>` : ''}
+                                </span>
+                                <span style="transition: all 0.2s; ${textStyle}">${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
                             </div>
                         </td>
-                        <td class="concept-edit-cell tooltip-trigger"
+                        <td class="col-concept concept-edit-cell tooltip-trigger"
+                            data-tooltip="${encodeURIComponent(fullConcept)}"
                             data-step-id="${row.step_id}"
                             data-problem-id="${pid}"
                             data-step-number="${row.step_number || ''}"
@@ -935,17 +1198,32 @@
                             data-standard-name="${row.standard_name || ''}"
                             data-step-title="${encodeURIComponent(row.step_title || '')}"
                             data-explanation="${encodeURIComponent(row.explanation_html || row.explanation_text || '')}"
-                            data-tooltip="${encodeURIComponent(fullConcept)}"
-                            title="오류 제보">
+                            title="">
                             <div style="display:flex;align-items:center;gap:6px;cursor:pointer;">
                                 <span class="concept-display" style="display:inline-block;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">
                                     ${fullConcept}
                                 </span>
-                                <span class="edit-pencil" style="opacity:0;transition:opacity 0.15s;font-size:0.75rem;color:#a78bfa;flex-shrink:0;">${reportSvg}</span>
                             </div>
                         </td>`;
                     tr.innerHTML = html;
+                    // Set data-tooltip directly via DOM to avoid innerHTML attribute injection issues
+                    const conceptCell = tr.querySelector('td.col-concept');
+                    if (conceptCell) {
+                        conceptCell.setAttribute('data-tooltip', fullConcept);
+                    }
                     searchTbody.appendChild(tr);
+                });
+            });
+
+            // Group hover: highlight ALL rows of the same problem together
+            searchTbody.querySelectorAll('tr[data-prob-group]').forEach(tr => {
+                tr.addEventListener('mouseenter', () => {
+                    const grp = tr.dataset.probGroup;
+                    searchTbody.querySelectorAll(`tr[data-prob-group="${grp}"]`).forEach(r => r.classList.add('group-hovered'));
+                });
+                tr.addEventListener('mouseleave', () => {
+                    const grp = tr.dataset.probGroup;
+                    searchTbody.querySelectorAll(`tr[data-prob-group="${grp}"]`).forEach(r => r.classList.remove('group-hovered'));
                 });
             });
 
@@ -1191,473 +1469,7 @@
         fetchConceptsTree();
     </script>
 
-    {% if not offline_mode %}
-    <!-- ── 오류 제보 사이드 패널 ──────────────────────────── -->
-    <div id="concept-picker-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:900;"
-        onclick="closeConceptPicker()"></div>
 
-    <div id="concept-picker-panel" style="
-        position:fixed;top:0;right:-500px;width:480px;height:100vh;
-        background:var(--sidebar-bg,#1a1a2e);border-left:1px solid rgba(16,185,129,0.3);
-        display:flex;flex-direction:column;z-index:901;
-        transition:right 0.25s cubic-bezier(0.4,0,0.2,1);
-        box-shadow:-8px 0 32px rgba(0,0,0,0.5);
-        overflow:hidden;
-    ">
-        <!-- 고정 헤더 -->
-        <div style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:rgba(0,0,0,0.2);">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
-                <div>
-                    <strong style="color:#f59e0b;font-size:0.95rem;">⚠️ 오류 제보</strong>
-                    <div id="report-panel-subtitle" style="font-size:0.78rem;color:#64748b;margin-top:0.2rem;"></div>
-                </div>
-                <button onclick="closeConceptPicker()"
-                    style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.3rem;line-height:1;flex-shrink:0;">&times;</button>
-            </div>
-        </div>
-
-        <!-- 스크롤 영역 -->
-        <div style="flex:1;overflow-y:auto;padding:1.25rem;">
-
-            <!-- 뷰 A: 로딩 -->
-            <div id="report-view-loading" style="display:flex;justify-content:center;align-items:center;height:200px;color:#64748b;font-size:0.9rem;">
-                불러오는 중...
-            </div>
-
-            <!-- 뷰 B: 기존 제보 목록 -->
-            <div id="report-view-pending" style="display:none;">
-                <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#fbbf24;">
-                    이 스텝에 대해 처리 중인 제보가 있습니다.
-                    <span id="pending-count-badge" style="font-weight:700;"></span>
-                </div>
-                <div id="pending-report-list" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;"></div>
-                <div id="pending-report-detail" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1rem;font-size:0.85rem;display:none;">
-                    <div style="margin-bottom:0.5rem;">
-                        <span style="color:#94a3b8;font-size:0.78rem;">제보 일시</span>
-                        <div id="pending-detail-time" style="color:#e2e8f0;margin-top:0.2rem;"></div>
-                    </div>
-                    <div style="margin-bottom:0.5rem;">
-                        <span style="color:#94a3b8;font-size:0.78rem;">보고된 항목</span>
-                        <div id="pending-detail-fields" style="margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.3rem;"></div>
-                    </div>
-                    <div>
-                        <span style="color:#94a3b8;font-size:0.78rem;">제보 내용</span>
-                        <div id="pending-detail-message" style="color:#e2e8f0;margin-top:0.2rem;white-space:pre-wrap;line-height:1.5;background:rgba(0,0,0,0.2);padding:0.6rem;border-radius:6px;"></div>
-                    </div>
-                </div>
-                <button onclick="switchToReportForm()" style="
-                    margin-top:1rem;width:100%;padding:0.6rem;
-                    background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);
-                    color:#10b981;border-radius:8px;cursor:pointer;font-size:0.85rem;
-                    transition:background 0.15s;">+ 추가 제보하기</button>
-            </div>
-
-            <!-- 뷰 C: 제보 작성 폼 -->
-            <div id="report-view-form" style="display:none;">
-                <!-- 문항번호 + 썸네일 호버 -->
-                <div id="report-form-pid-row" style="margin-bottom:0.6rem;display:flex;align-items:center;gap:0.4rem;">
-                    <span style="font-size:0.75rem;color:#64748b;">문항</span>
-                    <span id="report-form-pid-wrap" style="position:relative;display:inline-block;">
-                        <span id="report-form-pid-text" style="font-size:0.85rem;font-weight:600;color:#e2e8f0;cursor:default;"></span>
-                        <div id="report-form-pid-tooltip" style="
-                            display:none;position:absolute;z-index:902;
-                            bottom:calc(100% + 6px);left:0;
-                            background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);
-                            border-radius:8px;padding:0.4rem;box-shadow:0 8px 24px rgba(0,0,0,0.6);
-                            pointer-events:none;">
-                            <img id="report-form-pid-thumb" src="" alt="" style="display:block;width:320px;height:auto;border-radius:4px;">
-                        </div>
-                    </span>
-                </div>
-                <p style="font-size:0.82rem;color:#94a3b8;margin-bottom:0.75rem;">오류가 있는 항목을 선택하고 내용을 적어주세요.</p>
-
-                <!-- 체크박스 항목들 -->
-                <div style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:1rem;">
-                    <!-- 성취기준 -->
-                    <label id="check-label-concept" style="display:block;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem;cursor:pointer;transition:border-color 0.15s;">
-                        <div style="display:flex;align-items:center;gap:0.6rem;">
-                            <input type="checkbox" id="check-concept" style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;" onchange="updateReportTitle();updateSubmitBtn();">
-                            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:500;">성취기준</span>
-                        </div>
-                        <div id="preview-concept" style="display:none;margin-top:0.5rem;padding:0.5rem;background:rgba(0,0,0,0.2);border-radius:5px;font-size:0.8rem;color:#94a3b8;line-height:1.5;"></div>
-                    </label>
-                    <!-- 단계별 요약 -->
-                    <label id="check-label-title" style="display:block;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem;cursor:pointer;transition:border-color 0.15s;">
-                        <div style="display:flex;align-items:center;gap:0.6rem;">
-                            <input type="checkbox" id="check-title" style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;" onchange="updateReportTitle();updateSubmitBtn();">
-                            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:500;">단계별 요약</span>
-                        </div>
-                        <div id="preview-title" style="display:none;margin-top:0.5rem;padding:0.5rem;background:rgba(0,0,0,0.2);border-radius:5px;font-size:0.8rem;color:#94a3b8;line-height:1.5;"></div>
-                    </label>
-                    <!-- 해설 -->
-                    <label id="check-label-explanation" style="display:block;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.75rem;cursor:pointer;transition:border-color 0.15s;">
-                        <div style="display:flex;align-items:center;gap:0.6rem;">
-                            <input type="checkbox" id="check-explanation" style="width:16px;height:16px;accent-color:#10b981;cursor:pointer;" onchange="updateReportTitle();updateSubmitBtn();">
-                            <span style="font-size:0.85rem;color:#e2e8f0;font-weight:500;">해설</span>
-                        </div>
-                        <div id="preview-explanation" style="display:none;margin-top:0.5rem;padding:0.5rem;background:rgba(0,0,0,0.2);border-radius:5px;font-size:0.8rem;color:#94a3b8;line-height:1.5;max-height:120px;overflow-y:auto;"></div>
-                    </label>
-                </div>
-
-                <!-- 동적 제목 -->
-                <div id="report-title-display" style="display:none;font-size:0.82rem;color:#fbbf24;margin-bottom:0.75rem;padding:0.5rem 0.75rem;background:rgba(245,158,11,0.08);border-radius:6px;line-height:1.4;"></div>
-
-                <!-- 텍스트 입력 -->
-                <textarea id="report-textarea"
-                    placeholder="오류 내용을 자세히 적어주세요."
-                    oninput="updateSubmitBtn(); updateTextareaPreview();"
-                    style="width:100%;min-height:120px;padding:0.75rem;
-                        background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);
-                        border-radius:8px;color:#e2e8f0;font-size:0.85rem;line-height:1.5;
-                        resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-
-                <!-- 수식 미리보기 -->
-                <div id="report-textarea-preview" style="display:none;margin-top:0.4rem;padding:0.6rem 0.75rem;background:rgba(0,0,0,0.2);border-radius:6px;font-size:0.82rem;color:#cbd5e1;line-height:1.6;"></div>
-
-                <!-- 유효성 안내 -->
-                <div id="report-validation-msg" style="display:none;font-size:0.78rem;color:#f87171;margin-top:0.4rem;"></div>
-
-                <!-- 제보 버튼 -->
-                <button id="submit-report-btn" onclick="submitReport()" disabled style="
-                    margin-top:0.75rem;width:100%;padding:0.7rem;
-                    background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);
-                    color:#6ee7b7;border-radius:8px;font-size:0.88rem;font-weight:500;
-                    transition:all 0.15s;opacity:0.5;">제보하기</button>
-            </div>
-
-            <!-- 뷰 D: 성공 화면 -->
-            <div id="report-view-success" style="display:none;text-align:center;padding:2rem 1rem;">
-                <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
-                <h3 style="color:#10b981;margin-bottom:0.5rem;font-size:1rem;">소중한 의견 감사합니다.</h3>
-                <p style="color:#94a3b8;font-size:0.88rem;line-height:1.6;">서비스 개선에 큰 도움이 됩니다.</p>
-                <button onclick="closeConceptPicker()" style="
-                    margin-top:1.5rem;padding:0.6rem 2rem;
-                    background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);
-                    color:#10b981;border-radius:8px;cursor:pointer;font-size:0.88rem;">닫기</button>
-            </div>
-
-        </div><!-- /스크롤 영역 -->
-    </div>
-
-    <style>
-        /* 성취기준 셀 호버 효과 */
-        .concept-edit-cell:hover .edit-pencil { opacity: 1 !important; }
-        .concept-edit-cell:hover { background: rgba(245,158,11,0.06); cursor: pointer; }
-        #check-label-concept:has(#check-concept:checked),
-        #check-label-title:has(#check-title:checked),
-        #check-label-explanation:has(#check-explanation:checked) {
-            border-color: rgba(16,185,129,0.5);
-            background: rgba(16,185,129,0.06);
-        }
-        #submit-report-btn { cursor: not-allowed; }
-        #submit-report-btn:not(:disabled) {
-            background: rgba(16,185,129,0.4);
-            border-color: #10b981;
-            color: #ecfdf5;
-            cursor: pointer;
-            opacity: 1;
-            font-weight: 700;
-            box-shadow: 0 0 10px rgba(16,185,129,0.35);
-        }
-        #submit-report-btn:not(:disabled):hover {
-            background: rgba(16,185,129,0.6);
-            box-shadow: 0 0 16px rgba(16,185,129,0.5);
-        }
-        #report-textarea:focus { outline: none; border-color: rgba(16,185,129,0.5); }
-    </style>
-
-    <script>
-        // ── 패널 컨텍스트 저장 ──────────────────────────────────
-        let _reportCtx = null;
-
-        // ── 뷰 전환 ─────────────────────────────────────────────
-        function _showReportView(viewId) {
-            ['report-view-loading','report-view-pending','report-view-form','report-view-success'].forEach(id => {
-                document.getElementById(id).style.display = (id === viewId) ? '' : 'none';
-            });
-        }
-
-        // ── 패널 열기 ───────────────────────────────────────────
-        function openConceptPicker(ctx) {
-            _reportCtx = ctx;
-            document.getElementById('concept-picker-overlay').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            const panel = document.getElementById('concept-picker-panel');
-            panel.style.right = '0';
-
-            // 헤더 서브타이틀
-            const subtitle = document.getElementById('report-panel-subtitle');
-            subtitle.textContent = ctx ? `${ctx.problemId}  ·  Step ${ctx.stepNumber}` : '';
-
-            // 로딩 상태로 시작
-            _showReportView('report-view-loading');
-
-            if (!ctx || !ctx.stepId) { showReportForm(ctx); return; }
-
-            // 기존 제보 확인 (중복 제보 방지 안내용)
-            fetch(`/api/step_reports?step_id=${ctx.stepId}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.count && data.count > 0) {
-                        _showPendingView(data.reports, ctx);
-                    } else {
-                        showReportForm(ctx);
-                    }
-                })
-                .catch(() => showReportForm(ctx));
-        }
-
-        // ── 패널 닫기 ───────────────────────────────────────────
-        function closeConceptPicker() {
-            document.getElementById('concept-picker-overlay').style.display = 'none';
-            document.getElementById('concept-picker-panel').style.right = '-500px';
-            document.body.style.overflow = '';
-            // 상태 초기화
-            ['check-concept','check-title','check-explanation'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.checked = false;
-            });
-            const ta = document.getElementById('report-textarea');
-            if (ta) ta.value = '';
-            const taPreview = document.getElementById('report-textarea-preview');
-            if (taPreview) { taPreview.textContent = ''; taPreview.style.display = 'none'; }
-            ['preview-concept','preview-title','preview-explanation'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.style.display = 'none';
-            });
-            document.getElementById('report-title-display').style.display = 'none';
-            document.getElementById('report-validation-msg').style.display = 'none';
-            const btn = document.getElementById('submit-report-btn');
-            if (btn) { btn.disabled = true; }
-        }
-
-        // ── 미반영 제보 목록 뷰 ──────────────────────────────────
-        function _showPendingView(reports, ctx) {
-            _showReportView('report-view-pending');
-            const badge = document.getElementById('pending-count-badge');
-            badge.textContent = `(${reports.length}건)`;
-
-            const listEl = document.getElementById('pending-report-list');
-            listEl.innerHTML = '';
-            const fieldLabels = { standard_name:'성취기준', step_title:'단계별 요약', explanation:'해설' };
-
-            reports.forEach((r, i) => {
-                const item = document.createElement('div');
-                item.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:0.65rem 0.85rem;cursor:pointer;transition:border-color 0.15s;';
-                const tags = (r.reported_fields || []).map(f => `<span style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);padding:1px 6px;border-radius:4px;font-size:0.73rem;">${fieldLabels[f]||f}</span>`).join(' ');
-                const ts = r.timestamp ? new Date(r.timestamp).toLocaleString('ko-KR') : '';
-                item.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;"><div style="display:flex;flex-wrap:wrap;gap:0.3rem;">${tags}</div><span style="font-size:0.73rem;color:#64748b;flex-shrink:0;">${ts}</span></div>`;
-                item.addEventListener('click', () => _showPendingDetail(r));
-                item.addEventListener('mouseenter', () => { item.style.borderColor = 'rgba(245,158,11,0.4)'; });
-                item.addEventListener('mouseleave', () => { item.style.borderColor = 'rgba(255,255,255,0.1)'; });
-                listEl.appendChild(item);
-            });
-
-            // 첫 번째 자동 선택
-            if (reports.length > 0) _showPendingDetail(reports[0]);
-        }
-
-        function _showPendingDetail(report) {
-            const detail = document.getElementById('pending-report-detail');
-            detail.style.display = '';
-            const fieldLabels = { standard_name:'성취기준', step_title:'단계별 요약', explanation:'해설' };
-            document.getElementById('pending-detail-time').textContent =
-                report.timestamp ? new Date(report.timestamp).toLocaleString('ko-KR') : '';
-            document.getElementById('pending-detail-fields').innerHTML =
-                (report.reported_fields || [])
-                    .map(f => `<span style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);padding:2px 8px;border-radius:4px;font-size:0.78rem;">${fieldLabels[f]||f}</span>`)
-                    .join('');
-            document.getElementById('pending-detail-message').textContent = report.user_message || '';
-        }
-
-        // ── 추가 제보 버튼 → 폼 전환 ─────────────────────────────
-        function switchToReportForm() {
-            showReportForm(_reportCtx);
-        }
-
-        // ── 제보 폼 초기화 및 표시 ────────────────────────────────
-        function showReportForm(ctx) {
-            _showReportView('report-view-form');
-            if (!ctx) return;
-
-            // 문항번호 + 썸네일 호버 세팅
-            const pidText = document.getElementById('report-form-pid-text');
-            const pidThumb = document.getElementById('report-form-pid-thumb');
-            const pidTooltip = document.getElementById('report-form-pid-tooltip');
-            const pidWrap = document.getElementById('report-form-pid-wrap');
-            if (pidText) pidText.textContent = ctx.problemId || '';
-            if (pidThumb && ctx.problemId) pidThumb.src = `/thumbnail/${encodeURIComponent(ctx.problemId)}`;
-            if (pidWrap) {
-                pidWrap.onmouseenter = () => { if (pidTooltip) pidTooltip.style.display = 'block'; };
-                pidWrap.onmouseleave = () => { if (pidTooltip) pidTooltip.style.display = 'none'; };
-            }
-
-            // 미리보기 내용 채우기
-            const _katexOpts = { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false };
-
-            const conceptText = (ctx.refCode ? ctx.refCode + ' ' : '') + (ctx.standardName || '');
-            const conceptEl = document.getElementById('preview-concept');
-            conceptEl.textContent = conceptText || '(성취기준 없음)';
-            if (window.renderMathInElement) renderMathInElement(conceptEl, _katexOpts);
-
-            const titleText = ctx.stepTitle || '(단계별 요약 없음)';
-            const titleEl = document.getElementById('preview-title');
-            titleEl.textContent = titleText;
-            if (window.renderMathInElement) renderMathInElement(titleEl, _katexOpts);
-
-            // 해설은 HTML 태그 제거 후 텍스트만
-            const expRaw = ctx.explanation || '';
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = expRaw;
-            const expEl = document.getElementById('preview-explanation');
-            expEl.textContent = tempDiv.textContent || '(해설 없음)';
-            if (window.renderMathInElement) renderMathInElement(expEl, _katexOpts);
-
-            // 체크박스 변경 시 미리보기 토글 연동
-            document.getElementById('check-concept').onchange = function() {
-                document.getElementById('preview-concept').style.display = this.checked ? '' : 'none';
-                updateReportTitle(); updateSubmitBtn();
-            };
-            document.getElementById('check-title').onchange = function() {
-                document.getElementById('preview-title').style.display = this.checked ? '' : 'none';
-                updateReportTitle(); updateSubmitBtn();
-            };
-            document.getElementById('check-explanation').onchange = function() {
-                document.getElementById('preview-explanation').style.display = this.checked ? '' : 'none';
-                updateReportTitle(); updateSubmitBtn();
-            };
-        }
-
-        // ── textarea 수식 미리보기 ────────────────────────────────
-        function updateTextareaPreview() {
-            const ta = document.getElementById('report-textarea');
-            const preview = document.getElementById('report-textarea-preview');
-            if (!ta || !preview) return;
-            const val = ta.value || '';
-            const hasMath = /\$|\\\(|\\\[/.test(val);
-            if (!hasMath || !val.trim()) {
-                preview.style.display = 'none';
-                return;
-            }
-            preview.textContent = val;
-            preview.style.display = '';
-            if (window.renderMathInElement) {
-                renderMathInElement(preview, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false });
-            }
-        }
-
-        // ── 동적 제목 업데이트 ────────────────────────────────────
-        function updateReportTitle() {
-            const labels = [];
-            if (document.getElementById('check-concept').checked) labels.push('성취기준');
-            if (document.getElementById('check-title').checked) labels.push('단계별 요약');
-            if (document.getElementById('check-explanation').checked) labels.push('해설');
-
-            const titleEl = document.getElementById('report-title-display');
-            if (labels.length === 0) {
-                titleEl.style.display = 'none';
-                return;
-            }
-            const pid = _reportCtx ? _reportCtx.problemId : '';
-            titleEl.textContent = `${pid}의 ${labels.join(', ')}에 오류를 제보합니다.`;
-            titleEl.style.display = '';
-        }
-
-        // ── 제보 버튼 활성/비활성 ─────────────────────────────────
-        function updateSubmitBtn() {
-            const anyChecked = document.getElementById('check-concept').checked
-                || document.getElementById('check-title').checked
-                || document.getElementById('check-explanation').checked;
-            const hasText = (document.getElementById('report-textarea').value || '').trim().length > 0;
-            const btn = document.getElementById('submit-report-btn');
-            btn.disabled = !(anyChecked && hasText);
-
-            const msg = document.getElementById('report-validation-msg');
-            if (!anyChecked && !hasText) {
-                msg.textContent = '항목을 선택하고 오류 내용을 입력해주세요.';
-                msg.style.display = '';
-            } else if (!anyChecked) {
-                msg.textContent = '오류가 있는 항목을 하나 이상 선택해주세요.';
-                msg.style.display = '';
-            } else if (!hasText) {
-                msg.textContent = '오류 내용을 입력해주세요.';
-                msg.style.display = '';
-            } else {
-                msg.style.display = 'none';
-            }
-        }
-
-        // ── 제보 전송 ─────────────────────────────────────────────
-        function submitReport() {
-            if (!_reportCtx) return;
-            const reportedFields = [];
-            if (document.getElementById('check-concept').checked) reportedFields.push('standard_name');
-            if (document.getElementById('check-title').checked) reportedFields.push('step_title');
-            if (document.getElementById('check-explanation').checked) reportedFields.push('explanation');
-            const userMessage = (document.getElementById('report-textarea').value || '').trim();
-            if (reportedFields.length === 0 || !userMessage) { updateSubmitBtn(); return; }
-
-            const body = {
-                problem_id:       _reportCtx.problemId,
-                step_id:          _reportCtx.stepId,
-                step_number:      _reportCtx.stepNumber,
-                action_concept_id:_reportCtx.conceptId,
-                standard_name:    _reportCtx.standardName,
-                step_title:       _reportCtx.stepTitle,
-                reported_fields:  reportedFields,
-                user_message:     userMessage,
-            };
-
-            const btn = document.getElementById('submit-report-btn');
-            btn.disabled = true;
-            btn.textContent = '전송 중...';
-
-            fetch('/api/report_error', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.ok) {
-                    _showReportView('report-view-success');
-                } else {
-                    btn.disabled = false;
-                    btn.textContent = '제보하기';
-                    const msg = document.getElementById('report-validation-msg');
-                    msg.textContent = '제보 전송에 실패했습니다. 다시 시도해주세요.';
-                    msg.style.display = '';
-                }
-            })
-            .catch(() => {
-                btn.disabled = false;
-                btn.textContent = '제보하기';
-                const msg = document.getElementById('report-validation-msg');
-                msg.textContent = '네트워크 오류가 발생했습니다. 다시 시도해주세요.';
-                msg.style.display = '';
-            });
-        }
-
-        // ── 이벤트 위임: 경고 아이콘 클릭 시 패널 열기 ─────────────
-        document.addEventListener('click', (e) => {
-            const icon = e.target.closest('.edit-pencil');
-            if (!icon) return;
-            const cell = icon.closest('.concept-edit-cell');
-            if (!cell) return;
-            const ctx = {
-                stepId:      parseInt(cell.dataset.stepId),
-                problemId:   cell.dataset.problemId || '',
-                stepNumber:  cell.dataset.stepNumber || '',
-                conceptId:   cell.dataset.conceptId || '',
-                refCode:     cell.dataset.refCode || '',
-                standardName:cell.dataset.standardName || '',
-                stepTitle:   decodeURIComponent(cell.dataset.stepTitle || ''),
-                explanation: decodeURIComponent(cell.dataset.explanation || ''),
-            };
-            openConceptPicker(ctx);
-        });
-    </script>
-    {% endif %}{# /offline_mode #}
     <!-- Include Cart Logic -->
     <script src="{{ url_for('static', filename='cart.js') }}"></script>
     <!-- Custom Alert Modal -->

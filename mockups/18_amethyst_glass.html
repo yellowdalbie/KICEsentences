@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>KICE LYNX - Mockup 18: Amethyst Glass</title>
+    <style>
+        @font-face {
+            font-family: 'Paperozi';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Paperozi-Bold';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Paperozi-Black';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
+        }
+
+        :root {
+            --bg-base: #110B1A;
+            /* Deep purple-black */
+            --text-main: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.65);
+
+            /* Amethyst / Purple Palette */
+            --accent-light: #DDD6FE;
+            /* Violet 200 */
+            --accent: #A855F7;
+            /* Purple 500 */
+            --accent-dark: #7E22CE;
+            /* Purple 700 */
+
+            /* Glass aesthetics */
+            --glass-bg: rgba(20, 15, 30, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --backdrop-blur: blur(24px);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Paperozi', sans-serif;
+            background: var(--bg-base);
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* Purple abstract gradient */
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(126, 34, 206, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(216, 180, 254, 0.1) 0%, transparent 50%),
+                linear-gradient(to bottom right, #110B1A 0%, #1A1025 100%);
+            background-attachment: fixed;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            backdrop-filter: var(--backdrop-blur);
+            -webkit-backdrop-filter: var(--backdrop-blur);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 8vh 2rem 8rem 2rem;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Central Search Area */
+        .search-area {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .brand-container {
+            margin-bottom: 2.5rem;
+        }
+
+        .brand-kice {
+            font-size: 1.2rem;
+            font-family: 'Paperozi-Bold';
+            color: var(--accent-light);
+            letter-spacing: 6px;
+            margin-bottom: -15px;
+            display: block;
+            opacity: 0.8;
+        }
+
+        .brand {
+            font-size: 5rem;
+            font-family: 'Paperozi-Black';
+            color: var(--text-main);
+            letter-spacing: -2px;
+            margin: 0;
+            text-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+        }
+
+        .brand-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            font-family: 'Paperozi', sans-serif;
+        }
+
+        /* Glass Pills */
+        .search-mode-pills {
+            display: inline-flex;
+            border-radius: 30px;
+            padding: 6px;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .pill {
+            padding: 8px 24px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .pill:hover {
+            color: var(--text-main);
+        }
+
+        .pill.active {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--accent-light);
+            font-family: 'Paperozi-Bold';
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25), 0 4px 12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Search Input */
+        .search-input-wrapper {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .huge-search {
+            width: 100%;
+            border: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 1.2rem 0;
+            font-size: 2.2rem;
+            font-family: 'Paperozi-Bold';
+            outline: none;
+            color: var(--text-main);
+            background: transparent;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .huge-search::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: normal;
+        }
+
+        .huge-search:focus {
+            border-bottom-color: var(--accent);
+            text-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+        }
+
+        /* Glass Breadcrumbs */
+        .folder-breadcrumbs {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            align-items: center;
+        }
+
+        .folder-span {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Paperozi-Bold';
+            color: var(--accent-light);
+        }
+
+        .folder-span:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .folder-span span {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            margin-left: 6px;
+        }
+
+        /* Results Area */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 4rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .search-meta {
+            font-size: 0.85rem;
+            color: var(--accent-light);
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .search-meta strong {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            font-family: 'Paperozi-Bold';
+        }
+
+        /* Unified Glass Table */
+        .data-table-container {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        .data-table th {
+            padding: 1.2rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--accent-light);
+            letter-spacing: 0.05em;
+            font-weight: normal;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .data-table td {
+            padding: 2rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: top;
+            color: var(--text-main);
+        }
+
+        .data-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .pid-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pid {
+            color: var(--accent-light);
+            font-size: 1.1rem;
+            font-family: 'Paperozi-Bold';
+            text-shadow: 0 0 8px rgba(221, 214, 254, 0.3);
+        }
+
+        .pid-badges {
+            display: flex;
+            gap: 6px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        .step {
+            display: block;
+            margin-bottom: 1rem;
+            padding-left: 1.2rem;
+            border-left: 2px solid rgba(255, 255, 255, 0.25);
+            line-height: 1.6;
+        }
+
+        .step-num {
+            color: var(--accent);
+            font-size: 0.85rem;
+            margin-right: 0.8rem;
+            font-family: 'Paperozi-Bold';
+            opacity: 0.9;
+        }
+
+        /* The Standard Box - Deep Glass */
+        .concept-col {
+            color: var(--text-main);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .concept-col::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent);
+            opacity: 0.8;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="search-area">
+            <div class="brand-container">
+                <span class="brand-kice">평가원 기출 분석망</span>
+                <h1 class="brand">KICE LYNX</h1>
+                <div class="brand-subtitle">성취기준 및 기출표현 연결 탐색기</div>
+            </div>
+
+            <div class="glass-panel search-mode-pills">
+                <div class="pill">키워드 검색</div>
+                <div class="pill">표현 검색</div>
+                <div class="pill active">성취기준 검색</div>
+                <div class="pill">문항 번호</div>
+            </div>
+
+            <div class="search-input-wrapper">
+                <input type="text" class="huge-search" placeholder="단원이나 성취기준을 입력하세요..." value="다항식의 나눗셈">
+            </div>
+
+            <div class="folder-breadcrumbs">
+                탐색 범위:
+                <div class="glass-panel folder-span">수학 공통 <span>▼</span></div>
+                <div class="glass-panel folder-span">1. 다항식 <span>▼</span></div>
+            </div>
+        </div>
+
+        <div class="results-header">
+            <div class="search-meta">전체 문항 중 <strong>142</strong>개의 노드가 연결되었습니다.</div>
+        </div>
+
+        <div class="glass-panel data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%; padding-left: 1.5rem;">문항 식별자</th>
+                        <th style="width: 55%;">분석 단계 및 논리 구조</th>
+                        <th style="width: 30%; padding-right: 1.5rem;">매핑된 성취기준</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding-left: 1.5rem;">
+                            <div class="pid-box">
+                                <span class="pid">2026.9모_공22</span>
+                                <div class="pid-badges">
+                                    <span class="badge">4점</span>
+                                    <span class="badge">주관식</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="step"><span class="step-num">S01</span>다항식 P(x)를 x-a로 나눈 나머지가 P(a)임을 이용하여 식을
+                                세운다.</div>
+                            <div class="step"><span class="step-num">S02</span>주어진 두 조건식을 연립하여 일차방정식의 해를 구한다.</div>
+                        </td>
+                        <td style="padding-right: 1.5rem;">
+                            <div class="concept-col">[9수01-04] 다항식의 덧셈, 뺄셈, 곱셈과 나눗셈을 할 수 있다.</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left: 1.5rem;">
+                            <div class="pid-box">
+                                <span class="pid">2025.수능_공14</span>
+                                <div class="pid-badges">
+                                    <span class="badge">4점</span>
+                                    <span class="badge">객관식</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="step"><span class="step-num">S01</span>다항식의 인수분해를 위해 조립제법을 사용하여 근을 찾는다.</div>
+                            <div class="step"><span class="step-num">S02</span>나머지 정리를 역으로 적용하여 계수를 구한다.</div>
+                        </td>
+                        <td style="padding-right: 1.5rem;">
+                            <div class="concept-col">[10수01-05] 인수분해 공식을 이용하여 다항식을 인수분해할 수 있다.</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
