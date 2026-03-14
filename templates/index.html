@@ -1256,9 +1256,8 @@
                         matchStepIds.add(String(r.step_id));
                     });
 
-                    const orderedProbIds = [];
-                    const seen = new Set();
-                    simData.results.forEach(r => { if (!seen.has(r.problem_id)) { seen.add(r.problem_id); orderedProbIds.push(r.problem_id); } });
+                    // scoreMap의 최고 점수 기준으로 문항 정렬 (스텝 단위 API 결과의 등장 순서에 의존하지 않음)
+                    const orderedProbIds = Object.keys(scoreMap).sort((a, b) => scoreMap[b].hybrid_score - scoreMap[a].hybrid_score);
                     if (orderedProbIds.length === 0) { placeholder.innerText = '결과 없음'; return; }
 
                     fetch(`/api/steps_by_problems?ids=${encodeURIComponent(orderedProbIds.join(','))}`)

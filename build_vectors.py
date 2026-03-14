@@ -4,10 +4,16 @@ build_vectors.py
 Step 타이틀 텍스트를 BGE-m3-ko 모델로 임베딩하여 kice_step_vectors.npz 에 저장합니다.
 build_db.py 실행 후 이 스크립트를 실행하세요.
 
+임베딩 텍스트 구성 (3-tier 풍성화):
+  Tier 1: step_title  (핵심 기법 표현)
+  Tier 2: trigger_text (수학적 맥락 카테고리)
+  Tier 3: concept standard_name + keywords (교육과정 성취기준 설명)
+
 사용법:
     python3 build_vectors.py
 """
 
+import json
 import sqlite3
 import re
 import numpy as np
@@ -74,14 +80,50 @@ def preprocess_latex(text: str) -> str:
 
 
 def load_steps(conn: sqlite3.Connection):
+    """스텝 데이터를 트리거, 개념 정보와 함께 조회 (3-tier 풍성화용)"""
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT step_id, step_title, action_concept_id, problem_id, step_number
-        FROM steps
-        WHERE step_title IS NOT NULL AND step_title != ""
+        SELECT
+            s.step_id,
+            s.step_title,
+            s.action_concept_id,
+            s.problem_id,
+            s.step_number,
+            GROUP_CONCAT(t.trigger_text, ' / ') AS trigger_texts,
+            c.standard_name,
+            c.keywords
+        FROM steps s
+        LEFT JOIN step_triggers st ON s.step_id = st.step_id
+        LEFT JOIN triggers t ON st.trigger_id = t.trigger_id
+        LEFT JOIN concepts c ON s.action_concept_id = c.id
+        WHERE s.step_title IS NOT NULL AND s.step_title != ""
+        GROUP BY s.step_id
     ''')
     rows = cursor.fetchall()
     return rows
+
+
+def build_embedding_text(row) -> str:
+    """step_title + trigger + concept 정보를 결합한 풍성화 임베딩 텍스트 생성"""
+    parts = [row['step_title']]
+
+    # Tier 2: 트리거 카테고리 (괄호 제거하여 자연어화)
+    if row['trigger_texts']:
+        trigger_clean = re.sub(r'[\[\]]', '', row['trigger_texts'])
+        parts.append(trigger_clean)
+
+    # Tier 3: 교육과정 성취기준 설명 + 키워드
+    if row['standard_name']:
+        parts.append(row['standard_name'])
+    if row['keywords']:
+        try:
+            kws = json.loads(row['keywords'])
+            parts.append(' '.join(kws))
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    return preprocess_latex(' | '.join(parts))
 
 
 def main():
@@ -94,19 +136,25 @@ def main():
         print("ERROR: steps 테이블에 데이터가 없습니다. build_db.py를 먼저 실행하세요.")
         return
 
-    print(f"[2/4] {len(rows)}개 스텝 로드 완료. LaTeX 전처리 중...")
+    print(f"[2/4] {len(rows)}개 스텝 로드 완료. 임베딩 텍스트 구성 중...")
     step_ids = []
     step_texts = []
     concept_ids = []
     problem_ids = []
     step_numbers = []
 
-    for step_id, step_title, concept_id, problem_id, step_num in rows:
-        step_ids.append(step_id)
-        step_texts.append(preprocess_latex(step_title))
-        concept_ids.append(concept_id or '')
-        problem_ids.append(problem_id or '')
-        step_numbers.append(step_num or 0)
+    for row in rows:
+        step_ids.append(row['step_id'])
+        step_texts.append(build_embedding_text(row))
+        concept_ids.append(row['action_concept_id'] or '')
+        problem_ids.append(row['problem_id'] or '')
+        step_numbers.append(row['step_number'] or 0)
+
+    # 풍성화 샘플 출력 (첫 3개)
+    print("\n  [임베딩 텍스트 샘플]")
+    for i in range(min(3, len(step_texts))):
+        print(f"  Step {step_ids[i]}: {step_texts[i][:100]}...")
+    print()
 
     print(f"[3/4] 임베딩 생성 중 (모델: {MODEL_NAME}) ...")
     print("      첫 실행 시 모델 다운로드(~500MB)가 필요합니다.")

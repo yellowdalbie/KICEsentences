@@ -45,6 +45,20 @@ def load_vector_index():
 
 load_vector_index()
 
+# ── 하이브리드 검색 엔진 초기화 (벡터 인덱스 로드 후) ───────────────
+from search_engine import HybridSearchEngine, ProblemSimilarity
+_search_engine = None
+_problem_sim = None
+
+def load_search_engine():
+    global _search_engine, _problem_sim
+    if _vec_data is None:
+        return
+    _search_engine = HybridSearchEngine(_vec_data)
+    _problem_sim = ProblemSimilarity(_vec_data)
+
+load_search_engine()
+
 
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
@@ -71,78 +85,113 @@ def serve_thumbnail(problem_id):
 
 @app.route('/api/similar_steps/<int:step_id>')
 def similar_steps(step_id):
-    if _vec_data is None:
-        return jsonify({'error': '벡터 인덱스가 로드되지 않았습니다. build_vectors.py를 실행하세요.'}), 503
+    if _search_engine is None:
+        return jsonify({'error': '검색 엔진이 초기화되지 않았습니다. build_vectors.py를 실행하세요.'}), 503
 
     top_n = int(request.args.get('top_n', 10))
-    step_ids = _vec_data['step_ids']
 
-    # 쿼리 스텝 인덱스 찾기
-    matches = np.where(step_ids == step_id)[0]
-    if len(matches) == 0:
-        return jsonify({'error': f'step_id {step_id} 를 벡터 인덱스에서 찾을 수 없습니다.'}), 404
-    q_idx = matches[0]
+    # 하이브리드 검색 (BM25 + CPT + 벡터)
+    engine_result = _search_engine.search_steps(step_id, top_k=top_n)
+    if 'error' in engine_result:
+        return jsonify(engine_result), 404
 
-    q_vector = _vec_data['vectors'][q_idx:q_idx+1]  # (1, D)
-    q_concept = _vec_data['concept_ids'][q_idx]
-
-    # 코사인 유사도 계산 (벡터가 정규화되어 있으므로 내적 = 코사인)
-    cos_sims = cosine_similarity(q_vector, _vec_data['vectors'])[0]  # (N,)
-
-    # concept_id 일치 보너스 (0.0 or 0.5)
-    concept_bonus = np.array([
-        0.5 if (c == q_concept and q_concept != '') else 0.0
-        for c in _vec_data['concept_ids']
-    ], dtype=np.float32)
-
-    # 하이브리드 점수 = 0.5 * cos_sim + 0.5 * concept_bonus (bonus는 0 또는 0.5이므로 총합 0~1 범위)
-    hybrid_scores = 0.5 * cos_sims + concept_bonus
-
-    # 자기 자신 제외 후 상위 top_n 정렬
-    hybrid_scores[q_idx] = -1.0
-    top_indices = np.argsort(hybrid_scores)[::-1][:top_n]
-
-    # DB에서 추가 메타데이터 조회
+    # DB에서 메타데이터 보강
     conn = get_db_connection()
-    results = []
-    for idx in top_indices:
-        sid = int(step_ids[idx])
+    enriched = []
+    for r in engine_result['results']:
         row = conn.execute('''
             SELECT s.step_id, s.problem_id, s.step_number, s.step_title, s.action_concept_id,
                    c.standard_name, c.ref_code
             FROM steps s
             LEFT JOIN concepts c ON s.action_concept_id = c.id
             WHERE s.step_id = ?
-        ''', (sid,)).fetchone()
+        ''', (r['step_id'],)).fetchone()
         if row:
-            results.append({
-                'step_id': row['step_id'],
-                'problem_id': row['problem_id'],
-                'step_number': row['step_number'],
-                'step_title': row['step_title'],
-                'action_concept_id': row['action_concept_id'],
-                'standard_name': row['standard_name'],
-                'ref_code': row['ref_code'],
-                'cos_similarity': round(float(cos_sims[idx]), 4),
-                'hybrid_score': round(float(hybrid_scores[idx]), 4),
-                'same_concept': bool(_vec_data['concept_ids'][idx] == q_concept and q_concept != ''),
+            enriched.append({
+                'step_id':          row['step_id'],
+                'problem_id':       row['problem_id'],
+                'step_number':      row['step_number'],
+                'step_title':       row['step_title'],
+                'action_concept_id':row['action_concept_id'],
+                'standard_name':    row['standard_name'],
+                'ref_code':         row['ref_code'],
+                'hybrid_score':     r['score'],
+                'bm25_score':       r['bm25_score'],
+                'vec_score':        r['vec_score'],
+                'cpt_score':        r['cpt_score'],
+                'same_concept':     r['same_concept'],
+                # 하위 호환성 유지
+                'cos_similarity':   r['vec_score'],
             })
-    conn.close()
 
-    query_row = conn = get_db_connection()
-    q_info = get_db_connection().execute(
+    q_info = conn.execute(
         'SELECT step_title, action_concept_id, problem_id, step_number FROM steps WHERE step_id=?',
         (step_id,)
     ).fetchone()
+    conn.close()
+
     return jsonify({
         'query': {
-            'step_id': step_id,
-            'step_title': q_info['step_title'] if q_info else '',
-            'action_concept_id': q_info['action_concept_id'] if q_info else '',
-            'problem_id': q_info['problem_id'] if q_info else '',
-            'step_number': q_info['step_number'] if q_info else 0,
+            'step_id':          step_id,
+            'step_title':       q_info['step_title'] if q_info else '',
+            'action_concept_id':q_info['action_concept_id'] if q_info else '',
+            'problem_id':       q_info['problem_id'] if q_info else '',
+            'step_number':      q_info['step_number'] if q_info else 0,
         },
-        'results': results
+        'results': enriched,
+    })
+
+
+@app.route('/api/similar_problems/<problem_id>')
+def similar_problems(problem_id):
+    """
+    문항-레벨 유사도 검색.
+
+    쿼리 파라미터:
+      anchor_step_id (int): 검색을 유발한 스텝 ID (없으면 Step 1 사용)
+      top_k (int): 반환할 최대 문항 수 (기본 10)
+    """
+    if _problem_sim is None:
+        return jsonify({'error': '검색 엔진이 초기화되지 않았습니다.'}), 503
+
+    anchor_step_id = int(request.args.get('anchor_step_id', 0))
+    top_k = int(request.args.get('top_k', 10))
+
+    # anchor_step_id가 없으면 해당 문항의 첫 번째 스텝 사용
+    if anchor_step_id == 0:
+        conn = get_db_connection()
+        first_step = conn.execute(
+            'SELECT step_id FROM steps WHERE problem_id=? ORDER BY step_number LIMIT 1',
+            (problem_id,)
+        ).fetchone()
+        conn.close()
+        if not first_step:
+            return jsonify({'error': f'문항 {problem_id} 를 찾을 수 없습니다.'}), 404
+        anchor_step_id = first_step['step_id']
+
+    raw_results = _problem_sim.compare(problem_id, anchor_step_id, top_k=top_k)
+
+    # DB에서 문항 메타데이터 보강
+    conn = get_db_connection()
+    enriched = []
+    for r in raw_results:
+        # 각 매칭 스텝에 step_title 추가
+        for m in r['step_matches']:
+            row = conn.execute(
+                'SELECT step_title FROM steps WHERE step_id=?', (m['c_step_id'],)
+            ).fetchone()
+            m['c_step_title'] = row['step_title'] if row else ''
+            row = conn.execute(
+                'SELECT step_title FROM steps WHERE step_id=?', (m['q_step_id'],)
+            ).fetchone()
+            m['q_step_title'] = row['step_title'] if row else ''
+        enriched.append(r)
+    conn.close()
+
+    return jsonify({
+        'query_problem_id':  problem_id,
+        'anchor_step_id':    anchor_step_id,
+        'results':           enriched,
     })
 
 
