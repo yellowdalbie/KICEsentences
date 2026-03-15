@@ -52,7 +52,7 @@
             <div id="tab-expression" class="huge-search-wrapper">
                 <div style="position: relative;">
                     <input type="text" id="expression-search-input" class="huge-search-input"
-                        placeholder="">
+                        placeholder="" autocomplete="off">
                     <button id="expression-search-btn" class="search-icon-btn" aria-label="표현 검색">
                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -101,17 +101,36 @@
             </div>
         </header>
 
+        <!-- Thumbnail Hover Tooltip -->
+        <div id="expr-thumb-tooltip" style="
+            display: none; position: fixed; z-index: 9999;
+            background: var(--bg-surface); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 6px; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            pointer-events: none; max-width: 320px;">
+            <img id="expr-thumb-img" src="" alt="" style="max-width: 308px; height: auto; border-radius: 4px; display: block;">
+        </div>
+
         <!-- Main Content Area -->
         <main class="main-content">
 
             <!-- View: Expression Snippets List (replaces the sidebar snippet list) -->
             <section id="view-expression-snippets" class="view-section">
-                <div id="expression-snippet-container" class="glass" style="display: none; padding: 1.5rem;">
+                <div id="expression-snippet-container" class="glass" style="display: none; flex-direction: column; padding: 1.5rem;">
                     <h3 id="expression-count-header"
-                        style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
+                        style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
                         검색 결과: 0건</h3>
+                    <!-- 열 헤더 (search-table th 동일 스타일) -->
+                    <div style="display: flex; align-items: center; gap: 12px;
+                                background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--border-color);
+                                border-radius: 6px 6px 0 0; padding: 0.7rem 12px; margin-bottom: 0;">
+                        <div style="width:20%; min-width:160px; flex-shrink:0; text-align:center;
+                                    color:var(--text-muted); font-size:0.8rem; font-weight:normal;
+                                    text-transform:uppercase; letter-spacing:0.05em;">문항번호</div>
+                        <div style="flex:1; color:var(--text-muted); font-size:0.8rem; font-weight:normal;
+                                    text-transform:uppercase; letter-spacing:0.05em;">기출 표현</div>
+                    </div>
                     <div id="expression-snippet-list"
-                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; max-height: 600px; overflow-y: auto; padding-right: 0.5rem;">
+                        style="display: flex; flex-direction: column; gap: 0; border-radius: 0 0 6px 6px;">
                         <!-- Custom JS populated cards go here -->
                     </div>
                 </div>
@@ -520,7 +539,7 @@
                 } else if (targetTab === 'tab-expression') {
                     // Start fresh if they just clicked the tab, could show earlier results but let's reset to overview until search is run
                     const snippetContainer = document.getElementById('expression-snippet-container');
-                    if (snippetContainer.style.display === 'block') {
+                    if (snippetContainer.style.display !== 'none' && snippetContainer.style.display !== '') {
                         switchView('expression-snippets');
                     } else {
                         switchView('overview');
@@ -1323,6 +1342,7 @@
 
             expGuide.style.display = 'none';
             expContainer.style.display = 'flex';
+            switchView('expression-snippets');
             expCount.innerText = '검색 중...';
             expList.innerHTML = '<p class="placeholder-text">결과를 불러오는 중입니다...</p>';
 
@@ -1339,41 +1359,92 @@
                         return;
                     }
 
+                    const tooltip = document.getElementById('expr-thumb-tooltip');
+                    const tooltipImg = document.getElementById('expr-thumb-img');
+                    let thumbCache = {};
+
                     data.results.forEach(item => {
                         const card = document.createElement('div');
                         card.style.cssText = `
-                            background: var(--bg-surface);
-                            border: 1px solid var(--border-color);
-                            border-radius: 6px;
-                            padding: 10px;
-                            cursor: pointer;
-                            transition: background 0.2s, border-color 0.2s;
+                            background: transparent;
+                            border: none;
+                            border-bottom: 1px solid rgba(255,255,255,0.05);
+                            padding: 10px 12px;
+                            transition: background 0.2s;
+                            width: 100%;
+                            box-sizing: border-box;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
                         `;
-                        card.onmouseover = () => { card.style.borderColor = '#10b981'; card.style.background = 'rgba(16, 185, 129, 0.03)'; };
-                        card.onmouseout = () => { card.style.borderColor = 'var(--border-color)'; card.style.background = 'var(--bg-surface)'; };
 
-                        // Set CSS for <mark> tags dynamically inside this list
                         const snippetHtml = item.snippet.replace(/<mark>/g, '<mark style="background-color: rgba(234, 179, 8, 0.3); color: #fef08a; padding: 0 2px; border-radius: 2px;">');
+                        const pid = item.problem_id;
 
-                        card.innerHTML = `
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                <span class="tag tag-blue prob-id-trigger" style="font-weight: 500;" data-prob-id="${item.problem_id}" onclick="event.stopPropagation(); toggleCartItem('${item.problem_id}')">${item.problem_id}</span>
-                            </div>
-                            <div style="font-size: 0.8rem; color: var(--text-main); line-height: 1.5; word-break: break-all;">${snippetHtml}</div>
-                        `;
+                        // 문항번호 태그 (다른 검색결과와 동일한 glass 스타일, 클릭 시 장바구니)
+                        const pidSpan = document.createElement('span');
+                        pidSpan.className = 'prob-id-glass-tag prob-id-trigger';
+                        pidSpan.style.cssText = 'display:inline-block; width:20%; min-width:160px; flex-shrink:0; cursor:pointer; user-select:none; padding:0.25rem 0.7rem; text-align:center; box-sizing:border-box;';
+                        pidSpan.textContent = pid;
+                        pidSpan.title = '클릭하면 장바구니에 추가';
+                        pidSpan.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (typeof toggleCartItem === 'function') toggleCartItem(pid);
+                        });
+
+                        // 기출 텍스트 (클릭 시 상세보기)
+                        const textSpan = document.createElement('span');
+                        textSpan.style.cssText = 'font-size:0.95rem; color:var(--text-muted); line-height:1.6; cursor:pointer; flex:1; min-width:0;';
+                        textSpan.innerHTML = snippetHtml;
+
+                        card.appendChild(pidSpan);
+                        card.appendChild(textSpan);
+
+                        // Hover: 썸네일 툴팁
+                        card.addEventListener('mouseenter', (e) => {
+                            card.style.background = 'rgba(16, 185, 129, 0.06)';
+                            tooltipImg.src = thumbCache[pid] || `/thumbnail/${encodeURIComponent(pid)}`;
+                            thumbCache[pid] = tooltipImg.src;
+                            tooltip.style.display = 'block';
+                        });
+                        card.addEventListener('mousemove', (e) => {
+                            const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+                            const vw = window.innerWidth, vh = window.innerHeight;
+                            let x = e.clientX + 16, y = e.clientY + 16;
+                            if (x + tw > vw) x = e.clientX - tw - 8;
+                            if (y + th > vh) y = e.clientY - th - 8;
+                            tooltip.style.left = x + 'px';
+                            tooltip.style.top = y + 'px';
+                        });
+                        card.addEventListener('mouseleave', () => {
+                            if (!card.dataset.selected) card.style.background = 'transparent';
+                            tooltip.style.display = 'none';
+                        });
 
                         card.addEventListener('click', () => {
-                            // Highlight selected card visually
-                            Array.from(expList.children).forEach(c => c.style.borderLeft = 'none');
-                            card.style.borderLeft = '3px solid #10b981';
-
-                            // Load Split View detail logic here
-                            // We will implement loadSplitViewDetail shortly
-                            loadSplitViewDetail(item.problem_id);
+                            tooltip.style.display = 'none';
+                            Array.from(expList.children).forEach(c => {
+                                c.style.background = 'transparent';
+                                delete c.dataset.selected;
+                            });
+                            card.style.background = 'rgba(16, 185, 129, 0.1)';
+                            card.dataset.selected = '1';
+                            loadSplitViewDetail(pid);
                         });
 
                         expList.appendChild(card);
                     });
+
+                    // LaTeX 렌더링
+                    if (window.renderMathInElement) {
+                        renderMathInElement(expList, {
+                            delimiters: [
+                                { left: '$$', right: '$$', display: true },
+                                { left: '$', right: '$', display: false }
+                            ],
+                            throwOnError: false
+                        });
+                    }
                 })
                 .catch(err => {
                     expCount.innerText = '오류 발생';
@@ -1412,17 +1483,8 @@
             tloader.style.display = 'block';
             tableEl.style.display = 'none';
 
-            // Load Snapshot Image
-            const imgContainer = document.getElementById('exp-detail-image-container');
-            const snapshotImg = document.getElementById('exp-detail-snapshot');
-            const imgError = document.getElementById('exp-detail-image-error');
-
-            imgContainer.style.display = 'none';
-            imgError.style.display = 'none';
-            snapshotImg.src = `/thumbnail/${encodeURIComponent(problemId)}`;
-            snapshotImg.onload = () => { imgContainer.style.display = 'flex'; };
-            snapshotImg.onerror = () => { imgContainer.style.display = 'flex'; imgError.style.display = 'block'; snapshotImg.style.display = 'none'; };
-            snapshotImg.style.display = 'block';
+            // Snapshot image: not shown in detail view (available on hover in list)
+            document.getElementById('exp-detail-image-container').style.display = 'none';
 
             fetch(`/api/problem_steps?pid=${encodeURIComponent(problemId)}`)
                 .then(res => res.json())

@@ -265,6 +265,15 @@ body {
     box-shadow: 0 0 0 2px rgba(217, 70, 239, 0.2), 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
+.huge-search-input:-webkit-autofill,
+.huge-search-input:-webkit-autofill:hover,
+.huge-search-input:-webkit-autofill:focus,
+.huge-search-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px rgba(15, 15, 25, 0.95) inset !important;
+    -webkit-text-fill-color: var(--text-main) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 .search-icon-btn {
     position: absolute;
     right: 1.5rem;

@@ -101,7 +101,7 @@ def similar_steps(step_id):
     for r in engine_result['results']:
         row = conn.execute('''
             SELECT s.step_id, s.problem_id, s.step_number, s.step_title, s.action_concept_id,
-                   c.standard_name, c.ref_code
+                   c.standard_name, c.id AS ref_code
             FROM steps s
             LEFT JOIN concepts c ON s.action_concept_id = c.id
             WHERE s.step_id = ?
@@ -263,14 +263,14 @@ def stats():
     
     # 4. Top Concepts and Pairs (Existing)
     stats_data['top_concepts'] = [dict(row) for row in conn.execute('''
-        SELECT c.id, c.standard_name, c.ref_code, COUNT(*) as cnt 
+        SELECT c.id, c.standard_name, c.id AS ref_code, COUNT(*) as cnt 
         FROM steps s
         JOIN concepts c ON s.action_concept_id = c.id
         GROUP BY c.id ORDER BY cnt DESC LIMIT 5
     ''').fetchall()]
     
     stats_data['top_pairs'] = [dict(row) for row in conn.execute('''
-        SELECT t.normalized_text as trigger_cat, c.standard_name, c.ref_code, COUNT(*) as cnt
+        SELECT t.normalized_text as trigger_cat, c.standard_name, c.id AS ref_code, COUNT(*) as cnt
         FROM triggers t
         JOIN step_triggers st ON t.trigger_id = st.trigger_id
         JOIN steps s ON st.step_id = s.step_id
@@ -290,7 +290,7 @@ def search():
         return jsonify({"results": []})
         
     conn = get_db_connection()
-    is_exact_code = query.startswith('CPT-') or (len(query) > 3 and query[0].isdigit() and ('모' in query or '수능' in query))
+    is_exact_code = bool(__import__('re').match(r'\d{1,2}[가-힣ⅠⅡ]', query)) or (len(query) > 3 and query[0].isdigit() and ('모' in query or '수능' in query))
 
     if is_exact_code or _vec_data is None:
         # Fallback to pure DB LIKE search for Concept IDs or Problem IDs
@@ -302,7 +302,7 @@ def search():
                 LEFT JOIN step_triggers st ON s.step_id = st.step_id
                 LEFT JOIN triggers t ON st.trigger_id = t.trigger_id
                 LEFT JOIN concepts c ON s.action_concept_id = c.id
-                WHERE t.trigger_text LIKE ? OR t.normalized_text LIKE ? OR c.standard_name LIKE ? OR s.action_concept_id LIKE ? OR c.ref_code LIKE ? OR s.step_title LIKE ? OR p.problem_id LIKE ?
+                WHERE t.trigger_text LIKE ? OR t.normalized_text LIKE ? OR c.standard_name LIKE ? OR s.action_concept_id LIKE ? OR c.id LIKE ? OR s.step_title LIKE ? OR p.problem_id LIKE ?
             )
             SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text, s.explanation_html,
                    (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
@@ -311,7 +311,7 @@ def search():
                    '' AS normalized_text,
                    s.action_concept_id, 
                    c.standard_name, 
-                   c.ref_code
+                   c.id AS ref_code
             FROM steps s
             JOIN matched_problems mp ON s.problem_id = mp.problem_id
             LEFT JOIN concepts c ON s.action_concept_id = c.id
@@ -354,7 +354,7 @@ def search():
     placeholder = ','.join('?' for _ in top_unique_probs)
     rows = conn.execute(f'''
         SELECT s.step_id, s.problem_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text, s.explanation_html,
-               c.standard_name, c.ref_code,
+               c.standard_name, c.id AS ref_code,
                (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps
         FROM steps s
         LEFT JOIN concepts c ON s.action_concept_id = c.id
@@ -401,7 +401,7 @@ def steps_by_problems():
                s.step_title,
                s.action_concept_id,
                c.standard_name,
-               c.ref_code
+               c.id AS ref_code
         FROM steps s
         LEFT JOIN concepts c ON s.action_concept_id = c.id
         WHERE s.problem_id IN ({placeholders})
@@ -433,7 +433,7 @@ def steps_by_concept():
                s.step_title,
                s.action_concept_id,
                c.standard_name,
-               c.ref_code
+               c.id AS ref_code
         FROM steps s
         JOIN matched_problems mp ON s.problem_id = mp.problem_id
         LEFT JOIN concepts c ON s.action_concept_id = c.id
@@ -551,9 +551,9 @@ def concepts_tree():
             
         tree = {}
         for c in concepts:
-            ref = c.get('ref_code', '')
+            ref = c.get('id', '')
             if not ref: continue
-            
+
             unit_full = c.get('curriculum_unit', '')
             if ' - ' in unit_full:
                 parts = unit_full.split(' - ')
@@ -562,7 +562,7 @@ def concepts_tree():
             else:
                 raw_subj = '기타'
                 unit_name = unit_full
-                
+
             # Map raw subjects to display names
             if raw_subj.startswith('중학교 수학'):
                 subject = '중학교 수학'
@@ -576,18 +576,18 @@ def concepts_tree():
                 subject = '확률과 통계'
             else:
                 subject = raw_subj
-                
-            # Extract chapter number from ref_code if possible (e.g., [12대수01-02] -> 01)
-            m = re.search(r'\[.+?(\d{2})-\d{2}\]', ref)
+
+            # Extract chapter number from id (e.g., 12대수03-02 -> 03, 12미적Ⅰ-01-04 -> 01)
+            m = re.search(r'(\d{2})-\d{2}', ref)
             chapter = m.group(1) if m else '00'
-                
+
             combined_unit = f"{chapter}. {unit_name}"
-            
+
             if subject not in tree:
                 tree[subject] = {}
             if combined_unit not in tree[subject]:
                 tree[subject][combined_unit] = []
-                
+
             tree[subject][combined_unit].append({
                 'id': c['id'],
                 'ref_code': ref,
@@ -835,7 +835,7 @@ def search_probid():
                '' AS normalized_text,
                s.action_concept_id, 
                c.standard_name, 
-               c.ref_code
+               c.id AS ref_code
         FROM steps s
         LEFT JOIN concepts c ON s.action_concept_id = c.id
         ORDER BY s.problem_id DESC, s.step_number ASC
@@ -926,7 +926,7 @@ def problem_steps():
     try:
         rows = conn.execute('''
             SELECT s.step_id, s.step_number, s.step_title, s.action_concept_id, s.explanation_text, s.explanation_html,
-                   c.standard_name, c.ref_code
+                   c.standard_name, c.id AS ref_code
             FROM steps s
             LEFT JOIN concepts c ON s.action_concept_id = c.id
             WHERE s.problem_id = ?
@@ -1116,7 +1116,7 @@ def admin_step_detail(step_id):
             SELECT s.step_id, s.problem_id, s.step_number, s.step_title,
                    s.explanation_text, s.explanation_html,
                    s.action_concept_id, s.action_text, s.result_text,
-                   c.standard_name, c.ref_code
+                   c.standard_name, c.id AS ref_code
             FROM steps s
             LEFT JOIN concepts c ON s.action_concept_id = c.id
             WHERE s.step_id = ?

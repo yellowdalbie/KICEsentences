@@ -24,8 +24,7 @@ def setup_database():
             id TEXT PRIMARY KEY,
             curriculum_unit TEXT,
             standard_name TEXT,
-            keywords TEXT,
-            ref_code TEXT
+            keywords TEXT
         )
     ''')
     
@@ -83,9 +82,9 @@ def load_concepts(conn):
             concepts = json.load(f)
             for c in concepts:
                 cursor.execute('''
-                    INSERT INTO concepts (id, curriculum_unit, standard_name, keywords, ref_code)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (c.get('id'), c.get('curriculum_unit'), c.get('standard_name'), c.get('keywords', ''), c.get('ref_code', '')))
+                    INSERT INTO concepts (id, curriculum_unit, standard_name, keywords)
+                    VALUES (?, ?, ?, ?)
+                ''', (c.get('id'), c.get('curriculum_unit'), c.get('standard_name'), c.get('keywords', '')))
     except FileNotFoundError:
         print(f"Warning: {CONCEPTS_FILE} not found.")
     conn.commit()
