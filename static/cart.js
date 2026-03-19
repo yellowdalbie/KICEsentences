@@ -353,23 +353,31 @@ function renderSidebar() {
         li.addEventListener('dragend', () => {
             li.classList.remove('dragging');
             document.querySelectorAll('.sidebar-item').forEach(el => {
-                el.classList.remove('drag-insert-before');
+                el.classList.remove('drag-insert-before', 'drag-insert-after');
             });
         });
 
         li.addEventListener('dragover', (e) => {
             e.preventDefault(); 
             e.dataTransfer.dropEffect = 'move';
-            li.classList.add('drag-insert-before');
+            const rect = li.getBoundingClientRect();
+            if (e.clientY < rect.top + rect.height / 2) {
+                li.classList.add('drag-insert-before');
+                li.classList.remove('drag-insert-after');
+            } else {
+                li.classList.add('drag-insert-after');
+                li.classList.remove('drag-insert-before');
+            }
         });
 
         li.addEventListener('dragleave', () => {
-            li.classList.remove('drag-insert-before');
+            li.classList.remove('drag-insert-before', 'drag-insert-after');
         });
 
         li.addEventListener('drop', (e) => {
             e.preventDefault();
-            li.classList.remove('drag-insert-before');
+            const isBefore = li.classList.contains('drag-insert-before');
+            li.classList.remove('drag-insert-before', 'drag-insert-after');
             
             const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
             let toIdx = idx;
@@ -378,6 +386,14 @@ function renderSidebar() {
             
             // 배열 이동 처리
             const movedItem = _previewLoadedItems.splice(fromIdx, 1)[0];
+            
+            if (fromIdx < toIdx) {
+                toIdx--;
+            }
+            if (!isBefore) {
+                toIdx++;
+            }
+            
             _previewLoadedItems.splice(toIdx, 0, movedItem);
             
             if (_selectedSidebarIdx !== null) {

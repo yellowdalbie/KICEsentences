@@ -612,26 +612,37 @@ body {
     transform: scale(0.98);
 }
 
-/* Enhancing drag-and-drop dropzone visualization */
-/* padding-top으로 공간을 만들어야 transition: all 이 자연스럽게 애니메이션됨 */
-#sidebar-order-list li.drag-insert-before {
-    padding-top: 28px;
-    border-top: 2px solid var(--accent-blue);
+/* Enhancing drag-and-drop dropzone visualization without layout shifting (prevents jiggling) */
+#sidebar-order-list li.drag-insert-before,
+#sidebar-order-list li.drag-insert-after {
     position: relative;
 }
 
 #sidebar-order-list li.drag-insert-before::before {
     content: '';
     position: absolute;
-    top: 10px;
+    top: -2px;
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+    background: var(--accent-blue, #5b8dee);
     border-radius: 2px;
+    z-index: 10;
+    box-shadow: 0 0 4px rgba(91, 141, 238, 0.6);
 }
 
-/* #sidebar-order-list li.drag-insert-after-prev removed here, we only use 'before' to create gaps */
+#sidebar-order-list li.drag-insert-after::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent-blue, #5b8dee);
+    border-radius: 2px;
+    z-index: 10;
+    box-shadow: 0 0 4px rgba(91, 141, 238, 0.6);
+}
 .sidebar-search input {
     flex: 1;
     background: rgba(0, 0, 0, 0.2);
