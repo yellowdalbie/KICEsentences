@@ -1513,18 +1513,7 @@
 
     {% if offline_mode %}
       <span>KICE Lynx v2025.11</span>
-      <button onclick="shutdownServer()" style="background:#2a2d3a;border:none;color:#8d96ad;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;">종료</button>
     </div>
-    <script>
-    function shutdownServer() {
-      if (!confirm('KICE Lynx 서버를 종료하시겠습니까?')) return;
-      fetch('/api/shutdown', {method:'POST'})
-        .then(() => {
-          document.getElementById('shutdown-bar').innerHTML = '<span style="color:#5b8dee">종료되었습니다. 이 창을 닫아주세요.</span>';
-        })
-        .catch(() => {});
-    }
-    </script>
     {% endif %}
 </body>
 
