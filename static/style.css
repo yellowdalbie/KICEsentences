@@ -1786,13 +1786,21 @@ body {
 
 /* Footer elements */
 .csat-footer {
+    position: absolute;
+    top: 282mm; /* A4(297) - 15 = 282. Prevent chrome fragmentation push */
+    left: 15mm;
+    right: 15mm;
+    height: 15mm;
+    padding-bottom: 7mm;
     display: flex;
-    align-items: center;
-    position: relative;
-    margin-top: auto;
-    /* Push to bottom */
-    padding-top: 20px;
-    font-family: inherit;
+    justify-content: space-between;
+    align-items: flex-end;
+    background: white;
+    z-index: 10;
+    border-top: none;
+    font-size: 8.5pt;
+    color: #555;
+    font-family: var(--font-batang, "KoPubBatang", "Batang", "Myungjo", serif);
 }
 
 .footer-page-box {
