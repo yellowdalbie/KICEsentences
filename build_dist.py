@@ -304,16 +304,23 @@ def build(platform: str):
         exec_script = macos_dir / 'KICE Lynx'
         exec_script.write_text(
             '#!/bin/bash\n'
-            'BUNDLE_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"\n'
-            'APP_DIR="$BUNDLE_DIR/app"\n'
+            '# .app 내부에서의 경로 계산\n'
+            'BASE_DIR="$(cd "$(dirname "$0")/../../../.." && pwd)"\n'
+            'export APP_DIR="$BASE_DIR/app"\n'
             'PYTHON="$APP_DIR/python/bin/python3"\n'
             'if [ ! -f "$PYTHON" ]; then\n'
-            '  osascript -e \'display dialog "프로그램 파일이 손상되었습니다.\\n압축 파일을 다시 내려받아 주세요." '
+            '  # 한 단계 위에서도 시도 (ZIP 구성에 따라 가변적)\n'
+            '  BASE_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"\n'
+            '  export APP_DIR="$BASE_DIR/app"\n'
+            '  PYTHON="$APP_DIR/python/bin/python3"\n'
+            'fi\n'
+            'if [ ! -f "$PYTHON" ]; then\n'
+            '  osascript -e \'display dialog "애플리케이션 파일을 찾을 수 없습니다.\\n압축 해제된 폴더 그대로 실행해 주세요." '
             'with title "KICE Lynx — 오류" buttons {"확인"} default button 1 with icon stop\'\n'
             '  exit 1\n'
             'fi\n'
             'cd "$APP_DIR"\n'
-            '"$PYTHON" "launcher.py"\n',
+            './python/bin/python3 launcher.py\n',
             encoding='utf-8')
         os.chmod(exec_script, 0o755)
 
