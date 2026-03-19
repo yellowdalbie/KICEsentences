@@ -307,20 +307,29 @@ def build(platform: str):
             '# .app 내부에서의 경로 계산\n'
             'BASE_DIR="$(cd "$(dirname "$0")/../../../.." && pwd)"\n'
             'export APP_DIR="$BASE_DIR/app"\n'
+            'DEBUG_LOG="$BASE_DIR/mac_launch.log"\n'
+            'echo "Start: $(date)" > "$DEBUG_LOG"\n'
+            'echo "BASE_DIR: $BASE_DIR" >> "$DEBUG_LOG"\n'
             'PYTHON="$APP_DIR/python/bin/python3"\n'
             'if [ ! -f "$PYTHON" ]; then\n'
             '  # 한 단계 위에서도 시도 (ZIP 구성에 따라 가변적)\n'
             '  BASE_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"\n'
             '  export APP_DIR="$BASE_DIR/app"\n'
             '  PYTHON="$APP_DIR/python/bin/python3"\n'
+            '  echo "Retry BASE_DIR: $BASE_DIR" >> "$DEBUG_LOG"\n'
+            'fi\n'
+            'if [ ! -x "$PYTHON" ]; then\n'
+            '  chmod +x "$PYTHON" 2>/dev/null\n'
             'fi\n'
             'if [ ! -f "$PYTHON" ]; then\n'
             '  osascript -e \'display dialog "애플리케이션 파일을 찾을 수 없습니다.\\n압축 해제된 폴더 그대로 실행해 주세요." '
             'with title "KICE Lynx — 오류" buttons {"확인"} default button 1 with icon stop\'\n'
+            '  echo "Error: Python not found at $PYTHON" >> "$DEBUG_LOG"\n'
             '  exit 1\n'
             'fi\n'
             'cd "$APP_DIR"\n'
-            './python/bin/python3 launcher.py\n',
+            'export OFFLINE_MODE=1\n'
+            './python/bin/python3 launcher.py >> "$DEBUG_LOG" 2>&1\n',
             encoding='utf-8')
         os.chmod(exec_script, 0o755)
 

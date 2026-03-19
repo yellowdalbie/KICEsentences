@@ -106,7 +106,8 @@ def open_app_mode(browser_path, url):
             stderr=subprocess.DEVNULL,
         )
         return proc
-    except Exception:
+    except Exception as e:
+        log_msg(f"open_app_mode failed: {e}")
         return None
 
 
