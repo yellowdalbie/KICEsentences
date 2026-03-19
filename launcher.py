@@ -101,7 +101,7 @@ def open_app_mode(browser_path, url):
     """Chrome/Edge 앱 모드로 URL 열기. 프로세스 반환."""
     try:
         proc = subprocess.Popen(
-            [browser_path, f'--app={url}', '--new-window'],
+            [browser_path, f'--app={url}', '--new-window', '--start-maximized'],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
