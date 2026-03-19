@@ -307,10 +307,7 @@ body {
 }
 
 .tip-toggle-btn {
-    position: absolute;
-    left: 4px;
-    top: 50%;
-    transform: translateY(-50%);
+    margin-right: auto;
     background: rgba(167, 139, 250, 0.1);
     border: 1px solid rgba(167, 139, 250, 0.35);
     color: #c4b5fd;
