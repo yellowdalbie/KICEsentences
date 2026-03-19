@@ -336,14 +336,12 @@ function renderSidebar() {
             </div>
         `;
 
-        // 항목 클릭 시 선택
         li.addEventListener('click', (e) => {
             if (e.target.closest('.sidebar-item-remove')) return;
             _selectedSidebarIdx = idx;
             renderSidebar();
         });
 
-        // 드래그 앤 드랍 이벤트 핸들러
         li.addEventListener('dragstart', (e) => {
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', idx);
@@ -355,55 +353,6 @@ function renderSidebar() {
             document.querySelectorAll('.sidebar-item').forEach(el => {
                 el.classList.remove('drag-insert-before', 'drag-insert-after');
             });
-        });
-
-        li.addEventListener('dragover', (e) => {
-            e.preventDefault(); 
-            e.dataTransfer.dropEffect = 'move';
-            const rect = li.getBoundingClientRect();
-            if (e.clientY < rect.top + rect.height / 2) {
-                li.classList.add('drag-insert-before');
-                li.classList.remove('drag-insert-after');
-            } else {
-                li.classList.add('drag-insert-after');
-                li.classList.remove('drag-insert-before');
-            }
-        });
-
-        li.addEventListener('dragleave', () => {
-            li.classList.remove('drag-insert-before', 'drag-insert-after');
-        });
-
-        li.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const isBefore = li.classList.contains('drag-insert-before');
-            li.classList.remove('drag-insert-before', 'drag-insert-after');
-            
-            const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-            let toIdx = idx;
-            
-            if (fromIdx === toIdx) return;
-            
-            // 배열 이동 처리
-            const movedItem = _previewLoadedItems.splice(fromIdx, 1)[0];
-            
-            if (fromIdx < toIdx) {
-                toIdx--;
-            }
-            if (!isBefore) {
-                toIdx++;
-            }
-            
-            _previewLoadedItems.splice(toIdx, 0, movedItem);
-            
-            if (_selectedSidebarIdx !== null) {
-                if (_selectedSidebarIdx === fromIdx) _selectedSidebarIdx = toIdx;
-                else if (_selectedSidebarIdx > fromIdx && _selectedSidebarIdx <= toIdx) _selectedSidebarIdx--;
-                else if (_selectedSidebarIdx < fromIdx && _selectedSidebarIdx >= toIdx) _selectedSidebarIdx++;
-            }
-            
-            renderSidebar();
-            renderPreviewPages();
         });
 
         li.querySelector('.sidebar-item-remove').addEventListener('click', (e) => {
@@ -419,6 +368,91 @@ function renderSidebar() {
 
         sidebarOrderList.appendChild(li);
     });
+
+    if (!sidebarOrderList.dataset.dragbound) {
+        sidebarOrderList.dataset.dragbound = "true";
+        sidebarOrderList.style.paddingBottom = "40px"; // 여유 바닥 공간 제공
+        
+        sidebarOrderList.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const y = e.clientY;
+            const items = [...sidebarOrderList.querySelectorAll('.sidebar-item:not(.dragging)')];
+            if (items.length === 0) return;
+            
+            let targetItem = null;
+            for (let i = 0; i < items.length; i++) {
+                const rect = items[i].getBoundingClientRect();
+                const center = rect.top + rect.height / 2;
+                if (y < center) {
+                    targetItem = items[i];
+                    break;
+                }
+            }
+            
+            sidebarOrderList.querySelectorAll('.sidebar-item').forEach(el => {
+                el.classList.remove('drag-insert-before', 'drag-insert-after');
+            });
+            
+            if (targetItem) {
+                targetItem.classList.add('drag-insert-before');
+            } else {
+                items[items.length - 1].classList.add('drag-insert-after');
+            }
+        });
+
+        sidebarOrderList.addEventListener('dragleave', (e) => {
+            if (!sidebarOrderList.contains(e.relatedTarget)) {
+                sidebarOrderList.querySelectorAll('.sidebar-item').forEach(el => {
+                    el.classList.remove('drag-insert-before', 'drag-insert-after');
+                });
+            }
+        });
+
+        sidebarOrderList.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const fromIdxStr = e.dataTransfer.getData('text/plain');
+            if (!fromIdxStr) return;
+            const fromIdx = parseInt(fromIdxStr, 10);
+            
+            let toIdx = -1;
+            let isBefore = true;
+            const items = [...sidebarOrderList.querySelectorAll('.sidebar-item')];
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].classList.contains('drag-insert-before')) {
+                    toIdx = parseInt(items[i].dataset.idx, 10);
+                    isBefore = true;
+                    break;
+                } else if (items[i].classList.contains('drag-insert-after')) {
+                    toIdx = parseInt(items[i].dataset.idx, 10);
+                    isBefore = false;
+                    break;
+                }
+            }
+            
+            sidebarOrderList.querySelectorAll('.sidebar-item').forEach(el => {
+                el.classList.remove('drag-insert-before', 'drag-insert-after');
+            });
+            
+            if (toIdx === -1 || fromIdx === toIdx) return;
+            
+            const movedItem = _previewLoadedItems.splice(fromIdx, 1)[0];
+            
+            if (fromIdx < toIdx) toIdx--;
+            if (!isBefore) toIdx++;
+            
+            _previewLoadedItems.splice(toIdx, 0, movedItem);
+            
+            if (_selectedSidebarIdx !== null) {
+                if (_selectedSidebarIdx === fromIdx) _selectedSidebarIdx = toIdx;
+                else if (_selectedSidebarIdx > fromIdx && _selectedSidebarIdx <= toIdx) _selectedSidebarIdx--;
+                else if (_selectedSidebarIdx < fromIdx && _selectedSidebarIdx >= toIdx) _selectedSidebarIdx++;
+            }
+            
+            renderSidebar();
+            renderPreviewPages();
+        });
+    }
 }
 
 // ── 페이지 렌더링 (순서 변경 시 재호출) ──
