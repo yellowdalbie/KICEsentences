@@ -1442,6 +1442,14 @@ body {
     transition: background 0.15s, border-color 0.15s, margin 0.18s ease;
 }
 
+.sidebar-drag-handle {
+    cursor: grab;
+    padding-right: 4px;
+    color: #8b9bb4;
+    font-size: 1.1rem;
+    user-select: none;
+}
+
 .sidebar-item:hover {
     background: rgba(167, 139, 250, 0.07);
     border-color: rgba(167, 139, 250, 0.18);

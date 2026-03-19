@@ -328,8 +328,8 @@ function renderSidebar() {
         li.draggable = true;
         li.dataset.idx = idx;
         li.innerHTML = `
-            <div class="sidebar-drag-handle" title="드래그하여 순서 변경">⠿</div>
-            <div class="sidebar-item-row" style="flex:1;">
+            <div class="sidebar-item-row" style="flex:1; width:100%;">
+                <div class="sidebar-drag-handle" title="드래그하여 순서 변경">⠿</div>
                 <span class="sidebar-item-num">${idx + 1}</span>
                 <span class="sidebar-item-pid">${item.pid}</span>
                 <button class="sidebar-item-remove" title="제거">×</button>
