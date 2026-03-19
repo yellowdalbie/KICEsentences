@@ -7,9 +7,9 @@
     <title>KICE DB Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <!-- KaTeX CSS and JS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+    <link rel="stylesheet" href="{{ url_for('static', filename='katex/katex.min.css') }}">
+    <script defer src="{{ url_for('static', filename='katex/katex.min.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='katex/auto-render.min.js') }}"
         onload="renderMathInElement(document.body, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\(', right: '\\)', display: false}, {left: '\\[', right: '\\]', display: true}] });"></script>
 </head>
 
@@ -27,8 +27,8 @@
             <div class="search-mode-pills">
                 <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
                 <button class="search-pill" data-tab="tab-expression">기출표현</button>
-                <button class="search-pill" data-tab="tab-unit">성취기준</button>
                 <button class="search-pill" data-tab="tab-probid">문항번호</button>
+                <button class="search-pill" data-tab="tab-unit">성취기준</button>
             </div>
 
             <!-- 1. Keyword Search Input -->
@@ -44,7 +44,8 @@
                     </button>
                 </div>
                 <div class="search-helper-text" id="keyword-search-guide">
-                    <span>AI 핵심 주제 / 문장형 질문 의미 탐색</span>
+                    <button class="tip-toggle-btn" onclick="openTipModal()">TIP</button>
+                    <span>수학 개념어 또는 풀이 방법 입력</span>
                 </div>
             </div>
 
@@ -96,7 +97,7 @@
                     </button>
                 </div>
                 <div class="search-helper-text">
-                    <span>특정 문항 식별자로 즉시 이동</span>
+                    <span>예) 2024수능_30 · 2023.9모_15 · 2019수능나_26</span>
                 </div>
             </div>
         </header>
@@ -173,50 +174,8 @@
 
             <!-- View 1: Overview -->
             <section id="view-overview" class="view-section active">
-                <div
-                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; align-items: start;">
-                    <div class="chart-card glass" style="padding: 1.5rem;">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.8rem;">
-                            <h3
-                                style="font-size: 1.15rem; color: var(--text-main); margin-bottom: 0; padding-bottom: 0; border: none;">
-                                분석 진행 상황</h3>
-                            <div id="total-progress-text"
-                                style="font-size: 1.2rem; font-weight: 600; color: var(--text-main);">- / -</div>
-                        </div>
-
-                        <!-- Total Progress Bar -->
-                        <div
-                            style="width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; margin-bottom: 2rem; overflow: hidden; border: 1px solid rgba(217, 70, 239, 0.2);">
-                            <div id="total-progress-bar"
-                                style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-magenta), var(--accent-cyan)); transition: width 0.8s ease-out;">
-                            </div>
-                        </div>
-
-                        <div id="yearly-progress-container" style="display: flex; flex-direction: column; gap: 1.2rem;">
-                            <!-- Row 1: 2026-2022 -->
-                            <div id="yearly-row-1" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
-                            <!-- Row 2: Others -->
-                            <div id="yearly-row-2" style="display: flex; gap: 1.2rem; flex-wrap: wrap;"></div>
-                        </div>
-                    </div>
-
-                    <div class="chart-card glass" style="padding: 1.5rem;">
-                        <h3
-                            style="margin-bottom: 1.2rem; color: var(--text-main); font-size: 1.2rem;">
-                            검색 및 분석 활용 가이드</h3>
-
-                        <div
-                            style="background: rgba(217, 70, 239, 0.06); border: 1px solid rgba(217, 70, 239, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-                            <strong style="color: #f472b6; display: block; margin-bottom: 0.5rem;">미적분II 및 기하
-                                과목 분석
-                                안내</strong>
-                            <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
-                                미적분II와 기하는 <strong>'기출표현'</strong> 탭을 통한 문항의 텍스트 검색만 가능합니다.<br>
-                                <strong>'개념유사도'</strong> 및 <strong>'성취기준'</strong> 탭으로는 검색되지 않음을 유의해 주시기 바랍니다.
-                            </p>
-                        </div>
-
+                <div style="display: flex; justify-content: center; margin-top: 1rem;">
+                    <div class="chart-card glass" style="padding: 1.5rem; width: 100%; max-width: 900px;">
                         <div
                             style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
                             <div
@@ -225,8 +184,7 @@
                                     style="color: #e879f9; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
                                     개념유사도
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">AI가 해설의 맥락을
-                                    분석하여 검색어와 핵심 원리가 가장 비슷한 문항을 추천합니다.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">수학적 풀이 방법이나 개념어를 입력하면, 해설의 접근법이 유사한 문항을 찾아드립니다.</p>
                             </div>
                             <div
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
@@ -241,19 +199,19 @@
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
                                     style="color: #818cf8; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
-                                    성취기준
+                                    문항번호
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">교육과정의 성취기준
-                                    폴더를 탐색하여 특정 단원에 해당하는 문항을 찾습니다.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">수능·모의평가 문항번호를
+                                    직접 입력(예: 2026.9모_공22)하여 빠르게 검색합니다.</p>
                             </div>
                             <div
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
                                     style="color: #22d3ee; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
-                                    문항번호
+                                    성취기준
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">수능·모의평가 문항번호를
-                                    직접 입력(예: 2026.9모_공22)하여 빠르게 검색합니다.</p>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">교육과정의 성취기준
+                                    폴더를 탐색하여 특정 단원에 해당하는 문항을 찾습니다.</p>
                             </div>
                         </div>
                     </div>
@@ -557,68 +515,20 @@
 
         logoBtn.addEventListener('click', () => {
             switchView('overview');
+            // 개념유사도 탭을 기본값으로 활성화
+            searchPills.forEach(p => p.classList.remove('active'));
+            const keywordPill = document.querySelector('.search-pill[data-tab="tab-keyword"]');
+            if (keywordPill) keywordPill.classList.add('active');
+            searchWrappers.forEach(w => w.classList.remove('active'));
+            const keywordWrapper = document.getElementById('tab-keyword');
+            if (keywordWrapper) keywordWrapper.classList.add('active');
+            if (window.typeWriters) {
+                Object.values(window.typeWriters).forEach(tw => tw.stop());
+                if (window.typeWriters['tab-keyword']) window.typeWriters['tab-keyword'].start();
+            }
         });
 
         // App Logic: Fetch Data
-        async function fetchStats() {
-            try {
-                const response = await fetch('/api/stats');
-                const data = await response.json();
-
-                // Update KPIs
-                const totalText = document.getElementById('total-progress-text');
-                const progressBar = document.getElementById('total-progress-bar');
-
-                if (totalText) totalText.innerText = `${data.total_analyzed} / ${data.total_pdfs}`;
-
-                const completionRate = data.total_pdfs > 0 ? Math.round((data.total_analyzed / data.total_pdfs) * 100) : 0;
-                if (progressBar) progressBar.style.width = completionRate + '%';
-
-                // Update Yearly Progress Charts
-                const row1 = document.getElementById('yearly-row-1');
-                const row2 = document.getElementById('yearly-row-2');
-
-                if (row1 && row2) {
-                    row1.innerHTML = '';
-                    row2.innerHTML = '';
-
-                    const row1Years = ['2026', '2025', '2024', '2023', '2022'];
-
-                    data.yearly_progress.forEach(item => {
-                        if (item.year === '2028') return; // Exclude 2028 as requested
-
-                        const chartItem = document.createElement('div');
-                        chartItem.style.cssText = 'flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem; width: 68px;';
-
-                        const chartHtml = `
-                            <div style="display: flex; align-items: center; gap: 6px;">
-                                <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">${item.year}</span>
-                                <div style="
-                                    width: 10px; height: 10px; 
-                                    border-radius: 50%; 
-                                    background: conic-gradient(#8b5cf6 ${item.percent}%, rgba(255,255,255,0.1) 0);
-                                    border: 1px solid rgba(139, 92, 246, 0.4);
-                                    flex-shrink: 0;
-                                "></div>
-                            </div>
-                            <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 400; padding-left: 1px;">
-                                ${item.analyzed}/${item.total}
-                            </div>
-                        `;
-                        chartItem.innerHTML = chartHtml;
-
-                        if (row1Years.includes(item.year)) {
-                            row1.appendChild(chartItem);
-                        } else {
-                            row2.appendChild(chartItem);
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-            }
-        }
-
         // Typing Animations
         class Typewriter {
             constructor(element, texts, baseSpeed = 80, isLongSentence = false) {
@@ -768,21 +678,17 @@
 
                     // Build score map if it was a semantic search
                     const scoreMap = {};
-                    const matchStepIds = new Set();
                     data.results.forEach(r => {
                         if (r.cos_similarity !== undefined) {
                             if (!scoreMap[r.problem_id] || r.hybrid_score > scoreMap[r.problem_id].hybrid_score) {
-                                scoreMap[r.problem_id] = { cos_similarity: r.cos_similarity, hybrid_score: r.hybrid_score, same_concept: r.same_concept };
+                                scoreMap[r.problem_id] = { hybrid_score: r.hybrid_score };
                             }
-                        }
-                        if (r.match_step_id) {
-                            matchStepIds.add(String(r.match_step_id));
                         }
                     });
 
                     // Render function
                     const doRender = () => {
-                        renderMainTable(groups, undefined, scoreMap, 'main-search-table', 'search-tbody', matchStepIds);
+                        renderMainTable(groups, undefined, scoreMap, 'main-search-table', 'search-tbody');
                     };
 
                     doRender();
@@ -1139,7 +1045,7 @@
 
 
         // ── 공통 메인 렌더링 함수 ────────────────────────────────────
-        function renderMainTable(groups, orderedProbIds, scoreMap, targetTableId = 'main-search-table', targetTbodyId = 'search-tbody', matchStepIds = new Set()) {
+        function renderMainTable(groups, orderedProbIds, scoreMap, targetTableId = 'main-search-table', targetTbodyId = 'search-tbody') {
             const searchTable = document.getElementById(targetTableId);
             const searchTbody = document.getElementById(targetTbodyId);
             searchTbody.innerHTML = '';
@@ -1167,28 +1073,10 @@
 
                     const fullConcept = (row.ref_code || row.action_concept_id || '') + ' ' + (row.standard_name || '');
 
-                    let textStyle = '';
-                    if (matchStepIds && matchStepIds.has(String(row.step_id))) {
-                        textStyle = 'color: var(--accent-cyan); font-weight: 600;';
-                    }
-
                     if (index === 0) {
                         const pdfImg = `<img src="/thumbnail/${pid}" style="width:480px;height:auto;display:block;border-radius:4px;" alt="${pid}">`;
                         html += `<td class="col-probid" rowspan="${rowCount}" style="border-right: 1px solid rgba(255, 255, 255, 0.05);">
                             <span class="prob-id-glass-tag prob-id-trigger tooltip-trigger" style="cursor:pointer; user-select:none;" data-prob-id="${pid}" data-tooltip="${encodeURIComponent(pdfImg)}" onclick="toggleCartItem('${pid}')">${pid}</span>`;
-
-                        if (score && score.cos_similarity !== undefined) {
-                            const pct = Math.round((score.cos_similarity || 0) * 100);
-                            const barColor = score.same_concept
-                                ? 'linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta))'
-                                : (pct >= 70 ? 'linear-gradient(90deg, rgba(6, 182, 212, 0.5), var(--accent-cyan))' : 'linear-gradient(90deg, rgba(217, 70, 239, 0.5), var(--accent-magenta))');
-                            const badge = score.same_concept
-                                ? `<span class="tag" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.3); font-size: 0.7rem;">동일개념</span>` : '';
-                            html += `<div style="margin-top:0.4rem;font-size:0.72rem;color:var(--text-muted);display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;">
-                                        <span style="display:inline-block;height:4px;width:${Math.min(pct, 60)}px;border-radius:2px;background:${barColor};vertical-align:middle;"></span>
-                                        <span style="color:var(--text-main); font-family:'Courier New', monospace;">${pct}%</span>${badge}
-                                    </div>`;
-                        }
                         html += `</td>`;
                     }
 
@@ -1204,7 +1092,7 @@
                                         style="opacity:0.6;cursor:pointer;color:var(--accent-magenta);"
                                         onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">${linkSvg}</span>` : ''}
                                 </span>
-                                <span style="transition: all 0.2s; ${textStyle}">${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
+                                <span>${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
                             </div>
                         </td>
                         <td class="col-concept concept-edit-cell tooltip-trigger"
@@ -1267,12 +1155,10 @@
                     if (simData.error) { placeholder.innerText = simData.error; return; }
 
                     const scoreMap = {};
-                    const matchStepIds = new Set();
                     simData.results.forEach(r => {
                         if (!scoreMap[r.problem_id] || r.hybrid_score > scoreMap[r.problem_id].hybrid_score) {
-                            scoreMap[r.problem_id] = { cos_similarity: r.cos_similarity, hybrid_score: r.hybrid_score, same_concept: r.same_concept };
+                            scoreMap[r.problem_id] = { hybrid_score: r.hybrid_score };
                         }
-                        matchStepIds.add(String(r.step_id));
                     });
 
                     // scoreMap의 최고 점수 기준으로 문항 정렬 (스텝 단위 API 결과의 등장 순서에 의존하지 않음)
@@ -1290,7 +1176,7 @@
                             });
 
                             const doRender = () => {
-                                renderMainTable(groups, orderedProbIds, scoreMap, 'main-search-table', 'search-tbody', matchStepIds);
+                                renderMainTable(groups, orderedProbIds, scoreMap, 'main-search-table', 'search-tbody');
                             };
 
                             doRender();
@@ -1440,6 +1326,7 @@
                         renderMathInElement(expList, {
                             delimiters: [
                                 { left: '$$', right: '$$', display: true },
+                                { left: '\\[', right: '\\]', display: true },
                                 { left: '$', right: '$', display: false }
                             ],
                             throwOnError: false
@@ -1526,7 +1413,6 @@
         }
 
         // Init
-        fetchStats();
         fetchConceptsTree();
     </script>
 
@@ -1548,6 +1434,81 @@
             <button class="custom-alert-btn" onclick="closeCustomAlert()">확인</button>
         </div>
     </div>
+
+    <!-- TIP Modal -->
+    <div id="tip-modal" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:2000; align-items:center; justify-content:center; background:rgba(15,23,42,0.4); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
+        <div class="tip-modal-content" style="background:rgba(30,41,59,0.95); border:1px solid rgba(6,182,212,0.3); border-radius:16px; padding:2rem; width:90%; max-width:550px; max-height:80vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 style="color:#fff; font-size:1.2rem; margin:0; letter-spacing:0.05em;">KICE Lynx 활용 팁 <span style="color:var(--accent-cyan);font-weight:700;">TIP</span></h2>
+                <button onclick="closeTipModal()" style="background:none; border:none; color:#a0aec0; font-size:1.8rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <div id="tip-list" style="display:flex; flex-direction:column; gap:1.2rem;">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+    <script>
+        const LINK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5b8dee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin:0 1px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+        const SYS_TIPS = [
+            { title: "개념으로 문항 찾기", desc: "코사인법칙으로 변의 길이를 구하는 문항을 모아 보려면, <b>개념유사도</b> 검색창에 <b>'코사인법칙 변'</b>이라고 입력하세요." },
+            { title: "특정 번호 문항 모아 보기", desc: "30번 문항들을 한번에 보려면, <b>문항번호</b> 검색창에 <b>'30번'</b>이라고 입력하세요. 특정 문항 코드(예: 2024수능_14)를 입력하면 해당 문항으로 바로 이동합니다." },
+            { title: "수식·조건 표현으로 찾기", desc: "특정 수식이나 조건이 해설에 그대로 등장하는 문항을 찾으려면 <b>기출표현</b> 탭을 이용하세요. 개념어보다 원문 표현에 가까운 검색을 할 수 있습니다." },
+            { title: "단원별로 탐색하기", desc: "교육과정 단원 기준으로 문항을 탐색하려면 <b>성취기준</b> 탭에서 단원명을 클릭하세요. 각 성취기준에 해당하는 문항 목록이 나타납니다." },
+            { title: "해설은 마우스를 올리면 나타납니다", desc: "검색 결과의 각 풀이 단계에 마우스를 올리면 해당 단계의 <b>해설 전문이 팝업으로</b> 표시됩니다. 문항 번호에 마우스를 올리면 문항 이미지 미리보기도 볼 수 있습니다." },
+            { title: "문항을 장바구니에 담으려면", desc: "검색 결과에서 <b>문항 번호를 클릭</b>하면 장바구니에 담깁니다. 다시 클릭하면 제거됩니다. 오른쪽 하단 장바구니 아이콘으로 담긴 목록을 확인할 수 있습니다." },
+            { title: "같은 풀이 단계를 쓰는 문항 찾기", desc: `검색 결과에서 각 풀이 단계 왼쪽의 ${LINK_ICON} 아이콘을 클릭하면, 같은 수학적 접근을 활용하는 다른 문항들을 모아볼 수 있습니다.` },
+            { title: "유사 쌍둥이 문항 자동으로 채우기", desc: "장바구니에 문항을 담은 후 <b>🔗 더블</b> 버튼을 누르면, 각 문항과 풀이 구조가 가장 비슷한 다른 연도·시험의 문항을 자동으로 찾아 세트를 완성합니다." },
+            { title: "인쇄 순서는 드래그로 조정", desc: "미리보기 / 인쇄 버튼을 누른 뒤, 왼쪽 목록에서 문항을 드래그해 <b>순서를 자유롭게 조정</b>할 수 있습니다. 조정된 순서 그대로 출력됩니다." },
+            { title: "정답과 해설, 포함 여부를 선택해서 인쇄", desc: "인쇄 미리보기 상단에서 <b>정답 표기</b>(미표기 / 각 문항 / 문제지 끝)와 <b>해설 포함</b> 여부를 선택할 수 있습니다. 용도에 맞게 조합해 출력하세요." },
+            { title: "성취기준 코드가 궁금하다면", desc: "검색 결과 오른쪽 열의 성취기준 코드에 마우스를 올리면 <b>해당 성취기준의 전체 이름</b>이 표시됩니다. 교육과정 연계 여부를 빠르게 확인할 수 있습니다." },
+            { title: "인터넷 없이도 어디서나", desc: "KICE Lynx는 인터넷 연결 없이 로컬에서 완전히 동작합니다. 교실, 독서실, 인터넷이 닿지 않는 현장에서도 검색과 인쇄가 가능합니다." }
+        ];
+
+        function openTipModal() {
+            const listContainer = document.getElementById('tip-list');
+            listContainer.innerHTML = '';
+            SYS_TIPS.forEach(tip => {
+                const item = document.createElement('div');
+                item.style.cssText = 'background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:1.2rem; display:flex; flex-direction:column; gap:6px;';
+                item.innerHTML = `
+                    <div style="font-size:1.05rem; font-weight:600; color:#fff;">${tip.title}</div>
+                    <div style="font-size:0.9rem; color:#8d96ad; line-height:1.6;">${tip.desc.replace(/<b>/g, '<b style="color:#c8d0e0; font-weight:600;">')}</div>
+                `;
+                listContainer.appendChild(item);
+            });
+            const modal = document.getElementById('tip-modal');
+            modal.style.display = 'flex';
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.transition = 'opacity 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                modal.style.opacity = '1';
+            }, 10);
+        }
+
+        function closeTipModal() {
+            const modal = document.getElementById('tip-modal');
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 200);
+        }
+    </script>
+
+    {% if offline_mode %}
+      <span>KICE Lynx v2025.11</span>
+      <button onclick="shutdownServer()" style="background:#2a2d3a;border:none;color:#8d96ad;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;">종료</button>
+    </div>
+    <script>
+    function shutdownServer() {
+      if (!confirm('KICE Lynx 서버를 종료하시겠습니까?')) return;
+      fetch('/api/shutdown', {method:'POST'})
+        .then(() => {
+          document.getElementById('shutdown-bar').innerHTML = '<span style="color:#5b8dee">종료되었습니다. 이 창을 닫아주세요.</span>';
+        })
+        .catch(() => {});
+    }
+    </script>
+    {% endif %}
 </body>
 
 </html>

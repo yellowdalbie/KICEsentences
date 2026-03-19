@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KICE Lynx 시작 중...</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0f1117;
+    color: #e8eaf0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .logo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .logo span { color: #5b8dee; }
+
+  .status {
+    font-size: 0.85rem;
+    color: #7a8499;
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #5b8dee;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .tip-container {
+    width: 420px;
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    min-height: 180px;
+    position: relative;
+  }
+
+  .tip-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #5b8dee;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .tip-content {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .tip-content.visible { opacity: 1; }
+
+  .tip-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .tip-desc {
+    font-size: 0.88rem;
+    color: #8d96ad;
+    line-height: 1.7;
+  }
+  .tip-desc b {
+    color: #c8d0e0;
+    font-weight: 600;
+  }
+
+  .tip-dots {
+    display: flex;
+    gap: 6px;
+    margin-top: 1.5rem;
+    justify-content: center;
+  }
+  .tip-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #2a2d3a;
+    transition: background 0.3s;
+  }
+  .tip-dot.active { background: #5b8dee; }
+
+  .progress-bar {
+    width: 420px;
+    height: 2px;
+    background: #2a2d3a;
+    border-radius: 2px;
+    margin-top: 1.5rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #5b8dee;
+    width: 0%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .first-run-notice {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: #4a5060;
+    text-align: center;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">KICE <span>Lynx</span></div>
+<div class="status">
+  <div class="dot"></div>
+  <span id="status-text">시작 중...</span>
+</div>
+
+<div class="tip-container">
+  <div class="tip-label">이런 기능이 있어요</div>
+  <div class="tip-content" id="tip-content">
+    <div class="tip-title" id="tip-title"></div>
+    <div class="tip-desc" id="tip-desc"></div>
+  </div>
+  <div class="tip-dots" id="tip-dots"></div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+<div class="first-run-notice" id="first-run-notice">최초 실행 시 환경 설정 중입니다. 약 30초 소요됩니다.</div>
+
+<script>
+const LINK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5b8dee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin:0 1px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+
+const TIPS = [
+  {
+    title: "개념으로 문항 찾기",
+    desc: "코사인법칙으로 변의 길이를 구하는 문항을 모아 보려면, <b>개념유사도</b> 검색창에 <b>'코사인법칙 변'</b>이라고 입력하세요."
+  },
+  {
+    title: "특정 번호 문항 모아 보기",
+    desc: "30번 문항들을 한번에 보려면, <b>문항번호</b> 검색창에 <b>'30번'</b>이라고 입력하세요. 특정 문항 코드(예: 2024수능_14)를 입력하면 해당 문항으로 바로 이동합니다."
+  },
+  {
+    title: "수식·조건 표현으로 찾기",
+    desc: "특정 수식이나 조건이 해설에 그대로 등장하는 문항을 찾으려면 <b>기출표현</b> 탭을 이용하세요. 개념어보다 원문 표현에 가까운 검색을 할 수 있습니다."
+  },
+  {
+    title: "단원별로 탐색하기",
+    desc: "교육과정 단원 기준으로 문항을 탐색하려면 <b>성취기준</b> 탭에서 단원명을 클릭하세요. 각 성취기준에 해당하는 문항 목록이 나타납니다."
+  },
+  {
+    title: "해설은 마우스를 올리면 나타납니다",
+    desc: "검색 결과의 각 풀이 단계에 마우스를 올리면 해당 단계의 <b>해설 전문이 팝업으로</b> 표시됩니다. 문항 번호에 마우스를 올리면 문항 이미지 미리보기도 볼 수 있습니다."
+  },
+  {
+    title: "문항을 장바구니에 담으려면",
+    desc: "검색 결과에서 <b>문항 번호를 클릭</b>하면 장바구니에 담깁니다. 다시 클릭하면 제거됩니다. 오른쪽 하단 장바구니 아이콘으로 담긴 목록을 확인할 수 있습니다."
+  },
+  {
+    title: "같은 풀이 단계를 쓰는 문항 찾기",
+    desc: `검색 결과에서 각 풀이 단계 왼쪽의 ${LINK_ICON} 아이콘을 클릭하면, 같은 수학적 접근을 활용하는 다른 문항들을 모아볼 수 있습니다.`
+  },
+  {
+    title: "유사 쌍둥이 문항 자동으로 채우기",
+    desc: "장바구니에 문항을 담은 후 <b>🔗 더블</b> 버튼을 누르면, 각 문항과 풀이 구조가 가장 비슷한 다른 연도·시험의 문항을 자동으로 찾아 세트를 완성합니다."
+  },
+  {
+    title: "인쇄 순서는 드래그로 조정",
+    desc: "미리보기 / 인쇄 버튼을 누른 뒤, 왼쪽 목록에서 문항을 드래그해 <b>순서를 자유롭게 조정</b>할 수 있습니다. 조정된 순서 그대로 출력됩니다."
+  },
+  {
+    title: "정답과 해설, 포함 여부를 선택해서 인쇄",
+    desc: "인쇄 미리보기 상단에서 <b>정답 표기</b>(미표기 / 각 문항 / 문제지 끝)와 <b>해설 포함</b> 여부를 선택할 수 있습니다. 용도에 맞게 조합해 출력하세요."
+  },
+  {
+    title: "성취기준 코드가 궁금하다면",
+    desc: "검색 결과 오른쪽 열의 성취기준 코드에 마우스를 올리면 <b>해당 성취기준의 전체 이름</b>이 표시됩니다. 교육과정 연계 여부를 빠르게 확인할 수 있습니다."
+  },
+  {
+    title: "인터넷 없이도 어디서나",
+    desc: "KICE Lynx는 인터넷 연결 없이 로컬에서 완전히 동작합니다. 교실, 독서실, 인터넷이 닿지 않는 현장에서도 검색과 인쇄가 가능합니다."
+  }
+];
+
+let current = 0;
+let firstRunShown = false;
+
+// Build dots
+const dotsEl = document.getElementById('tip-dots');
+TIPS.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'tip-dot' + (i === 0 ? ' active' : '');
+  dotsEl.appendChild(d);
+});
+
+function showTip(idx) {
+  const content = document.getElementById('tip-content');
+  content.classList.remove('visible');
+  setTimeout(() => {
+    document.getElementById('tip-title').textContent = TIPS[idx].title;
+    document.getElementById('tip-desc').innerHTML = TIPS[idx].desc;
+    content.classList.add('visible');
+    document.querySelectorAll('.tip-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+  }, 300);
+}
+
+showTip(0);
+setInterval(() => {
+  current = (current + 1) % TIPS.length;
+  showTip(current);
+}, 4000);
+
+// Port from URL param
+const params = new URLSearchParams(window.location.search);
+const port = params.get('port') || '5050';
+const isFirstRun = params.get('first_run') === '1';
+
+if (isFirstRun) {
+  document.getElementById('first-run-notice').style.display = 'block';
+  document.getElementById('status-text').textContent = '환경 설정 중... (최초 1회)';
+}
+
+// Poll for server readiness
+let elapsed = 0;
+let maxWait = isFirstRun ? 180 : 30; // seconds
+
+const poll = setInterval(() => {
+  elapsed++;
+  const pct = Math.min((elapsed / maxWait) * 100, 95);
+  document.getElementById('progress').style.width = pct + '%';
+
+  if (elapsed === 10 && !isFirstRun) {
+    // Server taking longer than expected
+    document.getElementById('status-text').textContent = '서버 준비 중...';
+  }
+
+  if (elapsed >= maxWait) {
+    clearInterval(poll);
+    document.getElementById('status-text').textContent = '시작에 문제가 생겼습니다. 컴퓨터를 재시작 후 다시 시도해주세요.';
+    document.getElementById('progress').style.background = '#e05c5c';
+    return;
+  }
+
+  fetch(`http://127.0.0.1:${port}/ping`)
+    .then(r => { if (r.ok) {
+      clearInterval(poll);
+      document.getElementById('progress').style.width = '100%';
+      document.getElementById('status-text').textContent = '준비 완료!';
+      setTimeout(() => { window.location.href = `http://127.0.0.1:${port}`; }, 400);
+    }})
+    .catch(() => {});
+}, 1000);
+</script>
+</body>
+</html>

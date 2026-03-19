@@ -11,21 +11,21 @@ import html as html_module
 from datetime import datetime
 from flask import Flask, render_template, jsonify, request, send_from_directory, send_file
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
 
 app = Flask(__name__)
 DB_FILE = 'kice_database.sqlite'
 THUMBNAIL_DIR = os.path.join('static', 'thumbnails')
 VECTORS_FILE = 'kice_step_vectors.npz'
+STEP_CLUSTERS_FILE = 'step_clusters.json'
+TRIGGER_VECS_FILE = 'trigger_category_vectors.npz'
 os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
 # 오프라인 패키지 모드: 관리자 패널 및 오류 제보 기능 비활성화
 OFFLINE_MODE = os.environ.get('OFFLINE_MODE', '0') == '1'
 
-# ── 텍스트 임베딩 모델 및 벡터 인덱스 로드 ──────────────────────
-print("[로딩 중] 한국어 문장 임베딩 모델...")
-model = SentenceTransformer('dragonkue/BGE-m3-ko')
+# ── 벡터 인덱스 및 오프라인 쿼리 엔진 로드 ──────────────────────
 _vec_data = None
+_offline_query_engine = None
 
 def load_vector_index():
     global _vec_data
@@ -45,10 +45,61 @@ def load_vector_index():
 
 load_vector_index()
 
+
+def load_offline_query_engine():
+    global _offline_query_engine
+    try:
+        _offline_query_engine = OfflineQueryEngine()
+    except FileNotFoundError as e:
+        print(f"[경고] {e}")
+        print("[경고] 개념유사도 검색은 build_query_vocab.py 실행 후 사용 가능합니다.")
+
+
+def load_cluster_data():
+    """step_clusters.json + trigger_category_vectors.npz 로드해 _vec_data에 주입"""
+    global _vec_data
+    if _vec_data is None:
+        return
+
+    # 클러스터 ID 배열 (이진 판별용, 폴백)
+    if os.path.exists(STEP_CLUSTERS_FILE):
+        with open(STEP_CLUSTERS_FILE, encoding='utf-8') as f:
+            step_cluster_map = json.load(f)
+        cluster_ids = np.array(
+            [step_cluster_map.get(str(sid), -1) for sid in _vec_data['step_ids']],
+            dtype=np.int32,
+        )
+        _vec_data['step_cluster_ids'] = cluster_ids
+        n_clusters = len(set(cluster_ids[cluster_ids >= 0]))
+        print(f"[클러스터 데이터 로드됨] {n_clusters}개 클러스터 / {(cluster_ids >= 0).sum()}개 스텝 매핑")
+
+    # 트리거 카테고리 벡터 배열 (연속 유사도용)
+    if os.path.exists(TRIGGER_VECS_FILE):
+        tvec_data = np.load(TRIGGER_VECS_FILE, allow_pickle=True)
+        tvec_step_ids = tvec_data['step_ids']       # (M,) int32
+        tvec_vecs = tvec_data['step_trigger_vecs']  # (M, D) float32
+        # _vec_data['step_ids'] 순서에 맞춰 정렬
+        tvec_id_to_row = {int(sid): i for i, sid in enumerate(tvec_step_ids)}
+        D = tvec_vecs.shape[1]
+        step_trigger_vecs = np.zeros((len(_vec_data['step_ids']), D), dtype=np.float32)
+        mapped = 0
+        for i, sid in enumerate(_vec_data['step_ids']):
+            row = tvec_id_to_row.get(int(sid))
+            if row is not None:
+                step_trigger_vecs[i] = tvec_vecs[row]
+                mapped += 1
+        _vec_data['step_trigger_vecs'] = step_trigger_vecs
+        print(f"[트리거 벡터 로드됨] {mapped}개 스텝 매핑 (차원: {D})")
+
+
+load_cluster_data()
+
 # ── 하이브리드 검색 엔진 초기화 (벡터 인덱스 로드 후) ───────────────
-from search_engine import HybridSearchEngine, ProblemSimilarity
+from search_engine import HybridSearchEngine, ProblemSimilarity, OfflineQueryEngine
 _search_engine = None
 _problem_sim = None
+
+load_offline_query_engine()
 
 def load_search_engine():
     global _search_engine, _problem_sim
@@ -64,6 +115,22 @@ def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn
+
+@app.route('/ping')
+def ping():
+    return 'ok', 200
+
+@app.route('/api/shutdown', methods=['POST'])
+def shutdown():
+    if not OFFLINE_MODE:
+        return jsonify({'error': 'not allowed'}), 403
+    import threading
+    def _stop():
+        import time, os, signal
+        time.sleep(0.5)
+        os.kill(os.getpid(), signal.SIGTERM)
+    threading.Thread(target=_stop, daemon=True).start()
+    return jsonify({'status': 'shutting down'})
 
 @app.route('/')
 def index():
@@ -320,31 +387,33 @@ def search():
         conn.close()
         return jsonify({"results": results})
     
-    # Semantic Search Flow
-    q_vector = model.encode([query])[0]
-    q_vector_norm = q_vector / np.linalg.norm(q_vector)
-    
-    # Calculate cosine similarity against all step vectors
-    cos_sims = np.dot(_vec_data['vectors'], q_vector_norm)
-    
+    # Semantic Search Flow (오프라인 어휘 룩업)
+    if _offline_query_engine is None:
+        conn.close()
+        return jsonify({"results": [], "error": "개념유사도 엔진 미초기화. build_query_vocab.py를 실행하세요."})
+
+    cos_sims = _offline_query_engine.get_cos_sims(query)
+
     # Get indices sorted by similarity
     top_indices = np.argsort(cos_sims)[::-1]
-    
+
     top_unique_probs = []
     seen_probs = set()
     prob_scores = {}
-    
+
     for idx in top_indices:
+        score = float(cos_sims[idx])
+        if score < 0.15:   # 오프라인 엔진 분포 기준 하한
+            break
         prob_id = str(_vec_data['problem_ids'][idx])
-        score = round(float(cos_sims[idx]), 4)
         if prob_id not in seen_probs:
             seen_probs.add(prob_id)
             top_unique_probs.append(prob_id)
             prob_scores[prob_id] = {
-                'cos_similarity': score,
+                'cos_similarity': round(score, 4),
                 'match_step_id': int(_vec_data['step_ids'][idx])
             }
-        if len(top_unique_probs) >= 20: 
+        if len(top_unique_probs) >= 100:   # 안전 상한
             break
             
     if not top_unique_probs:
@@ -738,11 +807,34 @@ def strip_frontmatter(text):
 
     return ''.join(result_lines)
 
-def extract_snippet(text, highlights, surround=50):
+def _find_latex_regions(text):
+    """원본 텍스트(원시 문자열)에서 LaTeX 블록의 (start, end) 목록을 반환."""
+    regions = []
+    # Display: $$...$$
+    for m in re.finditer(r'\$\$[\s\S]*?\$\$', text):
+        regions.append((m.start(), m.end()))
+    # Display: \[...\]
+    for m in re.finditer(r'\\\[[\s\S]*?\\\]', text):
+        regions.append((m.start(), m.end()))
+    # Inline: $...$ (단, $$ 내부 제외)
+    for m in re.finditer(r'(?<!\$)\$(?!\$)[^\n$]+?\$(?!\$)', text):
+        if not any(rs <= m.start() < re for rs, re in regions):
+            regions.append((m.start(), m.end()))
+    regions.sort(key=lambda r: r[0])
+    return regions
+
+
+def extract_snippet(text, highlights, surround=80):
+    """검색 하이라이트 주변 텍스트를 추출하여 HTML-safe snippet 반환.
+
+    - LaTeX 블록 경계까지 snippet을 확장해 불완전한 수식을 방지
+    - HTML 특수문자(<, >, &)를 이스케이프한 후 <mark> 삽입
+    - 결과 HTML을 innerHTML에 직접 설정해도 안전하며 KaTeX가 정상 렌더링 가능
+    """
     if not highlights:
-        return text[:100] + "..."
-        
-    # Find the earliest occurrence of any highlight
+        return html_module.escape(text[:150]) + "..."
+
+    # 1) 가장 빠른 하이라이트 위치 탐색
     earliest_idx = len(text)
     best_hl = ""
     for hl in highlights:
@@ -750,26 +842,69 @@ def extract_snippet(text, highlights, surround=50):
         if idx != -1 and idx < earliest_idx:
             earliest_idx = idx
             best_hl = hl
-            
+
     if earliest_idx == len(text):
-        return text[:100] + "..."
-        
+        return html_module.escape(text[:150]) + "..."
+
+    # 2) 기본 범위 설정
     start = max(0, earliest_idx - surround)
     end = min(len(text), earliest_idx + len(best_hl) + surround)
-    
-    snippet = text[start:end]
-    if start > 0:
-        snippet = "..." + snippet
-    if end < len(text):
-        snippet = snippet + "..."
-        
-    # Apply <mark> tags
-    for hl in highlights:
-        # Simple string replace for highlighting.
-        # Note: this might break if highlights overlap or contain HTML.
-        snippet = snippet.replace(hl, f"<mark>{hl}</mark>")
-        
-    return snippet
+
+    # 3) LaTeX 블록 경계까지 확장 (블록 중간에서 잘리지 않도록)
+    regions = _find_latex_regions(text)
+    for rs, re_end in regions:
+        if rs < start < re_end:   # 시작점이 블록 내부 → 블록 시작으로 후퇴
+            start = rs
+        if rs < end < re_end:     # 끝점이 블록 내부 → 블록 끝으로 전진
+            end = re_end
+        if start <= rs and re_end <= end:
+            pass  # 블록 전체가 이미 포함
+        elif rs >= start and rs < end and re_end > end:
+            end = re_end  # 블록이 끝점 너머로 열려 있으면 닫힘까지 포함
+
+    start = max(0, start)
+    end = min(len(text), end)
+
+    prefix = "..." if start > 0 else ""
+    suffix = "..." if end < len(text) else ""
+    raw_snippet = text[start:end]
+
+    # 4) snippet 안의 LaTeX 영역 재계산 (offset 반영)
+    snippet_regions = _find_latex_regions(raw_snippet)
+
+    def in_latex_region(pos, length):
+        return any(rs <= pos and pos + length <= re_end
+                   for rs, re_end in snippet_regions)
+
+    # 5) 텍스트를 LaTeX / 비-LaTeX 세그먼트로 분리
+    segments = []  # (raw_text, is_latex)
+    cursor = 0
+    for rs, re_end in snippet_regions:
+        if cursor < rs:
+            segments.append((raw_snippet[cursor:rs], False))
+        segments.append((raw_snippet[rs:re_end], True))
+        cursor = re_end
+    if cursor < len(raw_snippet):
+        segments.append((raw_snippet[cursor:], False))
+
+    # 6) 각 세그먼트별 처리:
+    #    - 비-LaTeX: HTML 이스케이프 후 <mark> 삽입
+    #    - LaTeX: HTML 이스케이프만 (mark 삽입 안 함)
+    result_parts = []
+    for seg_text, is_latex in segments:
+        escaped = html_module.escape(seg_text)
+        if is_latex:
+            result_parts.append(escaped)
+        else:
+            for hl in highlights:
+                escaped_hl = html_module.escape(hl)
+                escaped = escaped.replace(
+                    escaped_hl,
+                    f'<mark>{escaped_hl}</mark>'
+                )
+            result_parts.append(escaped)
+
+    return prefix + ''.join(result_parts) + suffix
 
 @app.route('/api/search_expression', methods=['GET'])
 def search_expression():
@@ -888,7 +1023,7 @@ def serve_search_rules():
     if os.path.exists(rules_path):
         with open(rules_path, 'r', encoding='utf-8') as f:
             md_content = f.read()
-            html_content = markdown.markdown(md_content, extensions=['fenced_code'])
+            html_content = markdown_module.markdown(md_content, extensions=['fenced_code', 'tables'])
             
             full_html = f'''
             <!DOCTYPE html>
@@ -905,6 +1040,14 @@ def serve_search_rules():
                     a {{ color: #3b82f6; text-decoration: none; }}
                     a:hover {{ text-decoration: underline; }}
                     li {{ margin-bottom: 0.5rem; }}
+                    table {{ border-collapse: collapse; width: 100%; margin: 1rem 0; table-layout: fixed; }}
+                    th {{ background: #f1f5f9; text-align: left; padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; font-weight: 600; }}
+                    th:first-child, td:first-child {{ width: 35%; }}
+                    th:last-child, td:last-child {{ width: 65%; }}
+                    td {{ padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; vertical-align: top; word-break: break-all; }}
+                    td:first-child {{ font-family: "Courier New", Courier, monospace; font-size: 0.92em; color: #ef4444; background: #fff5f5; }}
+                    td:last-child {{ font-family: "Georgia", "Noto Serif KR", serif; color: #475569; }}
+                    em {{ font-style: normal; }}
                 </style>
             </head>
             <body>
@@ -995,7 +1138,7 @@ ADMIN_KEY_FILE = 'admin.key'
 
 def _load_admin_key():
     if os.path.exists(ADMIN_KEY_FILE):
-        with open(ADMIN_KEY_FILE, 'r') as f:
+        with open(ADMIN_KEY_FILE, 'r', encoding='utf-8') as f:
             return f.read().strip()
     return None
 
@@ -1244,5 +1387,5 @@ def double_cart():
 
 
 if __name__ == '__main__':
-    # Run the Flask app on port 5050 to avoid conflicts
-    app.run(host='0.0.0.0', port=5050, debug=False)
+    port = int(os.environ.get('KICE_PORT', '5050'))
+    app.run(host='127.0.0.1', port=port, debug=False)

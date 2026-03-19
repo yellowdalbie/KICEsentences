@@ -1,0 +1,24 @@
+# Flask 및 의존성
+flask
+blinker
+click
+colorama
+itsdangerous
+jinja2
+markupsafe
+werkzeug
+# 수치 계산
+numpy
+scipy
+scikit-learn
+joblib
+threadpoolctl
+# 텍스트 처리
+bleach
+webencodings
+six
+Markdown
+rank_bm25
+# UI/트레이
+pystray
+Pillow

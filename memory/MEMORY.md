@@ -11,3 +11,6 @@
 
 ## 진행 현황
 - [project_sol_progress.md](project_sol_progress.md): Sol 파일 작성 완료 및 잔여 작업 현황
+
+## 배포 및 검색 아키텍처
+- [project_deploy_plan.md](project_deploy_plan.md): 배포 방식, 트리거 클러스터 검색, 사전 계산 인덱스 계획

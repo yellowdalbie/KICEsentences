@@ -37,3 +37,5 @@ export_triggers.py
 update_triggers_db.py
 trigger_review.md
 implementation_plan.md.resolved
+dist/
+.build_cache/

@@ -4,60 +4,88 @@ search_engine.py
 하이브리드 스텝 검색 및 문항-레벨 유사도 판정 엔진.
 
 구성:
+  OfflineQueryEngine  - 사전 계산된 어휘 벡터로 모델 없이 쿼리 검색
   HybridSearchEngine  - BM25 + CPT + 벡터 임베딩 결합 스텝 검색
   ProblemSimilarity   - N×M 헝가리안 매칭으로 문항 간 유사도 산출
 
 의존 패키지:
-  rank_bm25, kiwipiepy, scipy
+  rank_bm25, scipy
 """
 
+import os
 import re
 import json
 import numpy as np
+from collections import defaultdict
 from rank_bm25 import BM25Okapi
-from kiwipiepy import Kiwi
 from scipy.optimize import linear_sum_assignment
 
-# 형태소 분석기 (모듈 로드 시 1회 초기화)
-print("[search_engine] Kiwi 형태소 분석기 초기화 중...")
-_kiwi = Kiwi()
-print("[search_engine] 초기화 완료.")
-
-# BM25에서 의미 있는 품사 태그 (명사, 외국어, 기호 등)
-_MEANINGFUL_TAGS = {'NNG', 'NNP', 'NNB', 'SL', 'SW', 'XR'}
-
-# step_title 표시용 LaTeX 제거 (BM25 토크나이징에 사용)
+# LaTeX 제거 (BM25 토크나이징에 사용)
 _LATEX_STRIP = re.compile(r'\$[^$]*\$|[\[\]\\${}^_]')
+
+# 한국어 조사/어미 목록 (길이 내림차순 — 가장 긴 것부터 매칭)
+_PARTICLES = sorted([
+    '으로부터', '로부터', '에서부터', '이라는', '라는', '이라고', '라고',
+    '에서의', '으로의', '로의', '에게서', '한테서',
+    '으로써', '로써', '으로서', '로서', '이므로', '므로',
+    '이라도', '라도', '이면서', '면서',
+    '에서는', '에서도', '에서만',
+    '으로는', '로는', '으로도', '로도',
+    '이지만', '지만', '이지만',
+    '으로', '에서', '에게', '한테', '께서',
+    '에는', '에도', '에만',
+    '이란', '란', '이나', '나',
+    '이든', '든', '까지', '부터',
+    '처럼', '같이', '보다', '마다',
+    '에', '의', '을', '를', '이', '가',
+    '은', '는', '도', '만', '과', '와',
+], key=len, reverse=True)
 
 
 def _tokenize(text: str) -> list:
-    """한국어 형태소 분석 + 수학 용어 추출 (BM25용)"""
+    """조사 제거 기반 토크나이저 (BM25용) — pure Python, 의존성 없음"""
     if not text:
         return []
-    # LaTeX 수식 제거 후 분석
     clean = _LATEX_STRIP.sub(' ', text)
     clean = re.sub(r'\s+', ' ', clean).strip()
-    try:
-        tokens = _kiwi.tokenize(clean)
-        return [t.form for t in tokens if t.tag in _MEANINGFUL_TAGS and len(t.form) > 1]
-    except Exception:
-        return clean.split()
+    result = []
+    for token in clean.split():
+        for p in _PARTICLES:
+            if token.endswith(p) and len(token) > len(p) + 1:
+                token = token[:-len(p)]
+                break
+        if len(token) >= 2:
+            result.append(token)
+    return result
 
 
 class HybridSearchEngine:
     """
     스텝-레벨 하이브리드 검색 엔진.
 
-    점수 구성:
-      최종 = 0.3 × CPT점수 + 0.4 × BM25정규화 + 0.3 × 벡터코사인
+    점수 구성 (클러스터 데이터 있을 때):
+      최종 = 0.40 × 클러스터 + 0.30 × BM25정규화 + 0.20 × 벡터코사인 + 0.10 × CPT점수
+
+    점수 구성 (클러스터 데이터 없을 때, 폴백):
+      최종 = 0.45 × BM25정규화 + 0.40 × 벡터코사인 + 0.15 × CPT점수
     """
 
     def __init__(self, vec_data: dict):
         """
         vec_data: dashboard.py의 _vec_data 딕셔너리
           (step_ids, vectors, concept_ids, problem_ids, step_numbers, step_texts)
+          선택: step_cluster_ids (build_trigger_clusters.py 실행 시 추가됨)
         """
         self.vec_data = vec_data
+        self._cluster_ids = vec_data.get('step_cluster_ids', None)
+        self._step_trigger_vecs = vec_data.get('step_trigger_vecs', None)
+        if self._step_trigger_vecs is not None:
+            print(f"[HybridSearchEngine] 트리거 벡터 모드 활성화 (연속 유사도)")
+        elif self._cluster_ids is not None:
+            print(f"[HybridSearchEngine] 클러스터 이진 모드 활성화 "
+                  f"(클러스터 수: {len(set(self._cluster_ids[self._cluster_ids >= 0]))}개)")
+        else:
+            print("[HybridSearchEngine] 클러스터 데이터 없음 → 기존 가중치 사용")
         self._build_bm25()
 
     def _build_bm25(self):
@@ -67,6 +95,27 @@ class HybridSearchEngine:
         self._bm25 = BM25Okapi(tokenized)
         self._tokenized = tokenized
         print(f"[HybridSearchEngine] BM25 인덱스 완료 ({len(tokenized)}개 스텝)")
+
+    def _trigger_sim_score(self, q_idx: int) -> np.ndarray:
+        """
+        트리거 카테고리 유사도 점수 (연속값).
+        - 트리거 벡터 있을 때: 쿼리 트리거 벡터와 모든 스텝 트리거 벡터의 코사인 (L2 정규화되어 있으므로 내적)
+        - 없고 클러스터 ID만 있을 때: 이진값 (같은 클러스터=1.0)
+        - 둘 다 없을 때: 0 배열
+        """
+        n = len(self.vec_data['step_ids'])
+        if self._step_trigger_vecs is not None:
+            q_tvec = self._step_trigger_vecs[q_idx]
+            norm = np.linalg.norm(q_tvec)
+            if norm < 1e-9:
+                return np.zeros(n, dtype=np.float32)
+            return np.dot(self._step_trigger_vecs, q_tvec / norm)
+        if self._cluster_ids is not None:
+            q_cluster = int(self._cluster_ids[q_idx])
+            if q_cluster < 0:
+                return np.zeros(n, dtype=np.float32)
+            return (self._cluster_ids == q_cluster).astype(np.float32)
+        return np.zeros(n, dtype=np.float32)
 
     def _cpt_score(self, q_concept: str) -> np.ndarray:
         """CPT 코드 유사도 점수 배열 반환 (동일=1.0, 같은계열=0.5, 무관=0.0)"""
@@ -119,26 +168,41 @@ class HybridSearchEngine:
         # Layer 1: CPT 점수
         cpt_scores = self._cpt_score(q_concept)
 
-        # 최종 점수
-        # CPT 가중치를 낮게 유지: 같은 교과 단원이라도 코드 번호가 달라도
-        # 개념적으로 동일한 유형이 존재하므로 BM25/벡터를 주 신호로 사용
-        final = 0.15 * cpt_scores + 0.45 * bm25_norm + 0.40 * vec_scores
+        # Layer 0: 트리거 유사도 (연속값 또는 이진 클러스터, 데이터 없으면 0)
+        trigger_scores = self._trigger_sim_score(q_idx)
+        has_trigger = (self._step_trigger_vecs is not None or self._cluster_ids is not None)
+
+        if has_trigger:
+            # 가중치: 트리거(0.40) + BM25(0.30) + 벡터(0.20) + CPT(0.10)
+            final = (0.40 * trigger_scores
+                     + 0.30 * bm25_norm
+                     + 0.20 * vec_scores
+                     + 0.10 * cpt_scores)
+        else:
+            # 폴백: 기존 가중치
+            final = 0.15 * cpt_scores + 0.45 * bm25_norm + 0.40 * vec_scores
+
         final[q_idx] = -1.0   # 자기 자신 제외
 
         top_indices = np.argsort(final)[::-1][:top_k]
 
+        # 클러스터 ID (same_cluster 표시용)
+        q_cluster = int(self._cluster_ids[q_idx]) if self._cluster_ids is not None else -1
+
         results = []
         for idx in top_indices:
             results.append({
-                'step_id':    int(step_ids[idx]),
-                'problem_id': str(self.vec_data['problem_ids'][idx]),
-                'step_number':int(self.vec_data['step_numbers'][idx]),
-                'concept_id': str(self.vec_data['concept_ids'][idx]),
-                'score':      round(float(final[idx]), 4),
-                'bm25_score': round(float(bm25_norm[idx]), 4),
-                'vec_score':  round(float(vec_scores[idx]), 4),
-                'cpt_score':  round(float(cpt_scores[idx]), 4),
-                'same_concept': bool(self.vec_data['concept_ids'][idx] == q_concept and q_concept != ''),
+                'step_id':       int(step_ids[idx]),
+                'problem_id':    str(self.vec_data['problem_ids'][idx]),
+                'step_number':   int(self.vec_data['step_numbers'][idx]),
+                'concept_id':    str(self.vec_data['concept_ids'][idx]),
+                'score':         round(float(final[idx]), 4),
+                'bm25_score':    round(float(bm25_norm[idx]), 4),
+                'vec_score':     round(float(vec_scores[idx]), 4),
+                'cpt_score':     round(float(cpt_scores[idx]), 4),
+                'trigger_score': round(float(trigger_scores[idx]), 4),
+                'same_concept':  bool(self.vec_data['concept_ids'][idx] == q_concept and q_concept != ''),
+                'same_cluster':  bool(self._cluster_ids is not None and int(self._cluster_ids[idx]) == q_cluster and q_cluster >= 0),
             })
 
         return {
@@ -279,3 +343,80 @@ class ProblemSimilarity:
 
         results.sort(key=lambda x: -x['score'])
         return results[:top_k]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+class OfflineQueryEngine:
+    """
+    사전 계산된 어휘-Step 유사도 행렬을 이용한 오프라인 쿼리 검색 엔진.
+
+    런타임에 ML 모델이 불필요합니다.
+    build_query_vocab.py로 생성된 kice_query_vocab.npz를 사용합니다.
+
+    동작 흐름:
+      1. 쿼리 텍스트를 토크나이징
+      2. 각 토큰을 어휘 사전에서 포함 관계로 매칭
+      3. 매칭된 어휘들의 사전 계산 유사도 행을 가중 평균
+      4. Step 인덱스 기준 최종 점수 배열 반환
+    """
+
+    VOCAB_NPZ = 'kice_query_vocab.npz'
+
+    def __init__(self):
+        if not os.path.exists(self.VOCAB_NPZ):
+            raise FileNotFoundError(
+                f"{self.VOCAB_NPZ} 파일이 없습니다. "
+                "build_query_vocab.py를 먼저 실행하세요."
+            )
+        data = np.load(self.VOCAB_NPZ, allow_pickle=True)
+        self.terms         = data['terms']           # (n_vocab,) str
+        self.top_k_indices = data['top_k_indices']   # (n_vocab, K) int32
+        self.top_k_scores  = data['top_k_scores']    # (n_vocab, K) float32
+        self.step_ids      = data['step_ids']         # (n_steps,) int32
+        self.problem_ids   = data['problem_ids']      # (n_steps,) str
+        self.n_steps       = len(self.step_ids)
+        self.K             = self.top_k_indices.shape[1]
+        print(f"[OfflineQueryEngine] 로드 완료: 어휘 {len(self.terms)}개 / Step {self.n_steps}개 / Top-{self.K}")
+
+    @staticmethod
+    def _tokenize(query: str) -> list[str]:
+        """쿼리를 공백·구두점 기준으로 분리, 2글자 이상 토큰만 반환."""
+        tokens = re.split(r'[\s·,·.·/·(·)·\[\]]+', query.strip())
+        return [t for t in tokens if len(t) >= 2]
+
+    def get_cos_sims(self, query: str, min_score: float = 0.0) -> np.ndarray:
+        """
+        쿼리에 대한 전체 Step 코사인 유사도 배열을 반환합니다.
+
+        반환값: np.ndarray shape=(n_steps,), dtype=float32
+          각 원소는 해당 Step 인덱스의 예측 유사도 (0~1).
+          어휘 매칭 실패 시 zeros 배열 반환.
+        """
+        tokens = self._tokenize(query)
+        if not tokens:
+            return np.zeros(self.n_steps, dtype=np.float32)
+
+        # 어휘 매칭: 각 토큰이 어휘 문자열에 포함되는 개수 → 가중치
+        vocab_weights: dict[int, float] = {}
+        for i, term in enumerate(self.terms):
+            overlap = sum(1 for t in tokens if t in term)
+            if overlap > 0:
+                vocab_weights[i] = overlap
+
+        if not vocab_weights:
+            return np.zeros(self.n_steps, dtype=np.float32)
+
+        # 가중 평균으로 Step 점수 집계
+        total_weight = sum(vocab_weights.values())
+        step_scores = np.zeros(self.n_steps, dtype=np.float32)
+
+        for vocab_idx, weight in vocab_weights.items():
+            w = weight / total_weight
+            indices = self.top_k_indices[vocab_idx]  # (K,)
+            scores  = self.top_k_scores[vocab_idx]   # (K,)
+            np.add.at(step_scores, indices, w * scores)
+
+        return step_scores
+
+    def is_available(self) -> bool:
+        return True

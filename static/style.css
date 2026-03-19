@@ -1684,6 +1684,7 @@ body {
     display: flex;
     flex: 1;
     position: relative;
+    min-height: 0;
 }
 
 .csat-col {
@@ -1692,6 +1693,7 @@ body {
     grid-template-rows: 1fr 1fr;
     gap: 15px;
     padding: 0 10px;
+    min-height: 0;
 }
 
 .csat-vline {
@@ -1988,6 +1990,19 @@ body {
         /* min-height can cause overflow printing issues, remove for print */
         min-height: auto !important;
         height: 297mm !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+
+    /* Footer를 절대 위치로 고정 — Chrome 인쇄 엔진에서 overflow:hidden 무시 시에도
+       footer가 항상 페이지 하단에 오도록 보장 */
+    .csat-footer {
+        position: absolute !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin-top: 0 !important;
+        padding-bottom: 0 !important;
     }
 }
 
