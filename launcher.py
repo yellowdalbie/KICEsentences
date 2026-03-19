@@ -12,9 +12,16 @@ import threading
 import time
 import webbrowser
 import urllib.request
+import traceback
 from pathlib import Path
 
 APP_DIR = Path(__file__).parent.resolve()
+ROCK_LOG = APP_DIR / 'launcher.log'
+
+def log_msg(msg):
+    with open(ROCK_LOG, 'a', encoding='utf-8') as f:
+        f.write(f'[{time.strftime("%Y-%m-%d %H:%M:%S")}] {msg}\n')
+
 LOADING_HTML = APP_DIR / 'loading.html'
 
 
@@ -175,13 +182,17 @@ def start_flask(port):
     return proc
 
 
-def wait_for_flask(port, timeout=30):
+def wait_for_flask(port, proc=None, timeout=30):
     """Flask가 응답할 때까지 대기. 성공 여부 반환."""
     deadline = time.time() + timeout
     while time.time() < deadline:
+        if proc and proc.poll() is not None:
+            log_msg(f"wait_for_flask: flask_proc died early (returncode={proc.returncode})")
+            return False
         if is_server_running(port):
             return True
         time.sleep(0.5)
+    log_msg("wait_for_flask: timed out.")
     return False
 
 
@@ -244,10 +255,12 @@ def show_error(error_key):
 
 # ── 메인 ───────────────────────────────────────────────────
 def main():
+    log_msg("--- Launcher Started ---")
     os.chdir(APP_DIR)
 
     # 이미 실행 중이면 브라우저만 열고 종료
     if is_server_running(5050):
+        log_msg("Server already running on port 5050.")
         browser = find_app_browser()
         url = 'http://127.0.0.1:5050'
         if browser:
@@ -257,18 +270,23 @@ def main():
         return
 
     port = find_free_port(5050)
+    log_msg(f"Free port found: {port}")
     browser = find_app_browser()
+    log_msg(f"Browser path: {browser}")
 
     # Flask 시작
     flask_proc = start_flask(port)
     flask_proc._port = port  # 트레이 아이콘에서 참조용
+    log_msg("Flask process started.")
 
     # 준비 대기
-    ready = wait_for_flask(port, timeout=60)
+    ready = wait_for_flask(port, proc=flask_proc, timeout=60)
+    log_msg(f"Server ready: {ready}")
 
     if not ready:
         # Flask가 죽었는지 확인
         if flask_proc.poll() is not None:
+            log_msg("Flask process failed.")
             error_key = detect_error(flask_proc)
             show_error(error_key or 'unknown')
             return
@@ -276,6 +294,7 @@ def main():
 
     # 브라우저 열기 (서버 준비 후)
     url = f'http://127.0.0.1:{port}'
+    log_msg(f"Opening browser to {url}")
     if browser:
         open_app_mode(browser, url)
     else:
@@ -283,9 +302,14 @@ def main():
 
     # Chrome/Edge 없는 경우: 트레이 아이콘으로 종료 제공
     if not browser:
+        log_msg("Starting tray icon...")
         run_tray(flask_proc)
     # Chrome/Edge 있는 경우: 브라우저를 통해 /api/shutdown 호출 시 종료
+    log_msg("Launcher finished gracefully.")
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as e:
+        log_msg(f"Fatal exception: {e}\n{traceback.format_exc()}")

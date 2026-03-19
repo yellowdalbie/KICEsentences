@@ -325,40 +325,67 @@ function renderSidebar() {
         const isSelected = _selectedSidebarIdx === idx;
         const li = document.createElement('li');
         li.className = 'sidebar-item' + (isSelected ? ' selected' : '');
+        li.draggable = true;
         li.dataset.idx = idx;
         li.innerHTML = `
-            <button class="sidebar-move-up" title="위로" ${idx === 0 ? 'disabled' : ''}>▲ 위로</button>
-            <div class="sidebar-item-row">
+            <div class="sidebar-drag-handle" title="드래그하여 순서 변경">⠿</div>
+            <div class="sidebar-item-row" style="flex:1;">
                 <span class="sidebar-item-num">${idx + 1}</span>
                 <span class="sidebar-item-pid">${item.pid}</span>
                 <button class="sidebar-item-remove" title="제거">×</button>
             </div>
-            <button class="sidebar-move-down" title="아래로" ${idx === total - 1 ? 'disabled' : ''}>▼ 아래로</button>
         `;
 
-        // 항목 클릭 시 선택 (버튼 클릭은 제외)
+        // 항목 클릭 시 선택
         li.addEventListener('click', (e) => {
-            if (e.target.closest('.sidebar-move-up, .sidebar-move-down, .sidebar-item-remove')) return;
+            if (e.target.closest('.sidebar-item-remove')) return;
             _selectedSidebarIdx = idx;
             renderSidebar();
         });
 
-        li.querySelector('.sidebar-move-up').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (idx === 0) return;
-            [_previewLoadedItems[idx - 1], _previewLoadedItems[idx]] =
-                [_previewLoadedItems[idx], _previewLoadedItems[idx - 1]];
-            _selectedSidebarIdx = idx - 1;
-            renderSidebar();
-            renderPreviewPages();
+        // 드래그 앤 드랍 이벤트 핸들러
+        li.addEventListener('dragstart', (e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', idx);
+            li.classList.add('dragging');
         });
 
-        li.querySelector('.sidebar-move-down').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (idx === total - 1) return;
-            [_previewLoadedItems[idx], _previewLoadedItems[idx + 1]] =
-                [_previewLoadedItems[idx + 1], _previewLoadedItems[idx]];
-            _selectedSidebarIdx = idx + 1;
+        li.addEventListener('dragend', () => {
+            li.classList.remove('dragging');
+            document.querySelectorAll('.sidebar-item').forEach(el => {
+                el.classList.remove('drag-insert-before');
+            });
+        });
+
+        li.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+            e.dataTransfer.dropEffect = 'move';
+            li.classList.add('drag-insert-before');
+        });
+
+        li.addEventListener('dragleave', () => {
+            li.classList.remove('drag-insert-before');
+        });
+
+        li.addEventListener('drop', (e) => {
+            e.preventDefault();
+            li.classList.remove('drag-insert-before');
+            
+            const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+            let toIdx = idx;
+            
+            if (fromIdx === toIdx) return;
+            
+            // 배열 이동 처리
+            const movedItem = _previewLoadedItems.splice(fromIdx, 1)[0];
+            _previewLoadedItems.splice(toIdx, 0, movedItem);
+            
+            if (_selectedSidebarIdx !== null) {
+                if (_selectedSidebarIdx === fromIdx) _selectedSidebarIdx = toIdx;
+                else if (_selectedSidebarIdx > fromIdx && _selectedSidebarIdx <= toIdx) _selectedSidebarIdx--;
+                else if (_selectedSidebarIdx < fromIdx && _selectedSidebarIdx >= toIdx) _selectedSidebarIdx++;
+            }
+            
             renderSidebar();
             renderPreviewPages();
         });
