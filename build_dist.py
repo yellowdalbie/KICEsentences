@@ -233,6 +233,10 @@ def copy_app_files(app_dst: Path):
     # templates/ (admin.html 제외)
     _copy_filtered(SRC / 'templates', app_dst / 'templates', TEMPLATE_EXCLUDES)
 
+    # MD_Ref/
+    if (SRC / 'MD_Ref').exists():
+        shutil.copytree(SRC / 'MD_Ref', app_dst / 'MD_Ref', dirs_exist_ok=True)
+
 
 def _copy_filtered(src: Path, dst: Path, excludes: set):
     dst.mkdir(parents=True, exist_ok=True)
@@ -385,7 +389,7 @@ def build(platform: str):
     size_mb = zip_path.stat().st_size / 1024 / 1024
     print(f'\n  ✅ 완료: {zip_path.name} ({size_mb:.1f} MB)')
 
-    shutil.rmtree(build_dir)
+    # shutil.rmtree(build_dir)
 
 
 # ── 진입점 ───────────────────────────────────────────────────

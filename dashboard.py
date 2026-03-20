@@ -19,6 +19,7 @@ THUMBNAIL_DIR = os.path.join(BASE_DIR, 'static', 'thumbnails')
 VECTORS_FILE = os.path.join(BASE_DIR, 'kice_step_vectors.npz')
 STEP_CLUSTERS_FILE = os.path.join(BASE_DIR, 'step_clusters.json')
 TRIGGER_VECS_FILE = os.path.join(BASE_DIR, 'trigger_category_vectors.npz')
+MD_REF_DIR = os.path.join(BASE_DIR, 'MD_Ref')
 os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
 # 오프라인 패키지 모드: 관리자 패널 및 오류 제보 기능 비활성화
@@ -854,20 +855,19 @@ def search_expression():
     if not query:
         return jsonify({"count": 0, "results": []})
         
-    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MD_Ref')
-    if not os.path.exists(base_dir):
-        return jsonify({"error": "MD_Ref directory not found"}), 404
+    if not os.path.exists(MD_REF_DIR):
+        return jsonify({"error": f"MD_Ref directory not found at {MD_REF_DIR}"}), 404
 
     matched_files = []
 
-    for root, dirs, files in os.walk(base_dir):
+    for root, dirs, files in os.walk(MD_REF_DIR):
         for file in files:
             if not file.endswith('.md'):
                 continue
 
             problem_id_str = unicodedata.normalize('NFC', file.replace('.md', ''))
             file_path = os.path.join(root, file)
-            rel_path = os.path.relpath(file_path, base_dir)
+            rel_path = os.path.relpath(file_path, MD_REF_DIR)
 
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
@@ -1106,13 +1106,12 @@ def _get_sol_path(problem_id):
 
 
 def _get_mdref_path(problem_id):
-    base_dir = os.path.dirname(os.path.abspath(__file__))
     m = re.match(r'^(\d{4})', problem_id)
     if m:
-        candidate = os.path.join(base_dir, 'MD_Ref', m.group(1), f'{problem_id}.md')
+        candidate = os.path.join(MD_REF_DIR, m.group(1), f'{problem_id}.md')
         if os.path.exists(candidate):
             return candidate
-    candidate = os.path.join(base_dir, 'MD_Ref', f'{problem_id}.md')
+    candidate = os.path.join(MD_REF_DIR, f'{problem_id}.md')
     return candidate if os.path.exists(candidate) else None
 
 
