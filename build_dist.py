@@ -364,13 +364,11 @@ def build(platform: str):
             print('    (캐시) python_windows/')
         shutil.copytree(python_dir, app_dst / 'python', dirs_exist_ok=True)
 
-        # Offline Guide and Icon copy for Windows
+        # Offline Guide copy for Windows (icon removed)
         if Path('KICE_Lynx_실행가이드.png').exists():
             shutil.copy2('KICE_Lynx_실행가이드.png', build_dir / 'KICE_Lynx_실행가이드.png')
         if Path('README_실행방법.txt').exists():
             shutil.copy2('README_실행방법.txt', build_dir / 'README_실행방법.txt')
-        if Path('icon.ico').exists():
-            shutil.copy2('icon.ico', build_dir / 'icon.ico')
 
     # 사용설명서
     print('\n  [3/3] 패키징...')

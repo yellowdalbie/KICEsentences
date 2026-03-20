@@ -113,6 +113,20 @@ def open_app_mode(browser_path, url):
 
 def open_default_browser(url):
     webbrowser.open(url)
+    # Windows에서 기본 브라우저로 열 때도 최대화 시도
+    import platform
+    if platform.system() == 'Windows':
+        try:
+            import ctypes
+            import time as _time
+            _time.sleep(1.5)  # 브라우저 창이 뜰 때까지 잠깐 대기
+            # Win+Up 키를 눌러 창 최대화
+            SW_MAXIMIZE = 3
+            hwnd = ctypes.windll.user32.GetForegroundWindow()
+            if hwnd:
+                ctypes.windll.user32.ShowWindow(hwnd, SW_MAXIMIZE)
+        except Exception:
+            pass
 
 
 def loading_url(port, first_run=False):
