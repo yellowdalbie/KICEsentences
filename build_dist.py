@@ -280,6 +280,12 @@ def build(platform: str):
         app_bundle = build_dir / 'KICE Lynx.app'
         macos_dir  = app_bundle / 'Contents' / 'MacOS'
         macos_dir.mkdir(parents=True)
+        resources_dir = app_bundle / 'Contents' / 'Resources'
+        resources_dir.mkdir(parents=True)
+
+        # Icon copy
+        if Path('icon.icns').exists():
+            shutil.copy2('icon.icns', resources_dir / 'AppIcon.icns')
 
         # Info.plist
         ver_num = VERSION.lstrip('v')
@@ -294,6 +300,7 @@ def build(platform: str):
   <key>CFBundleVersion</key><string>{ver_num}</string>
   <key>CFBundleShortVersionString</key><string>{ver_num}</string>
   <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>LSMinimumSystemVersion</key><string>12.0</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>LSUIElement</key><true/>
@@ -370,6 +377,10 @@ def build(platform: str):
             "exit\r\n"
         )
         (build_dir / '시작.bat').write_bytes(bat_content.encode('utf-8'))
+        
+        # Icon copy for Windows
+        if Path('icon.ico').exists():
+            shutil.copy2('icon.ico', build_dir / 'icon.ico')
 
     # 사용설명서
     print('\n  [3/3] 패키징...')
