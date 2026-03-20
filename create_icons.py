@@ -49,7 +49,7 @@ def create_windows_ico(source_png: Path, output_ico: Path):
     img.save(output_ico, format='ICO', sizes=icon_sizes)
 
 if __name__ == "__main__":
-    src_png = Path("/Users/home/.gemini/antigravity/brain/af70fe66-d052-4218-b492-f8b7059b3bb3/kice_lynx_icon_simple_1773972497922.png")
+    src_png = Path("icon_source.png")
     
     # Create icons
     print("Creating icon.icns for Mac...")
