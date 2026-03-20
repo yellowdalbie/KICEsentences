@@ -364,27 +364,13 @@ def build(platform: str):
             print('    (캐시) python_windows/')
         shutil.copytree(python_dir, app_dst / 'python', dirs_exist_ok=True)
 
-        # Windows 런처 (CRLF 강제, UTF-8 + chcp 65001)
-        bat_content = (
-            "@echo off\r\n"
-            "chcp 65001 >nul\r\n"
-            'cd /d "%~dp0app"\r\n'
-            'if not exist "python\\pythonw.exe" goto missing\r\n'
-            'start "" "python\\pythonw.exe" launcher.py\r\n'
-            "exit\r\n\r\n"
-            ":missing\r\n"
-            "powershell -WindowStyle Hidden -Command \"Add-Type -AssemblyName PresentationFramework; [System.Windows.MessageBox]::Show('프로그램 파일이 손상되었습니다. 폴더를 삭제하고 다시 압축을 풀어주세요.', 'KICE Lynx - 오류', 'OK', 'Error')\"\r\n"
-            "exit\r\n"
-        )
-        (build_dir / '시작.bat').write_bytes(bat_content.encode('utf-8'))
-        
-        # Icon, Installer scripts copy for Windows
+        # Offline Guide and Icon copy for Windows
+        if Path('KICE_Lynx_실행가이드.png').exists():
+            shutil.copy2('KICE_Lynx_실행가이드.png', build_dir / 'KICE_Lynx_실행가이드.png')
+        if Path('README_실행방법.txt').exists():
+            shutil.copy2('README_실행방법.txt', build_dir / 'README_실행방법.txt')
         if Path('icon.ico').exists():
             shutil.copy2('icon.ico', build_dir / 'icon.ico')
-        if Path('install.bat').exists():
-            shutil.copy2('install.bat', build_dir / '설치하기.bat')
-        if Path('setup.py').exists():
-            shutil.copy2('setup.py', build_dir / 'setup.py')
 
     # 사용설명서
     print('\n  [3/3] 패키징...')
