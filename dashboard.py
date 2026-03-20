@@ -13,11 +13,12 @@ from flask import Flask, render_template, jsonify, request, send_from_directory,
 from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
-DB_FILE = 'kice_database.sqlite'
-THUMBNAIL_DIR = os.path.join('static', 'thumbnails')
-VECTORS_FILE = 'kice_step_vectors.npz'
-STEP_CLUSTERS_FILE = 'step_clusters.json'
-TRIGGER_VECS_FILE = 'trigger_category_vectors.npz'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
+THUMBNAIL_DIR = os.path.join(BASE_DIR, 'static', 'thumbnails')
+VECTORS_FILE = os.path.join(BASE_DIR, 'kice_step_vectors.npz')
+STEP_CLUSTERS_FILE = os.path.join(BASE_DIR, 'step_clusters.json')
+TRIGGER_VECS_FILE = os.path.join(BASE_DIR, 'trigger_category_vectors.npz')
 os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
 # 오프라인 패키지 모드: 관리자 패널 및 오류 제보 기능 비활성화
@@ -242,16 +243,18 @@ def similar_problems(problem_id):
     conn = get_db_connection()
     enriched = []
     for r in raw_results:
-        # 각 매칭 스텝에 step_title 추가
+        # 각 매칭 스텝에 c_step_title, q_step_title 추가
         for m in r['step_matches']:
-            row = conn.execute(
+            row_c = conn.execute(
                 'SELECT step_title FROM steps WHERE step_id=?', (m['c_step_id'],)
             ).fetchone()
-            m['c_step_title'] = row['step_title'] if row else ''
-            row = conn.execute(
+            m['c_step_title'] = row_c['step_title'] if row_c else ''
+
+            row_q = conn.execute(
                 'SELECT step_title FROM steps WHERE step_id=?', (m['q_step_id'],)
             ).fetchone()
-            m['q_step_title'] = row['step_title'] if row else ''
+            m['q_step_title'] = row_q['step_title'] if row_q else ''
+        
         enriched.append(r)
     conn.close()
 
@@ -534,6 +537,7 @@ def problem_answers():
         # 조회된 데이터 맵에 저장
         for pid, ans in rows:
             answers[pid] = ans
+        conn.close()
             
         # 조회되지 않은 ID들은 None(null)으로 채움
         for pid in problem_ids:
