@@ -378,9 +378,13 @@ def build(platform: str):
         )
         (build_dir / '시작.bat').write_bytes(bat_content.encode('utf-8'))
         
-        # Icon copy for Windows
+        # Icon, Installer scripts copy for Windows
         if Path('icon.ico').exists():
             shutil.copy2('icon.ico', build_dir / 'icon.ico')
+        if Path('install.bat').exists():
+            shutil.copy2('install.bat', build_dir / '설치하기.bat')
+        if Path('setup.py').exists():
+            shutil.copy2('setup.py', build_dir / 'setup.py')
 
     # 사용설명서
     print('\n  [3/3] 패키징...')
