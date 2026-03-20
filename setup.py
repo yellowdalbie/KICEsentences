@@ -24,6 +24,12 @@ class InstallerGUI:
         self.text_color = "#1e293b"
         self.root.configure(bg=self.bg_color)
         
+        # Pre-initialize for linter
+        self.path_var = None
+        self.path_entry = None
+        self.progress = None
+        self.install_btn = None
+        
         self.create_widgets()
         
     def create_widgets(self):
@@ -163,14 +169,19 @@ oLink.Save
         
         batch_content = f'''
 @echo off
+chcp 65001 >nul
+set "tasklist=%SystemRoot%\System32\tasklist.exe"
+set "find=%SystemRoot%\System32\find.exe"
+set "timeout=%SystemRoot%\System32\timeout.exe"
+
 :wait
-tasklist /fi "PID eq {pid}" | find ":" > nul
+"%tasklist%" /fi "PID eq {pid}" | "%find%" ":" > nul
 if errorlevel 1 (
-    timeout /t 2 /nobreak > nul
+    "%timeout%" /t 2 /nobreak > nul
     rd /s /q "{source_dir}"
     del "%~f0"
 ) else (
-    timeout /t 1 /nobreak > nul
+    "%timeout%" /t 1 /nobreak > nul
     goto wait
 )
 '''
@@ -178,12 +189,20 @@ if errorlevel 1 (
             f.write(batch_content)
         
         # Start the batch file in a separate process
-        subprocess.Popen(["cmd.exe", "/c", cleanup_bat], shell=True, 
-                         creationflags=subprocess.CREATE_NEW_CONSOLE | 0x00000008) # DETACHED_PROCESS
+        # 0x00000010 is CREATE_NEW_CONSOLE, 0x00000008 is DETACHED_PROCESS
+        try:
+            subprocess.Popen(["cmd.exe", "/c", cleanup_bat], shell=True, 
+                             creationflags=0x00000010 | 0x00000008)
+        except Exception:
+            # If for some reason Popen fails, we don't want to crash the installer
+            pass
 
 if __name__ == "__main__":
-    # Elevated privileges check? 
-    # For C:\KICE_Lynx, we might need them or just advise user to run as Admin if it fails.
-    root = tk.Tk()
-    app = InstallerGUI(root)
-    root.mainloop()
+    try:
+        root = tk.Tk()
+        app = InstallerGUI(root)
+        root.mainloop()
+    except Exception as e:
+        # Emergency error reporting
+        with open("install_error.log", "w", encoding="utf-8") as f:
+            f.write(str(e))
