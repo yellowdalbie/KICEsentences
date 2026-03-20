@@ -514,98 +514,36 @@ def steps_by_concept():
 
 @app.route('/api/problem_answers', methods=['POST'])
 def problem_answers():
-    """주어진 problem_id 목록에 대해 Sol/ 폴더의 MD 파일을 읽어 정답을 추출하여 반환합니다."""
+    """주어진 problem_id 목록에 대해 DB의 problems 테이블에서 정답을 읽어 반환합니다."""
     data = request.get_json()
     problem_ids = data.get('problem_ids', [])
     if not problem_ids or not isinstance(problem_ids, list):
         return jsonify({'error': '유효하지 않은 problem_ids 목록입니다.'}), 400
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
     answers = {}
+    if not problem_ids:
+        return jsonify({'answers': {}})
 
-    for pid in problem_ids:
-        # 연도 폴더 유추
-        year_match = re.match(r'^(\d{4})', pid)
-        sol_path = None
-        if year_match:
-            year = year_match.group(1)
-            candidate = os.path.join(base_dir, 'Sol', year, f'{pid}.md')
-            if os.path.exists(candidate):
-                sol_path = candidate
+    try:
+        conn = get_db_connection()
+        # 정답 추출: SQL IN 절을 사용하여 대량 조회 최적화
+        placeholders = ', '.join(['?'] * len(problem_ids))
+        query = f"SELECT problem_id, answer FROM problems WHERE problem_id IN ({placeholders})"
+        rows = conn.execute(query, problem_ids).fetchall()
         
-        if not sol_path:
-            candidate = os.path.join(base_dir, 'Sol', f'{pid}.md')
-            if os.path.exists(candidate):
-                sol_path = candidate
-        
-        if not sol_path:
-            answers[pid] = None
-            continue
-        
-        try:
-            with open(sol_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            matches = re.finditer(r'정답(?:은|:)?\s*(.+?)(?:입니다|번\s*입니다|번입니다|\.|\n|$)', content)
-            found_ans = None
-            for m in matches:
-                ans_str = m.group(1).strip()
-                # Clean up markdown styling, blockquote markers, and LaTeX dollar signs
-                ans_str = re.sub(r'[\*\_>\$]+', '', ans_str).strip()
+        # 조회된 데이터 맵에 저장
+        for pid, ans in rows:
+            answers[pid] = ans
+            
+        # 조회되지 않은 ID들은 None(null)으로 채움
+        for pid in problem_ids:
+            if pid not in answers:
+                answers[pid] = None
                 
-                if not ans_str:
-                    continue
-                
-                # Extract digits inside parentheses: (5) -> 5
-                paren_match = re.match(r'^\((\d)\)$', ans_str)
-                if paren_match:
-                    ans_str = paren_match.group(1)
-                
-                is_mcq = False
-                if ans_str.endswith('번'):
-                    ans_str = ans_str[:-1].strip()
-                    is_mcq = True
-                elif paren_match:
-                    is_mcq = True
-                
-                # Check year and problem number for MCQ auto-conversion
-                try:
-                    year_val = 2022 # Default to current regime
-                    year_extract = re.match(r'^(\d{4})', pid)
-                    if year_extract:
-                        year_val = int(year_extract.group(1))
-                    
-                    parts = pid.split('_')
-                    if len(parts) >= 2:
-                        num_part = ''.join(filter(str.isdigit, parts[-1]))
-                        if num_part:
-                            pnum = int(num_part)
-                            if year_val >= 2022:
-                                # 2022+ regime: Common (1-15 MCQ, 16-22 SA), Elective (23-28 MCQ, 29-30 SA)
-                                if (1 <= pnum <= 15) or (23 <= pnum <= 28):
-                                    is_mcq = True
-                            else:
-                                # Pre-2022 regime: 1-21 MCQ, 22-30 SA
-                                if (1 <= pnum <= 21):
-                                    is_mcq = True
-                except:
-                    pass
-                
-                if is_mcq:
-                    # If it's an MCQ and we already have a circled number in the string (e.g. "① 65")
-                    # just take the circled number part.
-                    circled_match = re.search(r'([①②③④⑤])', ans_str)
-                    if circled_match:
-                        ans_str = circled_match.group(1)
-                    elif ans_str in ['1', '2', '3', '4', '5']:
-                        circled_map = {'1':'①', '2':'②', '3':'③', '4':'④', '5':'⑤'}
-                        ans_str = circled_map[ans_str]
-                
-                if ans_str:
-                    found_ans = ans_str
-
-            answers[pid] = found_ans
-        except Exception as e:
-            app.logger.error(f"Error reading answer for {pid}: {e}")
+    except Exception as e:
+        app.logger.error(f"Error reading answers from DB: {e}")
+        # 오류 발생 시 빈 결과 반환
+        for pid in problem_ids:
             answers[pid] = None
 
     return jsonify({'answers': answers})

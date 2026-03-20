@@ -258,8 +258,8 @@ async function openPrintPreview() {
     problemCart.classList.remove('open');
 
     const ids = Array.from(cartProblemIds);
-    // Sort by Year and Problem No
-    ids.sort();
+    // 장바구니에 담은 순서 그대로 유지 (정렬하지 않음)
+
 
     _previewAnswerOpt = document.getElementById('answer-display-opt').value;
     _previewExpOpt = document.getElementById('explanation-display-opt').value;

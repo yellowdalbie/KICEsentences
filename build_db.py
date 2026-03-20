@@ -34,7 +34,8 @@ def setup_database():
             year INTEGER,
             exam_type TEXT,
             subject_type TEXT,
-            question_no INTEGER
+            question_no INTEGER,
+            answer TEXT
         )
     ''')
     
@@ -110,6 +111,68 @@ def is_result_trigger(text):
     """'Step N의 Result' 패턴이 포함된 트리거를 걸러냄. 벡터 임베딩이 이 역할을 대신함."""
     return bool(re.search(r'\[?Step \d+의 Result', text.strip()))
 
+def extract_answer(content, pid):
+    """MD 파일 내용에서 정답을 추출합니다. (dashboard.py의 로직 재활용)"""
+    try:
+        matches = re.finditer(r'정답(?:은|:)?\s*(.+?)(?:입니다|번\s*입니다|번입니다|\.|\n|$)', content)
+        found_ans = None
+        for m in matches:
+            ans_str = m.group(1).strip()
+            # 마크다운 스타일, 블록인용구, LaTeX $ 기호 등 제거
+            ans_str = re.sub(r'[\*\_>\$]+', '', ans_str).strip()
+            
+            if not ans_str:
+                continue
+            
+            # 괄호 안의 숫자 추출: (5) -> 5
+            paren_match = re.match(r'^\((\d)\)$', ans_str)
+            if paren_match:
+                ans_str = paren_match.group(1)
+            
+            is_mcq = False
+            if ans_str.endswith('번'):
+                ans_str = ans_str[:-1].strip()
+                is_mcq = True
+            elif paren_match:
+                is_mcq = True
+            
+            # 연도와 문제 번호를 기반으로 객관식 자동 변환 규칙 적용
+            try:
+                year_val = 2022 # 기본값
+                year_extract = re.match(r'^(\d{4})', pid)
+                if year_extract:
+                    year_val = int(year_extract.group(1))
+                
+                parts = pid.split('_')
+                if len(parts) >= 2:
+                    num_part = ''.join(filter(str.isdigit, parts[-1]))
+                    if num_part:
+                        pnum = int(num_part)
+                        if year_val >= 2022:
+                            if (1 <= pnum <= 15) or (23 <= pnum <= 28):
+                                is_mcq = True
+                        else:
+                            if (1 <= pnum <= 21):
+                                is_mcq = True
+            except:
+                pass
+            
+            if is_mcq:
+                circled_match = re.search(r'([①②③④⑤])', ans_str)
+                if circled_match:
+                    ans_str = circled_match.group(1)
+                elif ans_str in ['1', '2', '3', '4', '5']:
+                    circled_map = {'1':'①', '2':'②', '3':'③', '4':'④', '5':'⑤'}
+                    ans_str = circled_map[ans_str]
+            
+            if ans_str:
+                found_ans = ans_str
+        
+        return found_ans
+    except Exception as e:
+        print(f"Error extracting answer for {pid}: {e}")
+        return None
+
 def get_or_create_trigger(conn, trigger_text):
     cursor = conn.cursor()
     cursor.execute('SELECT trigger_id FROM triggers WHERE trigger_text = ?', (trigger_text,))
@@ -129,13 +192,16 @@ def parse_solutions(conn):
         if not year:
             continue
             
-        cursor.execute('''
-            INSERT OR REPLACE INTO problems (problem_id, year, exam_type, subject_type, question_no)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (problem_id, year, exam_type, subject_type, qno))
-        
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
+
+        # 정답 추출
+        answer = extract_answer(content, problem_id)
+            
+        cursor.execute('''
+            INSERT OR REPLACE INTO problems (problem_id, year, exam_type, subject_type, question_no, answer)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (problem_id, year, exam_type, subject_type, qno, answer))
             
         # Parse steps using regex
         # Look for blocks that start with ## [Step N] <title>
