@@ -1423,7 +1423,7 @@ body {
 }
 
 #print-sidebar {
-    width: 200px;
+    width: 250px;
     flex-shrink: 0;
     background: #0f172a;
     border-right: 1px solid #1e293b;
@@ -1603,7 +1603,7 @@ body {
 /* CSAT Layout Styles */
 .csat-page {
     width: 210mm;
-    height: 297mm;
+    height: 296mm; /* Reduced from 297mm to prevent Chrome print subpixel overflow */
     background: #ffffff;
     margin: 0 auto 2rem auto;
     padding: 10mm 15mm 18mm 15mm;
@@ -1784,7 +1784,7 @@ body {
 /* Footer elements */
 .csat-footer {
     position: absolute;
-    top: 282mm; /* A4(297) - 15 = 282. Prevent chrome fragmentation push */
+    top: 281mm; /* A4(296, downsized) - 15 = 281. Prevent chrome fragmentation push */
     left: 15mm;
     right: 15mm;
     height: 15mm;
@@ -2042,7 +2042,7 @@ body {
         width: 210mm !important;
         /* min-height can cause overflow printing issues, remove for print */
         min-height: auto !important;
-        height: 297mm !important;
+        height: 296mm !important;
         overflow: hidden !important;
         position: relative !important;
     }

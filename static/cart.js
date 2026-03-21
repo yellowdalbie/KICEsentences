@@ -679,6 +679,22 @@ async function renderPreviewPages() {
             ]
         });
     }
+
+    // 문제지 타이틀 수정 시 해설지 타이틀 동기화
+    const examTitles = printModalBody.querySelectorAll('.exam-title');
+    if (examTitles.length > 1) {
+        examTitles[0].addEventListener('input', (e) => {
+            let text = e.target.textContent.trim();
+            if (text.endsWith('문제지')) {
+                text = text.slice(0, -3) + '해설지';
+            } else if (text.endsWith('문제')) {
+                text = text.slice(0, -2) + '해설';
+            } else if (!text.endsWith('해설지') && !text.endsWith('해설')) {
+                text = text + ' 해설지';
+            }
+            examTitles[1].textContent = text;
+        });
+    }
 }
 
 // ── 해설 아이템 전체 HTML (csat-exp-item 래퍼 포함) ──

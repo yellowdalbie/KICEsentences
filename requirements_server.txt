@@ -1,0 +1,18 @@
+# KICE Lynx Server Requirements
+# Merged from root and landing directory
+
+# Core (Dashboard)
+Markdown==3.6.0
+bleach==6.1.0
+pypdfium2
+scikit-learn
+sentence-transformers
+flask
+numpy
+pandas
+
+# Landing Page
+# (Already covered by flask above)
+
+# Production Server (Optional but recommended for PM2)
+gunicorn
