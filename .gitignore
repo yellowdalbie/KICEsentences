@@ -39,3 +39,8 @@ trigger_review.md
 implementation_plan.md.resolved
 dist/
 .build_cache/
+
+# AI Prompt Instructions & Trade Secrets
+AI_Instruction_KICE_System.md
+AI_Sol_Instructions.md
+AI_Template_Commentary.md

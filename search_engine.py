@@ -1,4 +1,7 @@
 """
+# Copyright (c) 2026 Kim Jin-chul. All rights reserved.
+# This software is the confidential and proprietary information of the author.
+
 search_engine.py
 ================
 하이브리드 스텝 검색 및 문항-레벨 유사도 판정 엔진.
