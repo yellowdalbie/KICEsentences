@@ -139,6 +139,13 @@ def get_db_connection():
                   password_hash TEXT NOT NULL,
                   is_paid INTEGER DEFAULT 0,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS login_logs
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  user_id INTEGER,
+                  email TEXT,
+                  ip TEXT,
+                  user_agent TEXT,
+                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
     conn.execute('''CREATE TABLE IF NOT EXISTS access_logs
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   ip TEXT,
