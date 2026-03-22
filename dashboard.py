@@ -1,3 +1,14 @@
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# .env 로드 (다른 모듈 임포트 전에 실행하여 환경 변수 전파)
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_path):
+    with open(env_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            if '=' in line and not line.strip().startswith('#'):
+                k, v = line.strip().split('=', 1)
+                os.environ[k] = v.strip()
+
 import sqlite3
 import json
 import re
@@ -16,17 +27,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 from routes_landing import landing_bp
 app.register_blueprint(landing_bp)
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# .env 로드
-env_path = os.path.join(BASE_DIR, '.env')
-if os.path.exists(env_path):
-    with open(env_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            if '=' in line and not line.strip().startswith('#'):
-                k, v = line.strip().split('=', 1)
-                os.environ[k] = v
 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 
