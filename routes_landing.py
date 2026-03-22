@@ -268,9 +268,10 @@ def admin():
         'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
     }
 
-    # 메인 DB에서 가입된 사용자 및 로그인 기록 가져오기
+    # 메인 DB에서 가입된 사용자, 로그인 기록, 접속 기록 가져오기
     users = []
     login_logs = []
+    access_logs = []
     total_users = 0
     if os.path.exists(MAIN_DB_FILE):
         try:
@@ -285,15 +286,17 @@ def admin():
                 'SELECT email, ip, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
             ).fetchall()
             
+            access_logs = main_conn.execute(
+                'SELECT ip, path, user_agent, created_at FROM access_logs ORDER BY id DESC LIMIT 100'
+            ).fetchall()
+            
             main_conn.close()
         except Exception as e:
             print(f"[Admin] Error fetching data from main DB: {e}")
 
     stats['subscribers'] = total_users # 기존 통계 항목 재활용 (UI 호환용)
 
-    recent_dl = db.execute(
-        'SELECT platform, country, city, user_agent, created_at FROM downloads ORDER BY id DESC LIMIT 30'
-    ).fetchall()
+    recent_dl = [] # 다운로드 기록은 더 이상 표시하지 않음
 
     country_stats = db.execute(
         '''SELECT country, COUNT(*) as cnt FROM visits
@@ -306,10 +309,7 @@ def admin():
            FROM visits GROUP BY day ORDER BY day DESC LIMIT 14'''
     ).fetchall()
 
-    daily_dl = db.execute(
-        '''SELECT date(created_at) as day, COUNT(*) as cnt, platform
-           FROM downloads GROUP BY day, platform ORDER BY day DESC LIMIT 28'''
-    ).fetchall()
+    daily_dl = [] # 다운로드 통계는 더 이상 표시하지 않음
 
     emails = db.execute(
         'SELECT email, country, created_at FROM subscribers ORDER BY id DESC'
@@ -325,10 +325,10 @@ def admin():
         'admin.html',
         stats=stats,
         recent_dl=recent_dl,
+        access_logs=access_logs, 
         country_stats=country_stats,
         daily_stats=daily_stats,
-        daily_dl=daily_dl,
-        emails=users, # 기존 변수명 사용 (template 수정 최소화)
+        emails=users, 
         login_logs=login_logs,
         errors=errors,
     )
