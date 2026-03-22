@@ -2053,7 +2053,7 @@ body {
         position: relative !important;
     }
 }
-#custom-alert-modal {
+#custom-alert-modal, #custom-confirm-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -2083,7 +2083,8 @@ body {
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-#custom-alert-modal.show .custom-alert-content {
+#custom-alert-modal.show .custom-alert-content,
+#custom-confirm-modal.show .custom-alert-content {
     transform: scale(1);
     opacity: 1;
 }

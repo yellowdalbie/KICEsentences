@@ -1086,6 +1086,40 @@ function closeCustomAlert() {
 window.showCustomAlert = showCustomAlert;
 window.closeCustomAlert = closeCustomAlert;
 
+// Custom Confirm Functions
+let _customConfirmCallback = null;
+
+function showCustomConfirm(message, onConfirm) {
+    const modal = document.getElementById('custom-confirm-modal');
+    const msgEl = document.getElementById('custom-confirm-message');
+    if (!modal || !msgEl) return;
+
+    _customConfirmCallback = onConfirm || null;
+    msgEl.innerHTML = message.replace(/\n/g, '<br>');
+    modal.style.display = 'flex';
+
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+function closeCustomConfirm(isConfirmed) {
+    const modal = document.getElementById('custom-confirm-modal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        if (isConfirmed && typeof _customConfirmCallback === 'function') {
+            _customConfirmCallback();
+        }
+        _customConfirmCallback = null;
+    }, 300);
+}
+
+window.showCustomConfirm = showCustomConfirm;
+window.closeCustomConfirm = closeCustomConfirm;
+
 // Initial UI setup
 updateCartUI();
 
@@ -1419,24 +1453,22 @@ window.submitChangePassword = async function() {
 };
 
 window.deleteAccount = async function() {
-    if (!confirm('정말로 계정을 삭제하시겠습니까?\n\n모든 정보와 학습 기록이 영구적으로 삭제되며 복구할 수 없습니다.')) {
-        return;
-    }
-    
-    try {
-        const res = await fetch('/api/auth/delete_account', { method: 'POST' });
-        if (res.ok) {
-            closeChangePasswordModal();
-            await initAuth();
-            showCustomAlert('계정이 성공적으로 삭제되었습니다. 이용해 주셔서 감사합니다.');
-        } else {
-            const data = await res.json();
-            showCustomAlert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
+    showCustomConfirm('정말로 계정을 삭제하시겠습니까?\n모든 정보와 학습 기록이 영구적으로 삭제되며 복구할 수 없습니다.', async () => {
+        try {
+            const res = await fetch('/api/auth/delete_account', { method: 'POST' });
+            if (res.ok) {
+                closeChangePasswordModal();
+                await initAuth();
+                showCustomAlert('계정이 성공적으로 삭제되었습니다.\n그동안 이용해 주셔서 감사합니다.');
+            } else {
+                const data = await res.json();
+                showCustomAlert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
+            }
+        } catch (e) {
+            console.error(e);
+            showCustomAlert('서버 통신 실패');
         }
-    } catch (e) {
-        console.error(e);
-        showCustomAlert('서버 통신 실패');
-    }
+    });
 };
 
 
