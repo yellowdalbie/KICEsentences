@@ -273,8 +273,13 @@ def admin():
         'unique_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits').fetchone()[0],
         'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at)=date('now', '+9 hours')").fetchone()[0],
         'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at)=date('now', '+9 hours')").fetchone()[0],
-        'subscribers':     0, # Will be updated from main DB
+        'subscribers':     0,
         'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
+        'search_totals':   {},
+        'top_concepts':    [],
+        'top_expressions': [],
+        'top_probids':     [],
+        'top_units':       []
     }
 
     # 메인 DB에서 가입된 사용자, 로그인 기록, 접속 기록 가져오기
