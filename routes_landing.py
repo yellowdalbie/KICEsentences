@@ -352,6 +352,9 @@ def admin():
 
     stats['subscribers'] = total_users
     
+    # 오류 신고 내역 가져오기
+    errors = db.execute('SELECT * FROM error_reports ORDER BY id DESC').fetchall()
+
     country_stats = db.execute(
         '''SELECT country, COUNT(*) as cnt FROM visits
            WHERE country != "" GROUP BY country ORDER BY cnt DESC LIMIT 15'''
@@ -363,32 +366,10 @@ def admin():
            FROM visits GROUP BY day ORDER BY day DESC LIMIT 14'''
     ).fetchall()
 
-    return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats, 
-                           emails=users, login_logs=login_logs, access_logs=access_logs, errors=errors, email_filter=email_filter)
-
-    daily_dl = [] # 다운로드 통계는 더 이상 표시하지 않음
-
-    emails = db.execute(
-        'SELECT email, country, created_at FROM subscribers ORDER BY id DESC'
-    ).fetchall()
-
-    errors = db.execute(
-        "SELECT problem_id, status, created_at FROM error_reports ORDER BY id DESC"
-    ).fetchall()
-
     db.close()
 
-    return render_template(
-        'admin.html',
-        stats=stats,
-        recent_dl=recent_dl,
-        access_logs=access_logs, 
-        country_stats=country_stats,
-        daily_stats=daily_stats,
-        emails=users, 
-        login_logs=login_logs,
-        errors=errors,
-    )
+    return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats, 
+                           emails=users, login_logs=login_logs, access_logs=access_logs, errors=errors, email_filter=email_filter)
 
 
 # ── ping ────────────────────────────────────────────────────
