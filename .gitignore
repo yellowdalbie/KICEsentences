@@ -5,26 +5,44 @@ venv/
 __pycache__/
 *.pyc
 
-# Environment and Data
+# Environment and Secrets
 .env
+admin.key
+
+# Databases (allow only main DB)
 *.db
 *.sqlite
 !kice_database.sqlite
+
+# Large binary vector/model files (build locally with build_vectors.py)
+*.npz
+
+# Backup files
+*_backup.sqlite
+
+# Logs and runtime output
 *.log
 nohup.out
-admin.key
 error_reports.jsonl
 
-# OS specific files
+# OS specific
 .DS_Store
 
-# Project specific exclusions
+# Project specific exclusions (local-only)
 PDF_Ref/
+dist/
+.build_cache/
+memory/
+mockups/
+
+# Test scratch files
 test*.js
 test*.html
 
-# Tools
+# Build/maintenance tools (not needed on server)
 generate_all_thumbnails.py
+generate_all_thumbnails_v2.py
+generate_thumbnails_v3.py
 normalize_triggers.py
 fix_*.py
 build_*.py
@@ -35,10 +53,32 @@ filter_*.py
 gen_trigger_review.py
 export_triggers.py
 update_triggers_db.py
+batch_*.py
+advanced_verify.py
+audit_titles.py
+check_cpt_fit.py
+create_icons.py
+lint_sol.py
+rewrite_tone.py
+find_limit_problems.py
+
+# Report/analysis outputs
 trigger_review.md
+audit_violations.json
+cpt_fit_report.csv
+lint_report.csv
+unwritten_problems.txt
 implementation_plan.md.resolved
-dist/
-.build_cache/
+
+# Icon binaries (not needed server-side)
+icon.icns
+icon.ico
+icon_source.png
+
+# macOS launcher scripts (not for server)
+*.command
+launcher.py
+loading.html
 
 # AI Prompt Instructions & Trade Secrets
 AI_Instruction_KICE_System.md

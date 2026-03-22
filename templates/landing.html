@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KICE Lynx — 수능 수학 기출 수업 자료 제작 도구</title>
+<meta name="description" content="풀이 단계로 찾고, 기출로 구성하고, 바로 인쇄한다. 수능 수학 교사를 위한 오프라인 문항 탐색·인쇄 도구.">
+<style>
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+  font-weight: 600; font-display: swap;
+}
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+  font-weight: 700; font-display: swap;
+}
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
+  font-weight: 900; font-display: swap;
+}
+
+:root {
+  --bg:        #070b14;
+  --bg-card:   rgba(255,255,255,0.05);
+  --bg-card2:  rgba(255,255,255,0.08);
+  --cyan:      #06b6d4;
+  --magenta:   #d946ef;
+  --indigo:    #6366f1;
+  --text:      #f8fafc;
+  --muted:     #94a3b8;
+  --border:    rgba(255,255,255,0.10);
+  --border2:   rgba(255,255,255,0.18);
+  --font:      'Paperlogy', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background:
+    radial-gradient(ellipse 70% 55% at 8% 30%,  rgba(6,182,212,0.13)   0%, transparent 68%),
+    radial-gradient(ellipse 55% 65% at 92% 12%, rgba(217,70,239,0.11)  0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 55% 90%, rgba(99,102,241,0.09)  0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── 공통 ───────────────────────────────────────── */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid var(--border);
+  border-top-color: var(--border2);
+  border-radius: 16px;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+.accent-cyan    { color: var(--cyan); }
+.accent-magenta { color: var(--magenta); }
+
+/* ── NAV ────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(7,11,20,0.80);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+  height: 60px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { display: flex; align-items: baseline; gap: 0.35rem; text-decoration: none; }
+.nav-logo .kice { font-size: 0.85rem; font-weight: 600; color: var(--muted); letter-spacing: 0.12em; }
+.nav-logo .lynx { font-size: 1.15rem; font-weight: 900; color: var(--text); letter-spacing: 0.05em; }
+.nav-logo .lynx span { color: var(--cyan); }
+.nav-dl-btn {
+  font-size: 0.82rem; font-weight: 600; font-family: var(--font);
+  color: var(--bg); background: var(--cyan); border: none;
+  padding: 0.45rem 1.1rem; border-radius: 8px; cursor: pointer;
+  text-decoration: none; transition: opacity 0.2s;
+}
+.nav-dl-btn:hover { opacity: 0.85; }
+
+/* ── HERO ───────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 100px 2rem 60px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em;
+  color: var(--cyan);
+  border: 1px solid rgba(6,182,212,0.35);
+  background: rgba(6,182,212,0.08);
+  padding: 0.35rem 0.9rem; border-radius: 99px;
+  margin-bottom: 2rem;
+}
+.hero-badge .dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--cyan);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:0.4; transform:scale(0.8); }
+  50%      { opacity:1;   transform:scale(1.2); }
+}
+.hero h1 {
+  font-size: clamp(2.8rem, 7vw, 5rem);
+  font-weight: 900; line-height: 1.05; letter-spacing: -0.02em;
+  margin-bottom: 1.4rem;
+}
+.hero h1 .brand-kice { color: var(--muted); font-size: 0.55em; letter-spacing: 0.15em; display: block; margin-bottom: 0.2em; }
+.hero h1 .brand-lynx { color: var(--text); }
+.hero h1 .brand-lynx span { color: var(--cyan); }
+
+.hero-tagline {
+  font-size: clamp(1.1rem, 2.5vw, 1.45rem);
+  font-weight: 600; color: var(--text);
+  margin-bottom: 0.8rem; line-height: 1.4;
+}
+.hero-tagline .sep {
+  color: var(--muted); font-weight: 400; margin: 0 0.4em;
+}
+.hero-sub {
+  font-size: 1rem; color: var(--muted); max-width: 520px;
+  margin: 0 auto 2.8rem;
+}
+
+.dl-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.6rem; }
+.dl-btn {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.85rem 1.8rem; border-radius: 12px;
+  font-family: var(--font); font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; border: none; text-decoration: none;
+  transition: transform 0.18s, opacity 0.18s;
+}
+.dl-btn:hover { transform: translateY(-2px); opacity: 0.92; }
+.dl-btn-mac { 
+  background: #334155; 
+  color: #94a3b8; 
+  cursor: default; 
+  opacity: 0.6;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+.dl-btn-win  { background: var(--cyan); color: #030712; }
+.dl-btn svg  { flex-shrink: 0; }
+.dl-btn-sub  { font-size: 0.72rem; font-weight: 400; opacity: 0.75; display: block; margin-top: 0.1rem; }
+
+.hero-stats {
+  display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+  font-size: 0.85rem; color: var(--muted);
+}
+.hero-stats strong { color: var(--text); font-weight: 700; }
+
+/* ── FEATURES ───────────────────────────────────── */
+.features { padding: 100px 0; }
+.section-label {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em;
+  color: var(--cyan); text-transform: uppercase; margin-bottom: 0.8rem;
+}
+.section-title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; line-height: 1.2;
+  margin-bottom: 1rem;
+}
+.section-sub { font-size: 1rem; color: var(--muted); max-width: 520px; }
+
+.features-layout { display: flex; gap: 3rem; align-items: flex-start; margin-top: 4rem; }
+.features-nav { flex: 0 0 260px; display: flex; flex-direction: column; gap: 0.5rem; }
+.feat-item {
+  padding: 1rem 1.2rem; border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer; transition: all 0.2s;
+}
+.feat-item:hover { background: var(--bg-card); }
+.feat-item.active {
+  background: var(--bg-card2);
+  border-color: rgba(6,182,212,0.30);
+}
+.feat-item-num {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--cyan); margin-bottom: 0.3rem;
+}
+.feat-item-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+.feat-item-desc  { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+.features-display { flex: 1; min-width: 0; position: sticky; top: 80px; }
+.feat-scene { display: none; }
+.feat-scene.active { display: block; }
+
+/* ── MOCK UI (공통) ─────────────────────────────── */
+.mock-wrap {
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border2);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(6,182,212,0.08);
+  background: #0d1220;
+}
+.mock-titlebar {
+  background: #0a0f1a; padding: 0.6rem 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mock-dot-r { background: #ff5f57; }
+.mock-dot-y { background: #ffbd2e; }
+.mock-dot-g { background: #28c941; }
+.mock-url-bar {
+  flex: 1; background: rgba(255,255,255,0.06); border-radius: 6px;
+  padding: 0.25rem 0.75rem; font-size: 0.72rem; color: var(--muted);
+  margin-left: 0.5rem;
+}
+
+.mock-header {
+  background: rgba(6,10,22,0.95);
+  padding: 0.75rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.mock-logo-sm {
+  font-size: 0.8rem; font-weight: 900; letter-spacing: 0.05em; white-space: nowrap;
+}
+.mock-logo-sm .k { color: var(--muted); font-weight: 600; font-size: 0.65em; letter-spacing: 0.1em; }
+.mock-logo-sm span { color: var(--cyan); }
+
+.mock-tabs { display: flex; gap: 0.3rem; }
+.mock-tab {
+  font-size: 0.72rem; padding: 0.3rem 0.7rem; border-radius: 6px;
+  border: none; background: transparent; color: var(--muted);
+  cursor: default; font-family: var(--font);
+}
+.mock-tab.on {
+  background: rgba(6,182,212,0.15); color: var(--cyan);
+  border: 1px solid rgba(6,182,212,0.3);
+}
+
+.mock-search-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: rgba(255,255,255,0.07); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 0.45rem 0.8rem;
+  flex: 1; min-width: 200px;
+}
+.mock-search-row span { font-size: 0.82rem; color: var(--text); flex: 1; }
+.mock-search-row svg { color: var(--muted); flex-shrink: 0; }
+
+.mock-body { padding: 0.8rem 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+
+/* 결과 카드 */
+.mock-card {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.75rem 1rem;
+  transition: border-color 0.2s;
+}
+.mock-card.selected {
+  border-color: rgba(6,182,212,0.5);
+  background: rgba(6,182,212,0.06);
+  box-shadow: 0 0 0 1px rgba(6,182,212,0.2);
+}
+.mock-card-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.mock-prob-id {
+  font-size: 0.8rem; font-weight: 700; color: var(--cyan);
+  background: rgba(6,182,212,0.12); border-radius: 5px;
+  padding: 0.15rem 0.5rem; cursor: pointer;
+}
+.mock-prob-id.selected-id { background: rgba(6,182,212,0.25); }
+.mock-cart-badge-inline {
+  font-size: 0.68rem; color: var(--cyan); font-weight: 600;
+  display: none;
+}
+.mock-card.selected .mock-cart-badge-inline { display: inline; }
+.mock-year-tag {
+  font-size: 0.7rem; color: var(--muted);
+  background: rgba(255,255,255,0.06); border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+}
+.mock-steps { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.mock-step {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.72rem; color: var(--muted);
+  background: rgba(255,255,255,0.05); border-radius: 5px;
+  padding: 0.2rem 0.55rem; border: 1px solid transparent;
+}
+.mock-step.highlight {
+  color: var(--cyan); background: rgba(6,182,212,0.1);
+  border-color: rgba(6,182,212,0.3);
+}
+.mock-link-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 3px;
+  cursor: pointer; color: var(--muted); flex-shrink: 0;
+  transition: color 0.2s;
+}
+.mock-step.highlight .mock-link-icon { color: var(--cyan); }
+
+/* Scene 2 전용: 유사 패널 */
+.mock-similar-panel {
+  background: rgba(6,182,212,0.06);
+  border: 1px solid rgba(6,182,212,0.25);
+  border-radius: 10px; padding: 0.75rem 1rem;
+  margin-top: 0.4rem;
+}
+.mock-similar-title {
+  font-size: 0.75rem; font-weight: 700; color: var(--cyan); margin-bottom: 0.5rem;
+}
+.mock-similar-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.mock-similar-chip {
+  font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 5px;
+  background: rgba(6,182,212,0.12); color: var(--cyan);
+  border: 1px solid rgba(6,182,212,0.25);
+}
+
+/* Scene 3 전용: 장바구니 배지 */
+.mock-cart-fab {
+  position: absolute; bottom: 12px; right: 12px;
+  width: 38px; height: 38px; border-radius: 10px;
+  background: var(--cyan); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(6,182,212,0.4);
+}
+.mock-cart-fab svg { color: #030712; }
+.mock-cart-count {
+  position: absolute; top: -5px; right: -5px;
+  background: var(--magenta); color: #fff;
+  font-size: 0.62rem; font-weight: 700;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.mock-relative { position: relative; }
+
+/* Scene 4 전용: 실제 인쇄 미리보기 모사 */
+.mock-print-modal {
+  display: flex; flex-direction: column;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border2);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  height: 480px;
+}
+.mock-print-topbar {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(40px);
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  padding: 0.6rem 1rem;
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.mock-print-title {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em;
+  text-transform: uppercase; color: rgba(248,250,252,0.55); white-space: nowrap;
+}
+.mock-pill-group { display: flex; align-items: center; gap: 0.4rem; }
+.mock-pill-label { font-size: 0.68rem; color: var(--muted); white-space: nowrap; }
+.mock-pills {
+  display: flex; gap: 0.18rem;
+  background: rgba(255,255,255,0.04);
+  padding: 0.22rem; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+.mock-pill {
+  padding: 0.22rem 0.65rem; border-radius: 999px;
+  font-size: 0.70rem; font-weight: 500; color: var(--muted);
+  background: transparent; border: 1px solid transparent;
+  font-family: var(--font);
+}
+.mock-pill.on {
+  background: linear-gradient(135deg,rgba(6,182,212,0.18),rgba(217,70,239,0.18));
+  border-color: rgba(255,255,255,0.14); color: #fff;
+}
+.mock-pill-divider { width:1px; height:22px; background:rgba(255,255,255,0.10); flex-shrink:0; }
+.mock-print-actions { display: flex; gap: 0.4rem; margin-left: auto; }
+.mock-btn-pdf {
+  padding: 0.28rem 0.8rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600;
+  background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.35);
+  color: var(--cyan); font-family: var(--font);
+}
+.mock-btn-close {
+  padding: 0.28rem 0.7rem; border-radius: 6px; font-size: 0.72rem;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  color: var(--muted); font-family: var(--font);
+}
+.mock-print-layout { display: flex; flex: 1; overflow: hidden; }
+.mock-print-sidebar {
+  width: 140px; flex-shrink: 0;
+  background: #0f172a; border-right: 1px solid #1e293b;
+  padding: 0.8rem 0.6rem; overflow-y: auto;
+}
+.mock-sidebar-title {
+  font-size: 0.62rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: #64748b; margin-bottom: 0.6rem; padding: 0 2px;
+}
+.mock-sidebar-item {
+  display: flex; align-items: center; gap: 0.4rem;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 5px; padding: 0.35rem 0.5rem;
+  font-size: 0.68rem; color: #e2e8f0; margin-bottom: 0.3rem; cursor: default;
+}
+.mock-sidebar-item.sel { border-color: rgba(167,139,250,0.45); background: rgba(167,139,250,0.10); }
+.mock-sidebar-num { font-size: 0.6rem; color: #64748b; }
+.mock-drag-handle {
+  display: flex; flex-direction: column; gap: 2px; opacity: 0.35; margin-right: 2px;
+}
+.mock-drag-handle span { display:block; width:10px; height:1.5px; background:currentColor; border-radius:2px; }
+
+.mock-print-scroll {
+  flex: 1; overflow-y: auto;
+  background: rgba(15,23,42,0.92);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1.2rem 1rem;
+  gap: 1rem;
+}
+/* 흰 A4 용지 */
+.mock-a4 {
+  width: 100%; max-width: 320px;
+  background: #ffffff; color: #1e1e1e;
+  padding: 1.4rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+  border-radius: 2px;
+}
+.mock-a4-header {
+  text-align: center; border-bottom: 1.5px solid #222;
+  padding-bottom: 0.5rem; margin-bottom: 1rem;
+}
+.mock-a4-subject { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; color: #222; }
+.mock-a4-title   { font-size: 0.78rem; font-weight: 900; color: #111; margin-top: 0.15rem; }
+
+.mock-problem { margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 1px dashed #ddd; }
+.mock-problem:last-of-type { border-bottom: none; margin-bottom: 0; }
+.mock-prob-header { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 0.35rem; }
+.mock-prob-no    { font-size: 0.82rem; font-weight: 900; color: #111; }
+.mock-prob-pts   { font-size: 0.6rem; color: #666; }
+.mock-prob-body  { font-size: 0.68rem; color: #333; line-height: 1.65; margin-bottom: 0.4rem; }
+.mock-prob-body em { font-style: italic; }
+.mock-choices { list-style: none; display: flex; flex-direction: column; gap: 0.15rem; padding-left: 0.2rem; }
+.mock-choices li { font-size: 0.66rem; color: #333; }
+
+.mock-sol-area {
+  background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px;
+  padding: 0.5rem 0.7rem; margin-top: 0.4rem;
+}
+.mock-sol-area-title { font-size: 0.6rem; font-weight: 700; color: #475569; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+.mock-sol-area-step  { font-size: 0.62rem; color: #475569; padding: 0.1rem 0; border-bottom: 1px solid #e8edf2; }
+.mock-sol-area-step:last-child { border-bottom: none; }
+
+.mock-answer-table {
+  width: 100%; border-collapse: collapse; margin-top: 0.8rem;
+  border-top: 1.5px solid #222;
+}
+.mock-answer-table th {
+  font-size: 0.6rem; font-weight: 700; color: #fff; background: #222;
+  padding: 0.25rem 0.4rem; text-align: center;
+}
+.mock-answer-table td {
+  font-size: 0.62rem; color: #111; padding: 0.25rem 0.4rem;
+  text-align: center; border: 1px solid #ddd;
+}
+
+
+/* ── DOWNLOAD ───────────────────────────────────── */
+.download-section { padding: 80px 0 120px; text-align: center; }
+.download-section h2 { font-size: 2rem; font-weight: 800; margin-bottom: 0.6rem; }
+.download-section p  { font-size: 1rem; color: var(--muted); margin-bottom: 2.5rem; }
+.dl-cards { display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap; }
+.dl-card {
+  width: 240px; padding: 2rem 1.5rem; border-radius: 16px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.dl-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(6,182,212,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+.dl-card-icon { margin-bottom: 0.8rem; color: var(--cyan); }
+.dl-card-icon svg { width: 40px; height: 40px; }
+.dl-card-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
+.dl-card-info { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.4rem; line-height: 1.6; }
+.dl-card-btn {
+  display: block; text-decoration: none; text-align: center;
+  background: var(--cyan); color: #030712;
+  padding: 0.7rem; border-radius: 10px;
+  font-family: var(--font); font-size: 0.88rem; font-weight: 700;
+  transition: opacity 0.2s;
+}
+.dl-card-btn:hover { opacity: 0.85; }
+.dl-card-btn.win { background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border2); }
+.dl-version { font-size: 0.72rem; color: var(--muted); margin-top: 1.5rem; }
+
+/* ── FOOTER ─────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border); padding: 2rem;
+  text-align: center; font-size: 0.78rem; color: var(--muted);
+}
+.report-link {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.78rem; color: var(--muted); background: none; border: none;
+  cursor: pointer; font-family: var(--font); padding: 0; margin-top: 0.6rem;
+  opacity: 0.7; transition: opacity 0.2s;
+}
+.report-link:hover { opacity: 1; color: var(--text); }
+
+/* ── 신고 모달 ───────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(7,11,20,0.8);
+  backdrop-filter: blur(8px); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-backdrop.open { opacity: 1; pointer-events: auto; }
+.modal-box {
+  width: 100%; max-width: 520px; padding: 2rem 2.2rem;
+  position: relative;
+}
+.modal-box h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.4rem; }
+.modal-box p  { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+.modal-close {
+  position: absolute; top: 1rem; right: 1.2rem;
+  background: none; border: none; color: var(--muted);
+  font-size: 1.3rem; cursor: pointer; line-height: 1; font-family: var(--font);
+}
+.modal-close:hover { color: var(--text); }
+.form-row { margin-bottom: 1rem; }
+.form-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 0.4rem; }
+.form-input, .form-select, .form-textarea {
+  width: 100%; background: rgba(255,255,255,0.07); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 0.7rem 1rem;
+  font-family: var(--font); font-size: 0.88rem; color: var(--text); outline: none;
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: rgba(6,182,212,0.5); }
+.form-select { appearance: none; cursor: pointer; }
+.form-select option { background: #0d1220; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-submit {
+  width: 100%; background: var(--cyan); color: #030712; border: none;
+  padding: 0.8rem; border-radius: 10px;
+  font-family: var(--font); font-size: 0.9rem; font-weight: 700;
+  cursor: pointer; transition: opacity 0.2s; margin-top: 0.5rem;
+}
+.form-submit:hover { opacity: 0.85; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+/* ── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .features-layout { flex-direction: column; }
+  .features-nav { flex: none; flex-direction: row; overflow-x: auto; gap: 0.4rem; padding-bottom: 0.5rem; }
+  .feat-item { flex: 0 0 auto; min-width: 160px; }
+  .features-display { position: static; }
+}
+  /* Mac 가이드 모달 */
+  #mac-guide-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .mac-guide-card {
+    background: #1a1d24;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 540px;
+    padding: 40px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes modalPop {
+    from { transform: scale(0.9); opacity:0; }
+    to { transform: scale(1); opacity:1; }
+  }
+  .mac-guide-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+  }
+  .mac-guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  .mac-guide-step {
+    display: flex;
+    gap: 16px;
+    background: rgba(255,255,255,0.03);
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .step-num {
+    background: var(--accent-indigo);
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .step-text { font-size: 0.92rem; line-height: 1.5; color: #d1d5db; }
+  .step-text strong { color: #fff; }
+  .mac-guide-img {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .mac-guide-btn {
+    width: 100%;
+    background: var(--accent-indigo);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mac-guide-btn:hover {
+    background: #6366f1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+
+/* ── 오류 신고 모달 ───────────────────────────────────── */
+#error-report-overlay {
+  position: fixed; inset: 0; background: rgba(7,11,20,0.85); backdrop-filter: blur(8px);
+  z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.error-modal-card {
+  background: #1a1d24; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+  width: 100%; max-width: 600px; padding: 30px;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; max-height: 90vh; display: flex; flex-direction: column;
+}
+.error-modal-close {
+  position: absolute; top: 15px; right: 20px; background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;
+}
+.error-modal-close:hover { color: #fff; }
+.error-banner {
+  background: rgba(6,182,212,0.15); color: var(--cyan); padding: 12px; border-radius: 10px; font-weight: 700; text-align: center; margin-bottom: 20px; line-height: 1.6;
+}
+.error-row { margin-bottom: 20px; }
+.error-row-title { font-size: 0.8rem; color: #94a3b8; font-weight: 700; margin-bottom: 8px; }
+.error-yr-btns, .error-exam-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.yr-wrap { display: inline-flex; }
+.error-split-btns { display: flex; outline: 1px solid rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+.split-btn { 
+  background: rgba(255,255,255,0.05); color: #e2e8f0; border: none; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; font-family: var(--font);
+  border-right: 1px solid rgba(255,255,255,0.1); transition: background 0.2s;
+}
+.split-btn:last-child { border-right: none; }
+.split-btn:hover { background: rgba(255,255,255,0.15); }
+.split-btn.selected { background: rgba(6,182,212,0.25); color: #fff; font-weight: 700; }
+
+.error-btn {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: background 0.2s; font-family: var(--font);
+}
+.error-btn:hover { background: rgba(255,255,255,0.1); }
+.error-btn.selected { background: rgba(6,182,212,0.25); border-color: var(--cyan); color: #fff; font-weight: 700; }
+.error-grid {
+  display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; padding-right: 5px;
+}
+.error-grid-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.error-prob-btn {
+  background: #2a2d36; border: 1px solid transparent; color: #d1d5db; 
+  width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; cursor: pointer; transition: all 0.15s; font-family: var(--font); padding: 0;
+}
+.error-prob-btn:hover:not(:disabled) { background: #374151; }
+.error-prob-btn.selected { background: rgba(6,182,212,0.25); border-color: var(--cyan); color: #fff; font-weight: 700; }
+.error-prob-btn:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+.error-submit-btn {
+  width: 100%; background: var(--cyan); color: #030712; border: none; padding: 14px; border-radius: 10px;
+  font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 20px; transition: opacity 0.2s; font-family: var(--font);
+}
+.error-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.error-submit-btn:not(:disabled):hover { opacity: 0.85; }
+.error-hr { height: 1px; background: rgba(255,255,255,0.1); margin: 6px 0; }
+.err-cart-item {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+  color: #f8fafc; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px;
+  display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); margin-bottom: 4px;
+}
+.err-cart-rm {
+  cursor: pointer; color: #94a3b8; font-size: 0.9rem; line-height: 1; margin-top: -2px;
+}
+.err-cart-rm:hover { color: #fff; }
+.error-group-label { width: 70px; font-size: 0.75rem; color: #64748b; font-weight: 600; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px;}
+
+.nav-report-btn {
+  font-size: 0.82rem; font-weight: 600; font-family: var(--font);
+  color: var(--text); background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  padding: 0.45rem 1.1rem; border-radius: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-report-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">
+      <span class="kice">KICE</span>
+      <span class="lynx">LY<span>N</span>X</span>
+    </a>
+    <div style="display:flex; gap:0.8rem; align-items:center;">
+      <button class="nav-report-btn" onclick="openErrorReportModal()">오류 신고</button>
+      <a class="nav-dl-btn" href="/app">앱 시작하기</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> 인터넷 없이 완전 오프라인 동작</div>
+
+  <h1>
+    <span class="brand-kice">KICE</span>
+    <span class="brand-lynx">LY<span>N</span>X</span>
+  </h1>
+
+  <p class="hero-tagline">
+    풀이 단계로 찾고<span class="sep">·</span>기출로 구성하고<span class="sep">·</span>바로 인쇄한다
+  </p>
+  <p class="hero-sub">
+    수능 수학 기출 2,200여 풀이 단계를 분류한 수업 자료 제작 도구.<br>
+    고등학교 수학 교사를 위해 설계했습니다.
+  </p>
+
+
+
+  <div class="hero-stats">
+    <span>누적 다운로드 <strong>{{ '{:,}'.format(total_downloads) }}회</strong></span>
+    <span>수능 수학 기출 <strong>2014–2026</strong></span>
+    <span>풀이 단계 <strong>2,200+</strong>개</span>
+  </div>
+</section>
+
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">수업 자료 제작, 이렇게 달라집니다</h2>
+    <p class="section-sub">
+      원하는 풀이 기법이 쓰인 기출 문항을 직접 찾아 구성하고, 정답·해설 포함 여부를 선택해 바로 인쇄합니다.
+    </p>
+
+    <div class="features-layout">
+
+      <!-- 왼쪽 메뉴 -->
+      <div class="features-nav">
+        <div class="feat-item active" data-scene="1">
+          <div class="feat-item-num">01</div>
+          <div class="feat-item-title">개념·풀이 기법으로 검색</div>
+          <div class="feat-item-desc">수학 개념어나 풀이 방법을 자연어로 입력하면 관련 기출 문항이 즉시 나타납니다.</div>
+        </div>
+        <div class="feat-item" data-scene="2">
+          <div class="feat-item-num">02</div>
+          <div class="feat-item-title">같은 접근법 문항 모아보기</div>
+          <div class="feat-item-desc">풀이 단계 옆 아이콘을 클릭하면 동일한 수학적 접근을 쓰는 다른 연도·시험의 문항을 한번에 볼 수 있습니다.</div>
+        </div>
+        <div class="feat-item" data-scene="3">
+          <div class="feat-item-num">03</div>
+          <div class="feat-item-title">장바구니로 문제지 구성</div>
+          <div class="feat-item-desc">문항 번호를 클릭하면 장바구니에 담기고, 다시 클릭하면 빠집니다. 원하는 구성이 만들어질 때까지 자유롭게 조정하세요.</div>
+        </div>
+        <div class="feat-item" data-scene="4">
+          <div class="feat-item-num">04</div>
+          <div class="feat-item-title">정답·해설 포함 여부 선택 후 인쇄</div>
+          <div class="feat-item-desc">문제지 끝에 정답 모아서 / 각 문항 아래 / 미표기, 해설 포함 여부를 조합해 한 번에 출력합니다.</div>
+        </div>
+      </div>
+
+      <!-- 오른쪽 mock UI -->
+      <div class="features-display">
+
+        <!-- Scene 1: 검색 -->
+        <div class="feat-scene active" id="scene-1">
+          <div class="mock-wrap">
+            <div class="mock-titlebar">
+              <div class="mock-dot mock-dot-r"></div>
+              <div class="mock-dot mock-dot-y"></div>
+              <div class="mock-dot mock-dot-g"></div>
+              <div class="mock-url-bar">localhost:5050</div>
+            </div>
+            <div class="mock-header">
+              <div class="mock-logo-sm"><span class="k">KICE </span>LY<span>N</span>X</div>
+              <div class="mock-tabs">
+                <button class="mock-tab on">개념유사도</button>
+                <button class="mock-tab">기출표현</button>
+                <button class="mock-tab">문항번호</button>
+                <button class="mock-tab">성취기준</button>
+              </div>
+              <div class="mock-search-row">
+                <span>중복조합이 쓰이는 조건부 확률</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+            </div>
+            <div class="mock-body">
+              <div class="mock-card">
+                <div class="mock-card-header">
+                  <span class="mock-prob-id">2025수능_27</span>
+                  <span class="mock-year-tag">확률과통계</span>
+                  <span style="font-size:0.7rem;color:var(--muted);margin-left:auto">유사도 0.94</span>
+                </div>
+                <div class="mock-steps">
+                  <span class="mock-step">사건 분리 후 경우의 수 나열</span>
+                  <span class="mock-step highlight">
+                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    중복조합으로 경우의 수 산출
+                  </span>
+                  <span class="mock-step">조건부 확률 정의 적용</span>
+                </div>
+              </div>
+              <div class="mock-card">
+                <div class="mock-card-header">
+                  <span class="mock-prob-id">2024.9모_28</span>
+                  <span class="mock-year-tag">확률과통계</span>
+                  <span style="font-size:0.7rem;color:var(--muted);margin-left:auto">유사도 0.91</span>
+                </div>
+                <div class="mock-steps">
+                  <span class="mock-step">조건 분류 후 케이스 분리</span>
+                  <span class="mock-step highlight">
+                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    중복조합으로 경우의 수 산출
+                  </span>
+                  <span class="mock-step">조건부 확률 공식으로 최종값 계산</span>
+                </div>
+              </div>
+              <div class="mock-card">
+                <div class="mock-card-header">
+                  <span class="mock-prob-id">2023수능_26</span>
+                  <span class="mock-year-tag">확률과통계</span>
+                  <span style="font-size:0.7rem;color:var(--muted);margin-left:auto">유사도 0.88</span>
+                </div>
+                <div class="mock-steps">
+                  <span class="mock-step">전체 사건과 조건 사건 분리</span>
+                  <span class="mock-step highlight">
+                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    중복조합으로 경우의 수 산출
+                  </span>
+                  <span class="mock-step">조건부 확률 정의 적용</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scene 2: 유사 문항 탐색 -->
+        <div class="feat-scene" id="scene-2">
+          <div class="mock-wrap">
+            <div class="mock-titlebar">
+              <div class="mock-dot mock-dot-r"></div>
+              <div class="mock-dot mock-dot-y"></div>
+              <div class="mock-dot mock-dot-g"></div>
+              <div class="mock-url-bar">localhost:5050</div>
+            </div>
+            <div class="mock-header">
+              <div class="mock-logo-sm"><span class="k">KICE </span>LY<span>N</span>X</div>
+              <div class="mock-tabs">
+                <button class="mock-tab on">개념유사도</button>
+                <button class="mock-tab">기출표현</button>
+                <button class="mock-tab">문항번호</button>
+                <button class="mock-tab">성취기준</button>
+              </div>
+            </div>
+            <div class="mock-body">
+              <div class="mock-card">
+                <div class="mock-card-header">
+                  <span class="mock-prob-id">2025수능_27</span>
+                  <span class="mock-year-tag">확률과통계</span>
+                </div>
+                <div class="mock-steps">
+                  <span class="mock-step">사건 분리 후 경우의 수 나열</span>
+                  <span class="mock-step highlight" style="box-shadow:0 0 0 1px rgba(6,182,212,0.5)">
+                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    중복조합으로 경우의 수 산출 ← 클릭
+                  </span>
+                  <span class="mock-step">조건부 확률 정의 적용</span>
+                </div>
+              </div>
+              <div class="mock-similar-panel">
+                <div class="mock-similar-title">
+                  <svg style="display:inline;vertical-align:middle;margin-right:4px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  같은 단계를 쓰는 문항 9개
+                </div>
+                <div class="mock-similar-list">
+                  <span class="mock-similar-chip">2024.9모_28</span>
+                  <span class="mock-similar-chip">2023수능_26</span>
+                  <span class="mock-similar-chip">2022수능_27</span>
+                  <span class="mock-similar-chip">2021.9모_25</span>
+                  <span class="mock-similar-chip">2020수능_26</span>
+                  <span class="mock-similar-chip">2019수능나_26</span>
+                  <span class="mock-similar-chip">2018수능나_26</span>
+                  <span class="mock-similar-chip">2017수능나_25</span>
+                  <span class="mock-similar-chip">2016수능A_26</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scene 3: 장바구니 -->
+        <div class="feat-scene" id="scene-3">
+          <div class="mock-wrap">
+            <div class="mock-titlebar">
+              <div class="mock-dot mock-dot-r"></div>
+              <div class="mock-dot mock-dot-y"></div>
+              <div class="mock-dot mock-dot-g"></div>
+              <div class="mock-url-bar">localhost:5050</div>
+            </div>
+            <div class="mock-header">
+              <div class="mock-logo-sm"><span class="k">KICE </span>LY<span>N</span>X</div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-left:auto">문항 번호를 클릭하면 장바구니에 담깁니다</div>
+            </div>
+            <div class="mock-body mock-relative">
+              <div class="mock-card selected">
+                <div class="mock-card-header">
+                  <span class="mock-prob-id selected-id">2025수능_27</span>
+                  <span class="mock-year-tag">확률과통계</span>
+                  <span class="mock-cart-badge-inline">✓ 담김</span>
+                </div>
+                <div class="mock-steps">
+                  <span class="mock-step">사건 분리 후 경우의 수 나열</span>
+                  <span class="mock-step">중복조합으로 경우의 수 산출</span>
+                  <span class="mock-step">조건부 확률 정의 적용</span>
+                </div>
+              </div>
+              <div class="mock-card">
+                <div class="mock-card-header">
+                  <span class="mock-prob-id">2024.9모_28</span>
+                  <span class="mock-year-tag">확률과통계</span>
+                  <span class="mock-cart-badge-inline">✓ 담김</span>
+                </div>
+                <div class="mock-steps">
+                  <span class="mock-step">조건 분류 후 케이스 분리</span>
+                  <span class="mock-step">중복조합으로 경우의 수 산출</span>
+                  <span class="mock-step">조건부 확률 공식으로 최종값 계산</span>
+                </div>
+              </div>
+              <div class="mock-card selected">
+                <div class="mock-card-header">
+                  <span class="mock-prob-id selected-id">2023수능_26</span>
+                  <span class="mock-year-tag">확률과통계</span>
+                  <span class="mock-cart-badge-inline">✓ 담김</span>
+                </div>
+                <div class="mock-steps">
+                  <span class="mock-step">전체 사건과 조건 사건 분리</span>
+                  <span class="mock-step">중복조합으로 경우의 수 산출</span>
+                  <span class="mock-step">조건부 확률 정의 적용</span>
+                </div>
+              </div>
+              <div class="mock-cart-fab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                <span class="mock-cart-count">2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scene 4: 실제 인쇄 미리보기 모사 -->
+        <div class="feat-scene" id="scene-4">
+          <div class="mock-print-modal">
+            <!-- 상단 옵션 바 -->
+            <div class="mock-print-topbar">
+              <span class="mock-print-title">인쇄 미리보기</span>
+              <div class="mock-pill-group">
+                <span class="mock-pill-label">정답 표기</span>
+                <div class="mock-pills">
+                  <span class="mock-pill">미표기</span>
+                  <span class="mock-pill">각 문항</span>
+                  <span class="mock-pill on">문제지 끝</span>
+                </div>
+              </div>
+              <div class="mock-pill-divider"></div>
+              <div class="mock-pill-group">
+                <span class="mock-pill-label">해설</span>
+                <div class="mock-pills">
+                  <span class="mock-pill">미포함</span>
+                  <span class="mock-pill on">포함</span>
+                </div>
+              </div>
+              <div class="mock-print-actions">
+                <button class="mock-btn-pdf">PDF 저장</button>
+                <button class="mock-btn-close">닫기</button>
+              </div>
+            </div>
+
+            <!-- 레이아웃: 사이드바 + 용지 -->
+            <div class="mock-print-layout">
+              <!-- 왼쪽 사이드바 -->
+              <div class="mock-print-sidebar">
+                <div class="mock-sidebar-title">문항 순서</div>
+                <div class="mock-sidebar-item sel">
+                  <div class="mock-drag-handle"><span></span><span></span><span></span></div>
+                  <div>
+                    <div style="font-size:0.58rem;color:#94a3b8">1</div>
+                    <div>2025수능_27</div>
+                  </div>
+                </div>
+                <div class="mock-sidebar-item">
+                  <div class="mock-drag-handle"><span></span><span></span><span></span></div>
+                  <div>
+                    <div style="font-size:0.58rem;color:#94a3b8">2</div>
+                    <div>2024.9모_28</div>
+                  </div>
+                </div>
+                <div class="mock-sidebar-item">
+                  <div class="mock-drag-handle"><span></span><span></span><span></span></div>
+                  <div>
+                    <div style="font-size:0.58rem;color:#94a3b8">3</div>
+                    <div>2023수능_26</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 오른쪽: 흰 A4 용지 -->
+              <div class="mock-print-scroll">
+                <div class="mock-a4">
+                  <div class="mock-a4-header">
+                    <div class="mock-a4-subject">수학 영역</div>
+                    <div class="mock-a4-title">확률과통계 — 조건부 확률 연습</div>
+                  </div>
+
+                  <!-- 문제 1 -->
+                  <div class="mock-problem">
+                    <div class="mock-prob-header">
+                      <span class="mock-prob-no">27.</span>
+                      <span class="mock-prob-pts">[4점] 2025수능</span>
+                    </div>
+                    <div class="mock-prob-body">
+                      집합 <em>X</em> = {1, 2, 3, 4, 5}에서 <em>X</em>로의 함수 <em>f</em> 중에서<br>
+                      조건 (가), (나)를 만족시키는 함수 <em>f</em>의 개수를 구하시오.
+                    </div>
+                    <ul class="mock-choices">
+                      <li>① 58&nbsp;&nbsp;② 62&nbsp;&nbsp;③ 66&nbsp;&nbsp;④ 70&nbsp;&nbsp;⑤ 74</li>
+                    </ul>
+                    <div class="mock-sol-area">
+                      <div class="mock-sol-area-title">풀이</div>
+                      <div class="mock-sol-area-step">① 조건에 따라 사건 A, B 분리</div>
+                      <div class="mock-sol-area-step">② 중복조합으로 각 경우의 수 산출</div>
+                      <div class="mock-sol-area-step">③ 조건부 확률 P(B|A) = 66/110 = 3/5</div>
+                    </div>
+                  </div>
+
+                  <!-- 문제 2 -->
+                  <div class="mock-problem">
+                    <div class="mock-prob-header">
+                      <span class="mock-prob-no">28.</span>
+                      <span class="mock-prob-pts">[4점] 2024.9모</span>
+                    </div>
+                    <div class="mock-prob-body">
+                      두 집합 <em>A</em>, <em>B</em>에 대하여 조건을 만족시키는<br>
+                      순서쌍 (<em>A</em>, <em>B</em>)의 개수를 구하시오.
+                    </div>
+                    <ul class="mock-choices">
+                      <li>① 40&nbsp;&nbsp;② 44&nbsp;&nbsp;③ 48&nbsp;&nbsp;④ 52&nbsp;&nbsp;⑤ 56</li>
+                    </ul>
+                    <div class="mock-sol-area">
+                      <div class="mock-sol-area-title">풀이</div>
+                      <div class="mock-sol-area-step">① 조건 분류 후 케이스 분리</div>
+                      <div class="mock-sol-area-step">② 중복조합으로 경우의 수 산출</div>
+                      <div class="mock-sol-area-step">③ 조건부 확률 공식으로 최종값 계산</div>
+                    </div>
+                  </div>
+
+                  <!-- 정답 표 (문제지 끝) -->
+                  <table class="mock-answer-table">
+                    <thead>
+                      <tr><th>문항</th><th>시험</th><th>정답</th><th>배점</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>27</td><td>2025수능</td><td>③</td><td>4</td></tr>
+                      <tr><td>28</td><td>2024.9모</td><td>④</td><td>4</td></tr>
+                      <tr><td>26</td><td>2023수능</td><td>②</td><td>4</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /features-display -->
+    </div><!-- /features-layout -->
+  </div>
+</section>
+
+
+<!-- DOWNLOAD SECTION -->
+<section class="download-section" id="download" style="padding: 100px 0 60px;">
+  <div class="container">
+    <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; text-align: center;">KICE Lynx 웹서비스</h2>
+    <p style="font-size: 1.05rem; color: var(--muted); margin-bottom: 3rem; text-align: center;">어느 환경에서든 브라우저를 통해 실시간으로 수능 수학을 분석하고 학습지를 제작하세요.</p>
+    <div class="dl-buttons" style="margin-bottom: 0;">
+      <a class="dl-btn dl-btn-win" href="/app" style="padding: 1.2rem 2.5rem; border-radius: 12px; font-size: 1.1rem; justify-content: center; min-width: 250px;">
+        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+        <span>
+          KICE Lynx 시작하기
+          <span class="dl-btn-sub" style="font-size:0.8rem; margin-top:0.3rem">설치 없이 즉시 실행</span>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="text-align: left; padding: 2rem; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: #94a3b8; line-height: 1.6; max-width: 800px; margin: 0 auto 3rem auto; border-radius: 12px;">
+  <h4 style="color: #cbd5e1; margin-bottom: 0.8rem; font-size: 0.95rem;">저작권 및 면책 공고 (Copyright & Disclaimer)</h4>
+  <ul style="list-style: none; padding: 0; margin: 0;">
+    <li style="margin-bottom: 0.5rem;"><strong style="color: #f8fafc;">원저작물 권리</strong>: 본 서비스에 포함된 수능/모의평가 문항의 저작권은 <strong>한국교육과정평가원(KICE)</strong>에 있습니다.</li>
+    <li style="margin-bottom: 0.5rem;"><strong style="color: #f8fafc;">2차적 저작물 권리</strong>: 본 서비스에서 제공하는 모든 해설(Step-Trigger-Action-Result 구조) 및 문항 간 유사도 분석 데이터는 <strong>김진철(Kim Jin-chul)</strong>의 창작물이며, 저작권법의 보호를 받습니다. 해당 알고리즘 코드는 GNU AGPLv3 라이선스를 따릅니다.</li>
+    <li><strong style="color: #f8fafc;">이용 목적</strong>: 본 서비스는 공교육 수학 학습 지원 및 교육 연구 목적으로 개발되었으며, 원저작물의 가치를 훼손하지 않는 범위 내에서 서비스를 제공합니다.</li>
+  </ul>
+</footer>
+
+
+<script>
+// ── Feature 탭 전환 ─────────────────────────────────
+document.querySelectorAll('.feat-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const n = item.dataset.scene;
+    document.querySelectorAll('.feat-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.feat-scene').forEach(s => s.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('scene-' + n).classList.add('active');
+  });
+});
+
+
+// ── Chrome 브라우저 감지 및 경고 배너 ──────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const isChromium = window.chrome;
+  const winNav = window.navigator;
+  const vendorName = winNav.vendor;
+  const isOpera = typeof window.opr !== "undefined";
+  const isIEedge = winNav.userAgent.indexOf("Edge") > -1;
+  const isIOSChrome = winNav.userAgent.match("CriOS");
+  const isEdgeChromium = winNav.userAgent.indexOf("Edg/") > -1;
+
+  let isChrome = false;
+  if (isIOSChrome) {
+    isChrome = true;
+  } else if (
+    isChromium !== null &&
+    typeof isChromium !== "undefined" &&
+    vendorName === "Google Inc." &&
+    isOpera === false &&
+    isIEedge === false &&
+    isEdgeChromium === false
+  ) {
+    isChrome = true;
+  }
+
+  // 데스크톱 환경이면서 크롬이 아닐 경우 경고
+  // 모바일 기기는 보통 인쇄를 사용하지 않으므로 화면이 좁아지는 것을 피하기 위해 제외할 수도 있지만,
+  // 범용적으로 데스크톱/모바일 구분 없이 띄웁니다.
+  if (!isChrome) {
+    const banner = document.createElement('div');
+    banner.style.background = 'rgba(239, 68, 68, 0.15)';
+    banner.style.borderBottom = '1px solid rgba(239, 68, 68, 0.3)';
+    banner.style.color = '#fca5a5';
+    banner.style.padding = '12px 20px';
+    banner.style.textAlign = 'center';
+    banner.style.fontSize = '0.9rem';
+    banner.style.fontWeight = '600';
+    banner.style.position = 'fixed';
+    banner.style.top = '60px'; // nav 아래
+    banner.style.left = '0';
+    banner.style.width = '100%';
+    banner.style.zIndex = '99';
+    banner.style.backdropFilter = 'blur(12px)';
+    banner.style.WebkitBackdropFilter = 'blur(12px)';
+    banner.innerHTML = '⚠️ KICE Lynx의 오프라인 인쇄 기능은 <strong>구글 크롬(Google Chrome)</strong> 브라우저 환경에 최적화되어 있습니다.';
+    
+    // 닫기 버튼 추가
+    const closeBtn = document.createElement('span');
+    closeBtn.innerHTML = '×';
+    closeBtn.style.marginLeft = '15px';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.fontSize = '1.2rem';
+    closeBtn.style.opacity = '0.7';
+    closeBtn.onclick = () => banner.remove();
+    banner.appendChild(closeBtn);
+
+    document.body.appendChild(banner);
+  }
+});
+
+// ── Mac 가이드 모달 로직 ──────────────────────────────
+(function() {
+  const macButtons = document.querySelectorAll('.dl-btn-mac');
+  const overlay = document.getElementById('mac-guide-overlay');
+  const confirmBtn = document.getElementById('mac-guide-confirm');
+  let currentHref = '';
+
+  macButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      currentHref = btn.getAttribute('href');
+      overlay.style.display = 'flex';
+    });
+  });
+
+  confirmBtn.addEventListener('click', () => {
+    overlay.style.display = 'none';
+    if (currentHref) {
+      window.location.href = currentHref;
+    }
+  });
+
+  // 외부 클릭 시 닫기 (선택 사항)
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.style.display = 'none';
+  });
+})();
+
+// DOM 요소를 조작하는 오류 신고 모달 이벤트들은 문서 마지막에 선언됩니다.
+</script>
+
+<!-- 오류 신고 모달 마크업 -->
+<div id="error-report-overlay">
+  <div class="error-modal-card">
+    <button class="error-modal-close" onclick="closeErrorReportModal()">×</button>
+    <div class="error-banner">
+      정답이 없는 문항, 해설이 잘못된 문항 등등<br>
+      문항 번호만 알려주세요.<br>
+      개선하는 데 큰 도움이 됩니다.
+    </div>
+    
+    <div class="error-row" id="err-step-year">
+      <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-1">
+        <span class="error-group-label">[A/B]</span>
+      </div>
+      <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-2">
+        <span class="error-group-label">[가/나]</span>
+      </div>
+      <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-3">
+        <span class="error-group-label" style="font-size:0.65rem;">[확/미/기]</span>
+      </div>
+      <div class="error-yr-btns" id="yr-group-4">
+        <span class="error-group-label">[통합]</span>
+      </div>
+    </div>
+
+    <div class="error-grid" id="err-step-grid" style="display:none; margin-top:10px;">
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:15px;" id="err-submit-zone">
+      <div id="err-selected-list" style="display:flex; flex-wrap:wrap; gap:6px; flex:1; max-height:80px; overflow-y:auto; padding-right:10px;"></div>
+      <button class="error-submit-btn" id="err-submit-btn" style="width:130px; margin-top:0; flex-shrink:0;" disabled onclick="submitErrorReport()">오류 신고 제출</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 오류 신고 모달 로직 ──────────────────────────────────
+let reportedErrors = new Set();
+let selectedErrProbs = new Set();
+let selectedErrYear = '';
+let selectedErrExam = '';
+
+const yrs1 = [2014,2015,2016];
+const yrs2 = [2017,2018,2019,2020,2021];
+const yrs3 = [2022,2023,2024,2025,2026,2027];
+const yrs4 = [2028];
+
+function getYrWrapHtml(yr) {
+  return `
+    <div class="yr-wrap" data-yr="${yr}">
+      <button class="error-btn yr-btn">${yr}</button>
+      <div class="error-split-btns" style="display:none;">
+        <button class="split-btn exam-btn" data-yr="${yr}" data-exam="6모">6</button>
+        <button class="split-btn exam-btn" data-yr="${yr}" data-exam="9모">9</button>
+        <button class="split-btn exam-btn" data-yr="${yr}" data-exam="수능">수</button>
+      </div>
+    </div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('yr-group-1').insertAdjacentHTML('beforeend', yrs1.map(getYrWrapHtml).join(''));
+  document.getElementById('yr-group-2').insertAdjacentHTML('beforeend', yrs2.map(getYrWrapHtml).join(''));
+  document.getElementById('yr-group-3').insertAdjacentHTML('beforeend', yrs3.map(getYrWrapHtml).join(''));
+  document.getElementById('yr-group-4').insertAdjacentHTML('beforeend', yrs4.map(getYrWrapHtml).join(''));
+
+  document.querySelectorAll('.yr-wrap').forEach(wrap => {
+    const yrBtn = wrap.querySelector('.yr-btn');
+    const splits = wrap.querySelector('.error-split-btns');
+    yrBtn.onclick = () => {
+      document.querySelectorAll('.error-split-btns').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.yr-btn').forEach(el => { el.style.display = 'block'; });
+      
+      yrBtn.style.display = 'none';
+      splits.style.display = 'flex';
+      
+      selectedErrYear = wrap.dataset.yr;
+      selectedErrExam = '';
+      document.getElementById('err-step-grid').style.display = 'none';
+      document.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+    };
+  });
+
+  document.querySelectorAll('.exam-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedErrYear = btn.dataset.yr;
+      selectedErrExam = btn.dataset.exam;
+      renderErrorGrid();
+    };
+  });
+});
+
+async function openErrorReportModal() {
+  document.getElementById('error-report-overlay').style.display = 'flex';
+  try {
+    const res = await fetch('/api/errors');
+    if (res.ok) {
+      const data = await res.json();
+      reportedErrors = new Set(data.errors);
+    }
+  } catch(e) {}
+  resetErrorModalState();
+}
+function closeErrorReportModal() { document.getElementById('error-report-overlay').style.display = 'none'; }
+
+function resetErrorModalState() {
+  selectedErrYear = ''; selectedErrExam = '';
+  document.querySelectorAll('.error-split-btns').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.yr-btn').forEach(el => el.style.display = 'block');
+  document.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('err-step-grid').style.display = 'none';
+  document.getElementById('err-submit-btn').disabled = true;
+  document.getElementById('err-submit-btn').innerText = '오류 신고 제출';
+  selectedErrProbs.clear();
+  renderErrSelectedList();
+}
+
+function renderErrSelectedList() {
+  const container = document.getElementById('err-selected-list');
+  container.innerHTML = '';
+  selectedErrProbs.forEach(pid => {
+    container.innerHTML += `<div class="err-cart-item">${pid} <span class="err-cart-rm" onclick="removeErrProb('${pid}')">×</span></div>`;
+  });
+  const submitBtn = document.getElementById('err-submit-btn');
+  submitBtn.disabled = selectedErrProbs.size === 0;
+}
+function removeErrProb(pid) {
+  selectedErrProbs.delete(pid);
+  renderErrSelectedList();
+  const btn = document.querySelector(`.error-prob-btn[data-pid="${pid}"]`);
+  if (btn) btn.classList.remove('selected');
+}
+
+function renderErrorGrid() {
+  const y = parseInt(selectedErrYear);
+  const gridContainer = document.getElementById('err-step-grid');
+  gridContainer.style.display = 'flex';
+  gridContainer.innerHTML = '';
+  
+  let html = '';
+  
+  const createBlock = (label, prefixForPid, rows) => {
+    let h = `<div style="display:flex; align-items:flex-start; margin-bottom:4px; gap:8px;">`;
+    if (label) h += `<span style="font-size:0.75rem; color:var(--cyan); font-weight:700; width:35px; flex-shrink:0; padding-top:6px;">${label}</span>`;
+    
+    h += `<div style="display:flex; flex-direction:column; gap:6px; flex:1;">`;
+    for(let r of rows) {
+      h += `<div class="error-grid-row">`;
+      for(let i=r.start; i<=r.end; i++) {
+        const numStr = i < 10 ? '0'+i : ''+i;
+        
+        let qExam = selectedErrExam === '수능' ? '수능' : '.' + selectedErrExam;
+        let pid = `${selectedErrYear}${qExam}${prefixForPid}_${numStr}`;
+        if (y >= 2028) pid = `${selectedErrYear}${qExam}_${numStr}`;
+        else if (y >= 2022) {
+          if (prefixForPid === '') pid = `${selectedErrYear}${qExam}_${numStr}`;
+          else pid = `${selectedErrYear}${qExam}${prefixForPid}_${numStr}`;
+        }
+
+        const isRep = reportedErrors.has(pid);
+        const isSel = selectedErrProbs.has(pid);
+        h += `<button class="error-prob-btn ${isSel ? 'selected' : ''}" data-pid="${pid}" ${isRep ? 'disabled title="이미 접수됨"' : ''}>${numStr}</button>`;
+      }
+      h += `</div>`;
+    }
+    h += `</div></div>`;
+    return h;
+  };
+
+  if (y >= 2014 && y <= 2016) {
+    html += createBlock('A형', 'A', [{start:1,end:13}, {start:14,end:21}, {start:22,end:25}, {start:26,end:30}]);
+    html += createBlock('B형', 'B', [{start:1,end:13}, {start:14,end:21}, {start:22,end:25}, {start:26,end:30}]);
+  } else if (y >= 2017 && y <= 2021) {
+    html += createBlock('가형', '가', [{start:1,end:13}, {start:14,end:21}, {start:22,end:25}, {start:26,end:30}]);
+    html += createBlock('나형', '나', [{start:1,end:13}, {start:14,end:21}, {start:22,end:25}, {start:26,end:30}]);
+  } else if (y >= 2022 && y <= 2027) {
+    html += createBlock('공통', '', [{start:1,end:8}, {start:9,end:15}, {start:16,end:19}, {start:20,end:22}]);
+    html += createBlock('확통', '확', [{start:23,end:30}]);
+    html += createBlock('미적', '미', [{start:23,end:30}]);
+    html += createBlock('기하', '기', [{start:23,end:30}]);
+  } else if (y >= 2028) {
+    html += createBlock('통합', '', [{start:1,end:13}, {start:14,end:21}, {start:22,end:25}, {start:26,end:30}]);
+  }
+
+  gridContainer.innerHTML = html;
+
+  gridContainer.querySelectorAll('.error-prob-btn').forEach(btn => {
+    btn.onclick = () => {
+      const pid = btn.dataset.pid;
+      if (selectedErrProbs.has(pid)) {
+        selectedErrProbs.delete(pid);
+        btn.classList.remove('selected');
+      } else {
+        selectedErrProbs.add(pid);
+        btn.classList.add('selected');
+      }
+      renderErrSelectedList();
+    };
+  });
+}
+
+async function submitErrorReport() {
+  if(selectedErrProbs.size === 0) return;
+  const btn = document.getElementById('err-submit-btn');
+  btn.disabled = true;
+  btn.innerText = '처리 중...';
+
+  try {
+    const res = await fetch('/api/errors', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ problem_ids: Array.from(selectedErrProbs) })
+    });
+    if(res.ok) {
+      selectedErrProbs.forEach(pid => reportedErrors.add(pid));
+      alert('오류 신고가 성공적으로 접수되었습니다. 신고해주셔서 감사합니다!');
+      closeErrorReportModal();
+    } else {
+      alert('오류 신고 접수에 실패했습니다. (서버 오류)');
+      btn.disabled = false;
+      btn.innerText = '오류 신고 제출';
+    }
+  } catch(e) {
+    alert('제출 중 네트워크 오류가 발생했습니다.');
+    btn.disabled = false;
+    btn.innerText = '오류 신고 제출';
+  }
+}
+</script>
+</body>
+</html>

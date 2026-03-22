@@ -23,6 +23,11 @@
                 <div class="brand-subtitle" style="margin-top: 5px;">Linking Yields & Nodes of eXams</div>
             </div>
 
+            <div id="auth-app-section" style="position: fixed; right: 1.5rem; top: 1.2rem; display: flex; align-items: center; gap: 0.8rem; z-index: 9999;">
+                <button onclick="openAuthModal('login')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; backdrop-filter: blur(4px);">로그인</button>
+                <button onclick="openAuthModal('register')" style="background: var(--accent-cyan); border: none; color: #030712; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 700; box-shadow: 0 4px 12px rgba(6,182,212,0.3);">회원가입</button>
+            </div>
+
             <!-- Search Mode Selector -->
             <div class="search-mode-pills">
                 <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
@@ -419,6 +424,10 @@
             <input type="hidden" id="answer-display-opt" value="none">
             <input type="hidden" id="explanation-display-opt" value="none">
             <div class="print-header-controls">
+                <div class="print-header-pill-group">
+                    <button id="edit-title-btn" class="print-pill" onclick="enableTitleEditing()" style="padding: 4px 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">타이틀 수정</button>
+                </div>
+                <div class="print-header-pill-divider"></div>
                 <div class="print-header-pill-group">
                     <span class="print-header-pill-label">정답 표기</span>
                     <div class="print-header-pills">

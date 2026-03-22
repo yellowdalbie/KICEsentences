@@ -1,47 +1,218 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KICE LYNX Admin</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #101010;
-      color: #e2e8f0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KICE Lynx — 관리자</title>
+<style>
+:root {
+  --bg: #070b14; --bg-card: rgba(255,255,255,0.05); --bg-card2: rgba(255,255,255,0.08);
+  --cyan: #06b6d4; --magenta: #d946ef; --green: #22c55e;
+  --text: #f8fafc; --muted: #94a3b8; --border: rgba(255,255,255,0.10);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); padding:2rem; font-size:0.88rem; }
+h1  { font-size:1.3rem; font-weight:700; margin-bottom:2rem; color:var(--cyan); }
+h2  { font-size:1rem; font-weight:600; margin:2rem 0 1rem; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; }
 
-    .msg {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      color: #a3a3a3;
-    }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:1rem; margin-bottom:2rem; }
+.stat-card {
+  background:var(--bg-card2); border:1px solid var(--border); border-radius:12px;
+  padding:1.2rem 1.4rem;
+}
+.stat-label { font-size:0.72rem; color:var(--muted); margin-bottom:0.4rem; }
+.stat-val   { font-size:1.8rem; font-weight:700; line-height:1; }
+.stat-val.cyan    { color:var(--cyan); }
+.stat-val.magenta { color:var(--magenta); }
+.stat-val.green   { color:var(--green); }
 
-    .btn {
-      padding: 0.8rem 1.5rem;
-      background: transparent;
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-    }
+table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+th { text-align:left; padding:0.5rem 0.8rem; color:var(--muted); border-bottom:1px solid var(--border); font-weight:600; }
+td { padding:0.5rem 0.8rem; border-bottom:1px solid rgba(255,255,255,0.04); }
+tr:hover td { background:rgba(255,255,255,0.03); }
 
-    .btn:hover {
-      background: rgba(56, 189, 248, 0.1);
-    }
-  </style>
+.badge {
+  display:inline-block; padding:0.15rem 0.5rem; border-radius:4px;
+  font-size:0.7rem; font-weight:600;
+}
+.badge-mac { background:rgba(6,182,212,0.15); color:var(--cyan); }
+.badge-win { background:rgba(99,102,241,0.15); color:#818cf8; }
+
+.section-box { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto; }
+
+.email-list { display:flex; flex-direction:column; gap:0.3rem; }
+.email-row  { display:flex; gap:1rem; align-items:center; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.email-addr { color:var(--cyan); }
+.email-meta { font-size:0.75rem; color:var(--muted); }
+
+.copy-btn {
+  margin-top:0.8rem; background:rgba(255,255,255,0.08); border:1px solid var(--border);
+  color:var(--text); padding:0.4rem 0.9rem; border-radius:6px; cursor:pointer;
+  font-size:0.78rem; font-family:var(--font);
+}
+.copy-btn:hover { background:rgba(255,255,255,0.12); }
+</style>
 </head>
-
 <body>
-  <div class="msg">제보 관리 기능이 폐기되었습니다. (KICE LYNX V2 디자인 개편)</div>
-  <a href="/" class="btn">대시보드로 돌아가기</a>
-</body>
+<h1>KICE Lynx 관리자 대시보드</h1>
 
+<!-- 핵심 지표 -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">누적 방문</div>
+    <div class="stat-val cyan">{{ stats.total_visits }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">순방문자</div>
+    <div class="stat-val cyan">{{ stats.unique_visitors }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">오늘 방문</div>
+    <div class="stat-val">{{ stats.today_visits }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">오늘 순방문</div>
+    <div class="stat-val">{{ stats.today_unique }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">재방문자</div>
+    <div class="stat-val">{{ stats.return_visitors }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">누적 다운로드</div>
+    <div class="stat-val magenta">{{ stats.total_downloads }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">오늘 다운로드</div>
+    <div class="stat-val magenta">{{ stats.today_downloads }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Mac 다운로드</div>
+    <div class="stat-val cyan">{{ stats.mac_downloads }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Windows 다운로드</div>
+    <div class="stat-val">{{ stats.win_downloads }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">이메일 구독자</div>
+    <div class="stat-val green">{{ stats.subscribers }}</div>
+  </div>
+</div>
+
+<!-- 접수된 오류 신고 -->
+<h2>접수된 오류 신고 ({{ errors|length }}건)</h2>
+<div class="section-box">
+  <div class="error-list" style="display:flex; flex-wrap:wrap; gap:10px;">
+    {% for err in errors %}
+    <div class="error-item" id="err-{{ err.problem_id }}" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:6px 12px; display:flex; align-items:center; gap:8px;">
+      <span style="font-family:var(--font); color:var(--cyan); font-weight:600; font-size:0.85rem;">{{ err.problem_id }}</span>
+      <span style="font-size:0.7rem; color:var(--muted)">{{ err.created_at.split(' ')[0] }}</span>
+      <button onclick="deleteError('{{ err.problem_id }}')" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; margin-left:6px; line-height:1;" title="해제 및 삭제">×</button>
+    </div>
+    {% else %}
+    <span style="color:var(--muted); font-size:0.8rem;">현재 접수된 오류가 없습니다.</span>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- 일별 방문 -->
+<h2>일별 방문·다운로드 (최근 14일)</h2>
+<div class="section-box">
+  <table>
+    <thead><tr><th>날짜</th><th>방문</th><th>순방문</th><th>Mac DL</th><th>Win DL</th></tr></thead>
+    <tbody>
+    {% set dl_map = {} %}
+    {% for row in daily_dl %}
+      {% if row.day not in dl_map %}{% set _ = dl_map.update({row.day: {'mac-arm64':0,'windows':0}}) %}{% endif %}
+      {% set _ = dl_map[row.day].update({row.platform: row.cnt}) %}
+    {% endfor %}
+    {% for row in daily_stats %}
+    <tr>
+      <td>{{ row.day }}</td>
+      <td>{{ row.visits }}</td>
+      <td>{{ row.uniq }}</td>
+      <td>{{ dl_map.get(row.day, {}).get('mac-arm64', 0) }}</td>
+      <td>{{ dl_map.get(row.day, {}).get('windows', 0) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- 국가별 방문 -->
+<h2>국가별 방문자 (상위 15)</h2>
+<div class="section-box">
+  <table>
+    <thead><tr><th>국가</th><th>방문 수</th></tr></thead>
+    <tbody>
+    {% for row in country_stats %}
+    <tr><td>{{ row.country }}</td><td>{{ row.cnt }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- 최근 다운로드 -->
+<h2>최근 다운로드 (30건)</h2>
+<div class="section-box">
+  <table>
+    <thead><tr><th>플랫폼</th><th>국가</th><th>도시</th><th>브라우저/OS</th><th>시각</th></tr></thead>
+    <tbody>
+    {% for row in recent_dl %}
+    <tr>
+      <td>
+        {% if row.platform == 'mac-arm64' %}
+          <span class="badge badge-mac">Mac ARM64</span>
+        {% else %}
+          <span class="badge badge-win">Windows</span>
+        {% endif %}
+      </td>
+      <td>{{ row.country }}</td>
+      <td>{{ row.city }}</td>
+      <td style="color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.user_agent }}</td>
+      <td style="color:var(--muted)">{{ row.created_at }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- 구독 이메일 -->
+<h2>이메일 구독자 ({{ stats.subscribers }}명)</h2>
+<div class="section-box">
+  <div class="email-list" id="email-list">
+  {% for row in emails %}
+    <div class="email-row">
+      <span class="email-addr">{{ row.email }}</span>
+      <span class="email-meta">{{ row.country }} · {{ row.created_at }}</span>
+    </div>
+  {% endfor %}
+  </div>
+  <button class="copy-btn" onclick="copyEmails()">이메일 목록 복사</button>
+</div>
+
+<script>
+async function deleteError(problem_id) {
+  if (!confirm(problem_id + " 오류 신고를 해제(삭제)하시겠습니까?")) return;
+  const key = new URLSearchParams(window.location.search).get('key');
+  const res = await fetch('/api/errors/delete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ key, problem_id })
+  });
+  if (res.ok) {
+      document.getElementById('err-' + problem_id).remove();
+  } else {
+      alert("삭제 권한이 없거나 실패했습니다.");
+  }
+}
+
+function copyEmails() {
+  const list = [{% for row in emails %}'{{ row.email }}',{% endfor %}];
+  navigator.clipboard.writeText(list.join('\n')).then(() => alert('복사됨: ' + list.length + '개'));
+}
+</script>
+</body>
 </html>

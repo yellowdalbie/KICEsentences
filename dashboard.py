@@ -9,11 +9,27 @@ import bleach as bleach_module
 import markdown as markdown_module
 import html as html_module
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request, send_from_directory, send_file
+from flask import Flask, render_template, jsonify, request, send_from_directory, send_file, session
 from sklearn.metrics.pairwise import cosine_similarity
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+from routes_landing import landing_bp
+app.register_blueprint(landing_bp)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# .env 로드
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_path):
+    with open(env_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            if '=' in line and not line.strip().startswith('#'):
+                k, v = line.strip().split('=', 1)
+                os.environ[k] = v
+
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
+
 DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
 THUMBNAIL_DIR = os.path.join(BASE_DIR, 'static', 'thumbnails')
 VECTORS_FILE = os.path.join(BASE_DIR, 'kice_step_vectors.npz')
@@ -118,6 +134,102 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+# ── Authentication API ─────────────────────────────────────────
+
+@app.route('/api/auth/register', methods=['POST'])
+def auth_register():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email', '').strip().lower()
+    pw = data.get('password', '')
+    if not email or not pw:
+        return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
+    if '@' not in email or '.' not in email:
+        return jsonify({'error': '유효한 이메일 형식이 아닙니다.'}), 400
+    if len(pw) < 6:
+        return jsonify({'error': '비밀번호는 최소 6자리 이상이어야 합니다.'}), 400
+        
+    conn = get_db_connection()
+    user = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()
+    if user:
+        conn.close()
+        return jsonify({'error': '이미 가입된 이메일 계정입니다.'}), 400
+        
+    hashed_pw = generate_password_hash(pw)
+    conn.execute('INSERT INTO users (email, password_hash, is_paid) VALUES (?, ?, ?)', (email, hashed_pw, 0))
+    conn.commit()
+    
+    # 바로 로그인 처리
+    user_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
+    conn.close()
+    
+    session['user_id'] = user_id
+    session['email'] = email
+    session['is_paid'] = 0
+    session.permanent = True
+    
+    return jsonify({'status': 'ok'}), 200
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email', '').strip().lower()
+    pw = data.get('password', '')
+    if not email or not pw:
+        return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
+        
+    conn = get_db_connection()
+    user = conn.execute('SELECT id, email, password_hash, is_paid FROM users WHERE email=?', (email,)).fetchone()
+    conn.close()
+    
+    if not user or not check_password_hash(user['password_hash'], pw):
+        return jsonify({'error': '이메일 또는 비밀번호가 일치하지 않습니다.'}), 401
+        
+    session['user_id'] = user['id']
+    session['email'] = user['email']
+    session['is_paid'] = user['is_paid']
+    session.permanent = True
+    
+    return jsonify({'status': 'ok', 'email': user['email'], 'is_paid': bool(user['is_paid'])}), 200
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    session.clear()
+    return jsonify({'status': 'ok'}), 200
+
+@app.route('/api/auth/change_password', methods=['POST'])
+def auth_change_password():
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인이 필요합니다.'}), 401
+    data = request.get_json() or {}
+    new_password = data.get('new_password', '').strip()
+    if len(new_password) < 6:
+        return jsonify({'error': '비밀번호는 6자리 이상이어야 합니다.'}), 400
+    hashed = generate_password_hash(new_password)
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET password_hash=? WHERE id=?', (hashed, session['user_id']))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok'}), 200
+
+@app.route('/api/auth/me', methods=['GET'])
+def auth_me():
+    if 'user_id' in session:
+        # DB에서 최신 is_paid 상태 조회 
+        conn = get_db_connection()
+        user = conn.execute('SELECT is_paid FROM users WHERE id=?', (session['user_id'],)).fetchone()
+        conn.close()
+        if user:
+            session['is_paid'] = user['is_paid']  # 세션 캐시 갱신
+            return jsonify({
+                'isLoggedIn': True,
+                'email': session['email'],
+                'isPaid': bool(user['is_paid'])
+            }), 200
+            
+    return jsonify({'isLoggedIn': False, 'isPaid': False}), 200
+
+# ─────────────────────────────────────────────────────────────
+
 @app.route('/ping')
 def ping():
     return 'ok', 200
@@ -134,8 +246,8 @@ def shutdown():
     threading.Thread(target=_stop, daemon=True).start()
     return jsonify({'status': 'shutting down'})
 
-@app.route('/')
-def index():
+@app.route('/app')
+def app_index():
     return render_template('index.html', offline_mode=OFFLINE_MODE)
 
 @app.route('/pdf/<path:filename>')

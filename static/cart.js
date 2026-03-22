@@ -246,6 +246,8 @@ cartPreviewBtn.addEventListener('click', () => {
         return;
     }
 
+    if (!checkAuthForPreview()) return;
+
     openPrintPreview();
 });
 
@@ -253,6 +255,10 @@ async function openPrintPreview() {
     printModalBody.innerHTML = '<div style="display:flex; justify-content:center; padding:3rem;"><div class="loader">이미지 및 정답을 불러오는 중...</div></div>';
     printModal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    // Hide auth buttons to avoid overlap with print preview
+    const authSection = document.getElementById('auth-app-section');
+    if (authSection) authSection.style.display = 'none';
 
     // Slide down the cart to avoid overlapping
     problemCart.classList.remove('open');
@@ -582,7 +588,7 @@ async function renderPreviewPages() {
             pageDiv.innerHTML += `
                 <div class="csat-header-page1">
                     <div class="h1-top">
-                        <span class="exam-title" contenteditable="true">2028학년도 대학수학능력시험 대비 문제지</span>
+                        <span class="exam-title" contenteditable="false">2028학년도 대학수학능력시험 대비 문제지</span>
                     </div>
                     <div class="h1-main-wrapper" style="position:relative; margin-bottom: 10px;">
                         <span class="exam-period">제 2 교시</span>
@@ -945,7 +951,7 @@ async function buildExplanationPages(expItems, problemPageCount) {
             pageDiv.innerHTML = `
                 <div class="csat-header-page1">
                     <div class="h1-top">
-                        <span class="exam-title" contenteditable="true">2028학년도 대학수학능력시험 대비 해설지</span>
+                        <span class="exam-title" contenteditable="false">2028학년도 대학수학능력시험 대비 해설지</span>
                     </div>
                     <div class="h1-main-wrapper" style="position:relative; margin-bottom:10px;">
                         <span class="exam-period">제 2 교시</span>
@@ -1018,9 +1024,15 @@ function loadAndMeasureImage(src) {
 
 function setPrintPill(btn) {
     const target = btn.dataset.target;
+    const val = btn.dataset.value;
+
+    if (target === 'explanation-display-opt' && val === 'separate') {
+        if (!checkPaidForBeta("해설 작성")) return;
+    }
+
     document.querySelectorAll(`.print-pill[data-target="${target}"]`).forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById(target).value = btn.dataset.value;
+    document.getElementById(target).value = val;
     openPrintPreview();
 }
 
@@ -1028,17 +1040,25 @@ function closePrintPreview() {
     printModal.style.display = 'none';
     document.body.style.overflow = ''; // Restore background scrolling
     printModalBody.innerHTML = ''; // clear memory
+
+    // Restore auth buttons
+    const authSection = document.getElementById('auth-app-section');
+    if (authSection) authSection.style.display = '';
+
     // 모듈 변수 초기화
     _previewLoadedItems = [];
     _selectedSidebarIdx = null;
 }
 
 // Custom Alert Functions
-function showCustomAlert(message) {
+let _customAlertCallback = null;
+
+function showCustomAlert(message, onConfirm) {
     const modal = document.getElementById('custom-alert-modal');
     const msgEl = document.getElementById('custom-alert-message');
     if (!modal || !msgEl) return;
 
+    _customAlertCallback = onConfirm || null;
     msgEl.innerText = message;
     modal.style.display = 'flex';
 
@@ -1055,7 +1075,11 @@ function closeCustomAlert() {
     modal.classList.remove('show');
     setTimeout(() => {
         modal.style.display = 'none';
-    }, 300); // Wait for transition
+        if (typeof _customAlertCallback === 'function') {
+            _customAlertCallback();
+            _customAlertCallback = null;
+        }
+    }, 300);
 }
 
 // Global exposure for index.html calls
@@ -1064,3 +1088,362 @@ window.closeCustomAlert = closeCustomAlert;
 
 // Initial UI setup
 updateCartUI();
+
+// --- Auth & Paywall Logic (Real Backend Integration) ---
+window.AUTH_STATE = { isLoggedIn: false, email: '', isPaid: false };
+
+const AUTH_MODAL_HTML = `
+<div id="auth-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="max-width: 380px; padding: 2.5rem 2.5rem 2rem;">
+
+    <!-- Close Button -->
+    <button class="modal-close" onclick="closeAuthModal()" style="font-size: 1.4rem;">&times;</button>
+
+    <!-- Icon + Title -->
+    <div style="text-align: center; margin-bottom: 1.8rem;">
+      <div style="width: 48px; height: 48px; background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+      <h3 id="auth-modal-title" style="margin: 0; font-size: 1.3rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.01em;">\ub85c\uadf8\uc778</h3>
+      <p style="margin: 0.4rem 0 0; font-size: 0.82rem; color: #64748b;">미리보기/인쇄 기능을 이용하려면 로그인이 필요합니다</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="auth-error-msg" style="display: none; color: #f87171; font-size: 0.82rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.2rem;"></div>
+
+    <!-- Email Field -->
+    <div style="margin-bottom: 1rem;">
+      <label style="display: block; margin-bottom: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase;">이메일</label>
+      <input type="email" id="auth-email"
+        style="width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.92rem; color: #f1f5f9; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"
+        placeholder="you@example.com"
+        onfocus="this.style.borderColor='rgba(6,182,212,0.5)';this.style.boxShadow='0 0 0 3px rgba(6,182,212,0.08)'"
+        onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'"
+      >
+    </div>
+
+    <!-- Password Field -->
+    <div style="margin-bottom: 1.6rem;">
+      <label style="display: block; margin-bottom: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase;">비밀번호</label>
+      <input type="password" id="auth-password"
+        style="width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.92rem; color: #f1f5f9; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"
+        placeholder="6자리 이상"
+        onfocus="this.style.borderColor='rgba(6,182,212,0.5)';this.style.boxShadow='0 0 0 3px rgba(6,182,212,0.08)'"
+        onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'"
+      >
+    </div>
+
+    <!-- Submit Button -->
+    <button id="auth-submit-btn" onclick="submitAuth()"
+      style="width: 100%; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.95rem; font-weight: 700; color: #030712; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(6,182,212,0.3); margin-bottom: 1.2rem;"
+      onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(6,182,212,0.45)'"
+      onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(6,182,212,0.3)'"
+    >\ub85c\uadf8\uc778</button>
+
+    <!-- Toggle Mode -->
+    <div style="text-align: center; font-size: 0.85rem; color: #64748b;">
+      <span id="auth-toggle-text">\uacc4\uc815\uc774 \uc5c6\uc73c\uc2e0\uac00\uc694?</span>
+      <a href="javascript:void(0)" onclick="toggleAuthMode()" id="auth-toggle-link"
+        style="color: #06b6d4; margin-left: 6px; font-weight: 700; text-decoration: none; transition: color 0.2s;"
+        onmouseover="this.style.color='#67e8f9'"
+        onmouseout="this.style.color='#06b6d4'"
+      >\ud68c\uc6d0\uac00\uc785</a>
+    </div>
+  </div>
+</div>
+`;
+
+let authMode = 'login';
+
+function injectAuthModal() {
+    if (!document.getElementById('auth-modal')) {
+        document.body.insertAdjacentHTML('beforeend', AUTH_MODAL_HTML);
+        
+        // Enter key support
+        document.getElementById('auth-password').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') submitAuth();
+        });
+    }
+}
+
+window.openAuthModal = function(mode = 'login') {
+    authMode = mode;
+    injectAuthModal();
+    document.getElementById('auth-error-msg').style.display = 'none';
+    document.getElementById('auth-email').value = '';
+    document.getElementById('auth-password').value = '';
+    
+    if (mode === 'login') {
+        document.getElementById('auth-modal-title').innerText = '로그인';
+        document.getElementById('auth-submit-btn').innerText = '로그인';
+        document.getElementById('auth-toggle-text').innerText = '계정이 없으신가요?';
+        document.getElementById('auth-toggle-link').innerText = '회원가입';
+    } else {
+        document.getElementById('auth-modal-title').innerText = '회원가입';
+        document.getElementById('auth-submit-btn').innerText = '가입하기';
+        document.getElementById('auth-toggle-text').innerText = '이미 계정이 있으신가요?';
+        document.getElementById('auth-toggle-link').innerText = '로그인';
+    }
+    
+    const modal = document.getElementById('auth-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+};
+
+window.closeAuthModal = function() {
+    const modal = document.getElementById('auth-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+};
+
+window.toggleAuthMode = function() {
+    openAuthModal(authMode === 'login' ? 'register' : 'login');
+};
+
+async function submitAuth() {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    const errorMsg = document.getElementById('auth-error-msg');
+    
+    errorMsg.style.display = 'none';
+    
+    if (!email || !password) {
+        errorMsg.innerText = '이메일과 비밀번호를 입력해주세요.';
+        errorMsg.style.display = 'block';
+        return;
+    }
+    
+    const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+    
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        
+        if (!res.ok) {
+            errorMsg.innerText = data.error || '오류가 발생했습니다.';
+            errorMsg.style.display = 'block';
+        } else {
+            closeAuthModal();
+            await initAuth(); // Refresh session state
+            showCustomAlert(authMode === 'login' ? '로그인되었습니다.' : '가입이 완료되었습니다.');
+        }
+    } catch (e) {
+        errorMsg.innerText = '서버 통신 실패';
+        errorMsg.style.display = 'block';
+    }
+}
+
+window.logout = async function() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        await initAuth();
+        showCustomAlert('로그아웃되었습니다.');
+    } catch (e) {
+        console.error(e);
+    }
+};
+
+async function initAuth() {
+    try {
+        const res = await fetch('/api/auth/me');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        window.AUTH_STATE = {
+            isLoggedIn: data.isLoggedIn || false,
+            email: data.email || '',
+            isPaid: data.isPaid || false
+        };
+    } catch (e) {
+        console.error('Auth state fetch failed:', e);
+        window.AUTH_STATE = { isLoggedIn: false, email: '', isPaid: false };
+    }
+    updateAuthNavUI();
+}
+
+function updateAuthNavUI() {
+    const appSection = document.getElementById('auth-app-section');
+    if (!appSection) return;
+    
+    // Clear existing contents
+    appSection.innerHTML = '';
+    
+    if (window.AUTH_STATE.isLoggedIn) {
+        const username = (window.AUTH_STATE.email || '').split('@')[0];
+        
+        const emailSpan = document.createElement('span');
+        emailSpan.textContent = username;
+        emailSpan.title = '\ube44\ubc00\ubc88\ud638 \ubcc0\uacbd';
+        emailSpan.style.cssText = 'color: var(--text-muted); font-size: 0.76rem; font-weight: 500; cursor: pointer; text-decoration-line: underline; text-underline-offset: 3px; text-decoration-style: dotted; transition: color 0.2s;';
+        emailSpan.addEventListener('mouseenter', () => emailSpan.style.color = 'var(--accent-cyan)');
+        emailSpan.addEventListener('mouseleave', () => emailSpan.style.color = '');
+        emailSpan.addEventListener('click', () => window.openChangePasswordModal());
+        
+        const logoutBtn = document.createElement('button');
+        logoutBtn.textContent = '\ub85c\uadf8\uc544\uc6c3';
+        logoutBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.4rem 0.7rem; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(4px);';
+        logoutBtn.addEventListener('click', () => window.logout());
+        
+        appSection.appendChild(emailSpan);
+        appSection.appendChild(logoutBtn);
+    } else {
+        const loginBtn = document.createElement('button');
+        loginBtn.textContent = '\ub85c\uadf8\uc778';
+        loginBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; backdrop-filter: blur(4px);';
+        loginBtn.addEventListener('click', () => window.openAuthModal('login'));
+        
+        const registerBtn = document.createElement('button');
+        registerBtn.textContent = '\ud68c\uc6d0\uac00\uc785';
+        registerBtn.style.cssText = 'background: var(--accent-cyan); border: none; color: #030712; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 700; box-shadow: 0 4px 12px rgba(6,182,212,0.3);';
+        registerBtn.addEventListener('click', () => window.openAuthModal('register'));
+        
+        appSection.appendChild(loginBtn);
+        appSection.appendChild(registerBtn);
+    }
+}
+
+function runAuthInit() {
+    injectAuthModal();
+    initAuth();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runAuthInit);
+} else {
+    runAuthInit();
+}
+
+// ── Change Password Modal ─────────────────────────────────────
+const CHANGE_PW_MODAL_HTML = `
+<div id="change-pw-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="max-width: 360px; padding: 2.2rem 2.2rem 1.8rem;">
+    <button class="modal-close" onclick="closeChangePasswordModal()" style="font-size: 1.4rem;">&times;</button>
+    <div style="text-align: center; margin-bottom: 1.6rem;">
+      <div style="width: 44px; height: 44px; background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.9rem;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #f1f5f9;">\ube44\ubc00\ubc88\ud638 \ubcc0\uacbd</h3>
+    </div>
+    <div id="change-pw-error" style="display: none; color: #f87171; font-size: 0.82rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem;"></div>
+    <div style="margin-bottom: 1rem;">
+      <label style="display: block; margin-bottom: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase;">\uc0c8 \ube44\ubc00\ubc88\ud638</label>
+      <input type="password" id="change-pw-new"
+        style="width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.92rem; color: #f1f5f9; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"
+        placeholder="6\uc790\ub9ac \uc774\uc0c1"
+        onfocus="this.style.borderColor='rgba(6,182,212,0.5)';this.style.boxShadow='0 0 0 3px rgba(6,182,212,0.08)'"
+        onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
+    </div>
+    <div style="margin-bottom: 1.6rem;">
+      <label style="display: block; margin-bottom: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase;">\uc0c8 \ube44\ubc00\ubc88\ud638 \ud655\uc778</label>
+      <input type="password" id="change-pw-confirm"
+        style="width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.92rem; color: #f1f5f9; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"
+        placeholder="\ube44\ubc00\ubc88\ud638 \ub2e4\uc2dc \uc785\ub825"
+        onfocus="this.style.borderColor='rgba(6,182,212,0.5)';this.style.boxShadow='0 0 0 3px rgba(6,182,212,0.08)'"
+        onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
+    </div>
+    <button onclick="submitChangePassword()"
+      style="width: 100%; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.95rem; font-weight: 700; color: #030712; cursor: pointer; box-shadow: 0 4px 16px rgba(6,182,212,0.3);"
+      onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(6,182,212,0.45)'"
+      onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(6,182,212,0.3)'"
+    >\ub514\ubc14\ubc00\ubc88\ud638 \ubcc0\uacbd</button>
+  </div>
+</div>
+`;
+
+window.openChangePasswordModal = function() {
+    if (!document.getElementById('change-pw-modal')) {
+        document.body.insertAdjacentHTML('beforeend', CHANGE_PW_MODAL_HTML);
+        document.getElementById('change-pw-confirm').addEventListener('keyup', e => {
+            if (e.key === 'Enter') submitChangePassword();
+        });
+    }
+    document.getElementById('change-pw-new').value = '';
+    document.getElementById('change-pw-confirm').value = '';
+    document.getElementById('change-pw-error').style.display = 'none';
+    const modal = document.getElementById('change-pw-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+};
+
+window.closeChangePasswordModal = function() {
+    const modal = document.getElementById('change-pw-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+};
+
+window.submitChangePassword = async function() {
+    const newPw = document.getElementById('change-pw-new').value;
+    const confirmPw = document.getElementById('change-pw-confirm').value;
+    const errorEl = document.getElementById('change-pw-error');
+    errorEl.style.display = 'none';
+
+    if (!newPw || newPw.length < 6) {
+        errorEl.textContent = '\ube44\ubc00\ubc88\ud638\ub294 6\uc790\ub9ac \uc774\uc0c1\uc774\uc5b4\uc57c \ud569\ub2c8\ub2e4.';
+        errorEl.style.display = 'block';
+        return;
+    }
+    if (newPw !== confirmPw) {
+        errorEl.textContent = '\ube44\ubc00\ubc88\ud638\uac00 \uc77c\uce58\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/auth/change_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ new_password: newPw })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.textContent = data.error || '\uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.';
+            errorEl.style.display = 'block';
+        } else {
+            closeChangePasswordModal();
+            showCustomAlert('\ube44\ubc00\ubc88\ud638\uac00 \ubcc0\uacbd\ub418\uc5c8\uc2b5\ub2c8\ub2e4.');
+        }
+    } catch (e) {
+        errorEl.textContent = '\uc11c\ubc84 \ud1b5\uc2e0 \uc2e4\ud328';
+        errorEl.style.display = 'block';
+    }
+};
+
+
+window.checkAuthForPreview = function() {
+    if (!window.AUTH_STATE.isLoggedIn) {
+        showCustomAlert(
+            '해당 기능을 이용하시려면 로그인이 필요합니다.\n\n(로그인/가입 후 무료 이용 가능)',
+            () => openAuthModal('login')
+        );
+        return false;
+    }
+    return true;
+};
+
+window.checkPaidForBeta = function(featureName) {
+    if (!window.AUTH_STATE.isLoggedIn) {
+        showCustomAlert(
+            '해당 기능을 이용하시려면 로그인이 필요합니다.\n\n(로그인/가입 후 이용 가능)',
+            () => openAuthModal('login')
+        );
+        return false;
+    }
+    if (!window.AUTH_STATE.isPaid) {
+        showCustomAlert(`[베타 안내]\n'${featureName}' 기능은 정식 유료회원 전용입니다만,\n베타 기간 동안 무료로 제한 없이 제공합니다.\n\n※ 조만간 정식 유료화가 적용될 예정입니다.`);
+        return true;
+    }
+    return true;
+};
+
+window.enableTitleEditing = function() {
+    if (!window.checkPaidForBeta("타이틀 수정")) return;
+    const titles = document.querySelectorAll('.exam-title');
+    titles.forEach(t => {
+        t.contentEditable = "true";
+        t.style.color = "gray";
+    });
+    if (titles.length > 0) titles[0].focus();
+};
