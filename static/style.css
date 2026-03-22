@@ -301,18 +301,16 @@ body {
     color: var(--text-muted);
     padding: 0 0.5rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    gap: 1rem;
+    gap: 0.8rem;
     margin-top: 0.5rem;
 }
 
 .search-helper-text span {
-    flex: 1;
-    text-align: center;
+    flex: 0 1 auto;
+    text-align: left;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .tip-toggle-btn {
@@ -2263,6 +2261,7 @@ body {
 .error-group-label { width: 70px; font-size: 0.75rem; color: #64748b; font-weight: 600; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px;}
 
 .nav-report-btn {
+  margin-left: auto;
   font-size: 0.82rem; font-weight: 600; font-family: var(--font-sans);
   color: var(--text-main); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
   padding: 0.45rem 1.1rem; border-radius: 8px; cursor: pointer;
