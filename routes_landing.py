@@ -312,6 +312,25 @@ def admin():
             search_rows = main_conn.execute('SELECT search_type, COUNT(*) as cnt FROM search_stats GROUP BY search_type').fetchall()
             stats['search_totals'] = { r['search_type']: r['cnt'] for r in search_rows }
             
+            # Top 검색어 (개념유사도, 기출표현, 문항번호)
+            stats['top_searches'] = main_conn.execute('''
+                SELECT search_type, query_text, COUNT(*) as cnt
+                FROM search_stats
+                WHERE search_type IN ('개념유사도', '기출표현', '문항번호') AND query_text IS NOT NULL AND query_text != ""
+                GROUP BY search_type, query_text
+                ORDER BY cnt DESC LIMIT 20
+            ''').fetchall()
+            
+            # Top 성취기준
+            stats['top_units'] = main_conn.execute('''
+                SELECT s.query_text as concept_id, c.standard_name, COUNT(*) as cnt
+                FROM search_stats s
+                LEFT JOIN concepts c ON s.query_text = c.id
+                WHERE s.search_type = '성취기준' AND s.query_text IS NOT NULL
+                GROUP BY s.query_text
+                ORDER BY cnt DESC LIMIT 10
+            ''').fetchall()
+            
             main_conn.close()
         except Exception as e:
             print(f"[Admin] Error fetching data from main DB: {e}")
