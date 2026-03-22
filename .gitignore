@@ -14,9 +14,6 @@ admin.key
 *.sqlite
 !kice_database.sqlite
 
-# Large binary vector/model files (build locally with build_vectors.py)
-*.npz
-
 # Backup files
 *_backup.sqlite
 
