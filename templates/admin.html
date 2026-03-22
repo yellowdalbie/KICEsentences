@@ -154,26 +154,21 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   </table>
 </div>
 
-<!-- 최근 다운로드 -->
-<h2>최근 다운로드 (30건)</h2>
+<!-- 최근 접속 기록 -->
+<h2>최근 접속 기록 (최근 100건)</h2>
 <div class="section-box">
   <table>
-    <thead><tr><th>플랫폼</th><th>국가</th><th>도시</th><th>브라우저/OS</th><th>시각</th></tr></thead>
+    <thead><tr><th>IP</th><th>경로</th><th>브라우저/OS</th><th>시각</th></tr></thead>
     <tbody>
-    {% for row in recent_dl %}
+    {% for row in access_logs %}
     <tr>
-      <td>
-        {% if row.platform == 'mac-arm64' %}
-          <span class="badge badge-mac">Mac ARM64</span>
-        {% else %}
-          <span class="badge badge-win">Windows</span>
-        {% endif %}
-      </td>
-      <td>{{ row.country }}</td>
-      <td>{{ row.city }}</td>
-      <td style="color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.user_agent }}</td>
-      <td style="color:var(--muted)">{{ row.created_at }}</td>
+      <td style="font-size:0.85rem; color:var(--accent-cyan)">{{ row.ip }}</td>
+      <td style="font-size:0.85rem;">{{ row.path }}</td>
+      <td style="color:var(--text-dim); max-width:400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="{{ row.user_agent }}">{{ row.user_agent }}</td>
+      <td style="color:var(--text-dim); font-size:0.8rem;">{{ row.created_at }}</td>
     </tr>
+    {% else %}
+    <tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">접속 기록이 없습니다.</td></tr>
     {% endfor %}
     </tbody>
   </table>

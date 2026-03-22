@@ -139,15 +139,29 @@ def get_db_connection():
                   password_hash TEXT NOT NULL,
                   is_paid INTEGER DEFAULT 0,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
-    conn.execute('''CREATE TABLE IF NOT EXISTS login_logs
+    conn.execute('''CREATE TABLE IF NOT EXISTS access_logs
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  user_id INTEGER,
-                  email TEXT,
                   ip TEXT,
                   user_agent TEXT,
+                  path TEXT,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
     return conn
+
+@app.before_request
+def log_access():
+    # favicon.ico나 static 파일 등은 제외하고 주요 요청만 로깅 (선택 사항)
+    if request.path.startswith('/static') or request.path == '/favicon.ico':
+        return
+        
+    try:
+        conn = get_db_connection()
+        conn.execute('INSERT INTO access_logs (ip, user_agent, path) VALUES (?, ?, ?)',
+                     (request.remote_addr, request.user_agent.string, request.path))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error logging access: {e}")
 
 # ── Authentication API ─────────────────────────────────────────
 
