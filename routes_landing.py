@@ -287,7 +287,7 @@ def admin():
             ).fetchall()
             
             access_logs = main_conn.execute(
-                'SELECT ip, path, user_agent, created_at FROM access_logs ORDER BY id DESC LIMIT 100'
+                'SELECT ip, country, city, path, user_agent, created_at FROM access_logs ORDER BY id DESC LIMIT 100'
             ).fetchall()
             
             main_conn.close()

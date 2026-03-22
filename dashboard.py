@@ -149,22 +149,37 @@ def get_db_connection():
     conn.execute('''CREATE TABLE IF NOT EXISTS access_logs
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   ip TEXT,
+                  country TEXT,
+                  city TEXT,
                   user_agent TEXT,
                   path TEXT,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
     conn.commit()
     return conn
 
+# GeoIP (ip-api.com)
+def get_geo(ip):
+    import urllib.request, json
+    if ip in ('127.0.0.1', 'localhost'): return {}
+    try:
+        url = f'http://ip-api.com/json/{ip}?fields=country,city'
+        req = urllib.request.Request(url, headers={'User-Agent': 'KICE-Lynx/1.0'})
+        with urllib.request.urlopen(req, timeout=1) as r:
+            return json.loads(r.read())
+    except:
+        return {}
+
 @app.before_request
 def log_access():
-    # favicon.ico나 static 파일 등은 제외하고 주요 요청만 로깅 (선택 사항)
     if request.path.startswith('/static') or request.path == '/favicon.ico':
         return
         
     try:
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+        geo = get_geo(ip)
         conn = get_db_connection()
-        conn.execute('INSERT INTO access_logs (ip, user_agent, path) VALUES (?, ?, ?)',
-                     (request.remote_addr, request.user_agent.string, request.path))
+        conn.execute('INSERT INTO access_logs (ip, country, city, user_agent, path) VALUES (?, ?, ?, ?, ?)',
+                     (ip, geo.get('country', ''), geo.get('city', ''), request.user_agent.string, request.path))
         conn.commit()
         conn.close()
     except Exception as e:
