@@ -107,28 +107,61 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 </div>
 
 <!-- 인기 검색어 & 성취기준 -->
-<div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-top:2rem;">
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-top:2rem;">
+  <!-- 개념유사도 -->
   <div>
-    <h2>인기 검색어 (Top 20)</h2>
+    <h2 style="font-size:1.1rem;">인기 개념유사도 (Top 10)</h2>
     <div class="section-box" style="padding:0; overflow:hidden;">
       <table style="font-size:0.78rem;">
-        <thead><tr><th>유형</th><th>검색어</th><th>횟수</th></tr></thead>
+        <thead><tr><th>검색어</th><th>횟수</th></tr></thead>
         <tbody>
-          {% for row in stats.top_searches %}
-          <tr>
-            <td style="color:var(--muted); font-size:0.7rem;">{{ row.search_type }}</td>
-            <td style="color:var(--cyan);">{{ row.query_text }}</td>
-            <td>{{ row.cnt }}</td>
-          </tr>
+          {% for row in stats.top_concepts %}
+          <tr><td style="color:var(--cyan);">{{ row.query_text }}</td><td>{{ row.cnt }}</td></tr>
           {% else %}
-          <tr><td colspan="3" style="text-align:center; color:var(--muted); padding:1rem;">검색 데이터가 없습니다.</td></tr>
+          <tr><td colspan="2" style="text-align:center; color:var(--muted); padding:1rem;">데이터 없음</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </div>
+
+  <!-- 기출표현 -->
   <div>
-    <h2>인기 성취기준 (Top 10)</h2>
+    <h2 style="font-size:1.1rem;">인기 기출표현 (Top 10)</h2>
+    <div class="section-box" style="padding:0; overflow:hidden;">
+      <table style="font-size:0.78rem;">
+        <thead><tr><th>검색어</th><th>횟수</th></tr></thead>
+        <tbody>
+          {% for row in stats.top_expressions %}
+          <tr><td style="color:var(--cyan);">{{ row.query_text }}</td><td>{{ row.cnt }}</td></tr>
+          {% else %}
+          <tr><td colspan="2" style="text-align:center; color:var(--muted); padding:1rem;">데이터 없음</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 문항번호 -->
+  <div>
+    <h2 style="font-size:1.1rem;">인기 문항번호 (Top 10)</h2>
+    <div class="section-box" style="padding:0; overflow:hidden;">
+      <table style="font-size:0.78rem;">
+        <thead><tr><th>검색어</th><th>횟수</th></tr></thead>
+        <tbody>
+          {% for row in stats.top_probids %}
+          <tr><td style="color:var(--cyan);">{{ row.query_text }}</td><td>{{ row.cnt }}</td></tr>
+          {% else %}
+          <tr><td colspan="2" style="text-align:center; color:var(--muted); padding:1rem;">데이터 없음</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 성취기준 -->
+  <div>
+    <h2 style="font-size:1.1rem;">인기 성취기준 (Top 10)</h2>
     <div class="section-box" style="padding:0; overflow:hidden;">
       <table style="font-size:0.78rem;">
         <thead><tr><th>성취기준</th><th>횟수</th></tr></thead>
@@ -137,14 +170,14 @@ tr:hover td { background:rgba(255,255,255,0.03); }
           <tr>
             <td>
               <div style="color:var(--cyan); font-weight:600;">{{ row.concept_id }}</div>
-              <div style="font-size:0.7rem; color:var(--muted); max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ row.standard_name }}">
+              <div style="font-size:0.7rem; color:var(--muted); max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ row.standard_name }}">
                 {{ row.standard_name or '-' }}
               </div>
             </td>
             <td>{{ row.cnt }}</td>
           </tr>
           {% else %}
-          <tr><td colspan="2" style="text-align:center; color:var(--muted); padding:1rem;">데이터가 없습니다.</td></tr>
+          <tr><td colspan="2" style="text-align:center; color:var(--muted); padding:1rem;">데이터 없음</td></tr>
           {% endfor %}
         </tbody>
       </table>

@@ -312,13 +312,23 @@ def admin():
             search_rows = main_conn.execute('SELECT search_type, COUNT(*) as cnt FROM search_stats GROUP BY search_type').fetchall()
             stats['search_totals'] = { r['search_type']: r['cnt'] for r in search_rows }
             
-            # Top 검색어 (개념유사도, 기출표현, 문항번호)
-            stats['top_searches'] = main_conn.execute('''
-                SELECT search_type, query_text, COUNT(*) as cnt
-                FROM search_stats
-                WHERE search_type IN ('개념유사도', '기출표현', '문항번호') AND query_text IS NOT NULL AND query_text != ""
-                GROUP BY search_type, query_text
-                ORDER BY cnt DESC LIMIT 20
+            # 인기 검색어 (유형별 Top 10)
+            stats['top_concepts'] = main_conn.execute('''
+                SELECT query_text, COUNT(*) as cnt FROM search_stats 
+                WHERE search_type = '개념유사도' AND query_text IS NOT NULL AND query_text != ""
+                GROUP BY query_text ORDER BY cnt DESC LIMIT 10
+            ''').fetchall()
+
+            stats['top_expressions'] = main_conn.execute('''
+                SELECT query_text, COUNT(*) as cnt FROM search_stats 
+                WHERE search_type = '기출표현' AND query_text IS NOT NULL AND query_text != ""
+                GROUP BY query_text ORDER BY cnt DESC LIMIT 10
+            ''').fetchall()
+
+            stats['top_probids'] = main_conn.execute('''
+                SELECT query_text, COUNT(*) as cnt FROM search_stats 
+                WHERE search_type = '문항번호' AND query_text IS NOT NULL AND query_text != ""
+                GROUP BY query_text ORDER BY cnt DESC LIMIT 10
             ''').fetchall()
             
             # Top 성취기준
