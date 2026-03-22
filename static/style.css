@@ -297,17 +297,25 @@ body {
 
 /* Keyword & Expression Helpers inside wrapper */
 .search-helper-text {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.search-helper-text span {
+    flex: 1;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .tip-toggle-btn {
-    margin-right: auto;
     background: rgba(167, 139, 250, 0.1);
     border: 1px solid rgba(167, 139, 250, 0.35);
     color: #c4b5fd;
