@@ -1662,7 +1662,8 @@ function renderErrorGrid() {
 
                 const isRep = reportedErrors.has(pid);
                 const isSel = selectedErrProbs.has(pid);
-                h += `<button class="error-prob-btn ${isSel ? 'selected' : ''}" data-pid="${pid}" ${isRep ? 'disabled title="이미 접수됨"' : ''}>${numStr}</button>`;
+                const tooltipAttr = isRep ? `data-tooltip="${encodeURIComponent('이미 접수되어 검토 중입니다.')}"` : '';
+                h += `<button class="error-prob-btn ${isSel ? 'selected' : ''} ${isRep ? 'reported tooltip-trigger' : ''}" data-pid="${pid}" ${tooltipAttr}>${numStr}</button>`;
             }
             h += `</div>`;
         }
@@ -1689,6 +1690,7 @@ function renderErrorGrid() {
 
     gridContainer.querySelectorAll('.error-prob-btn').forEach(btn => {
         btn.onclick = () => {
+            if (btn.classList.contains('reported')) return;
             const pid = btn.dataset.pid;
             if (selectedErrProbs.has(pid)) {
                 selectedErrProbs.delete(pid);
