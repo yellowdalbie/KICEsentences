@@ -258,8 +258,8 @@ def admin():
     stats = {
         'total_visits':    db.execute('SELECT COUNT(*) FROM visits').fetchone()[0],
         'unique_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits').fetchone()[0],
-        'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at)=date('now')").fetchone()[0],
-        'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at)=date('now')").fetchone()[0],
+        'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at)=date('now', '+9 hours')").fetchone()[0],
+        'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at)=date('now', '+9 hours')").fetchone()[0],
         'subscribers':     0, # Will be updated from main DB
         'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
     }
