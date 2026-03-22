@@ -154,6 +154,17 @@ def get_db_connection():
                   user_agent TEXT,
                   path TEXT,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+    # Ensure columns exist in access_logs (Migration)
+    try:
+        cursor = conn.execute("PRAGMA table_info(access_logs)")
+        columns = [row['name'] for row in cursor.fetchall()]
+        if columns and 'country' not in columns:
+            conn.execute("ALTER TABLE access_logs ADD COLUMN country TEXT")
+        if columns and 'city' not in columns:
+            conn.execute("ALTER TABLE access_logs ADD COLUMN city TEXT")
+    except:
+        pass
+        
     conn.commit()
     return conn
 

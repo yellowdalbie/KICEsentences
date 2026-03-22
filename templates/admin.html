@@ -80,22 +80,6 @@ tr:hover td { background:rgba(255,255,255,0.03); }
     <div class="stat-val">{{ stats.return_visitors }}</div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">누적 다운로드</div>
-    <div class="stat-val magenta">{{ stats.total_downloads }}</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">오늘 다운로드</div>
-    <div class="stat-val magenta">{{ stats.today_downloads }}</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Mac 다운로드</div>
-    <div class="stat-val cyan">{{ stats.mac_downloads }}</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Windows 다운로드</div>
-    <div class="stat-val">{{ stats.win_downloads }}</div>
-  </div>
-  <div class="stat-card">
     <div class="stat-label">이메일 구독자</div>
     <div class="stat-val green">{{ stats.subscribers }}</div>
   </div>
@@ -118,23 +102,16 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 </div>
 
 <!-- 일별 방문 -->
-<h2>일별 방문·다운로드 (최근 14일)</h2>
+<h2>일별 방문 (최근 14일)</h2>
 <div class="section-box">
   <table>
-    <thead><tr><th>날짜</th><th>방문</th><th>순방문</th><th>Mac DL</th><th>Win DL</th></tr></thead>
+    <thead><tr><th>날짜</th><th>방문</th><th>순방문</th></tr></thead>
     <tbody>
-    {% set dl_map = {} %}
-    {% for row in daily_dl %}
-      {% if row.day not in dl_map %}{% set _ = dl_map.update({row.day: {'mac-arm64':0,'windows':0}}) %}{% endif %}
-      {% set _ = dl_map[row.day].update({row.platform: row.cnt}) %}
-    {% endfor %}
     {% for row in daily_stats %}
     <tr>
       <td>{{ row.day }}</td>
       <td>{{ row.visits }}</td>
       <td>{{ row.uniq }}</td>
-      <td>{{ dl_map.get(row.day, {}).get('mac-arm64', 0) }}</td>
-      <td>{{ dl_map.get(row.day, {}).get('windows', 0) }}</td>
     </tr>
     {% endfor %}
     </tbody>
