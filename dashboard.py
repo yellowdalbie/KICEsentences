@@ -132,6 +132,21 @@ load_search_engine()
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
+    # Ensure tables exist
+    conn.execute('''CREATE TABLE IF NOT EXISTS users
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  email TEXT UNIQUE NOT NULL,
+                  password_hash TEXT NOT NULL,
+                  is_paid INTEGER DEFAULT 0,
+                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS login_logs
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  user_id INTEGER,
+                  email TEXT,
+                  ip TEXT,
+                  user_agent TEXT,
+                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+    conn.commit()
     return conn
 
 # ── Authentication API ─────────────────────────────────────────
@@ -189,6 +204,18 @@ def auth_login():
     session['is_paid'] = user['is_paid']
     session.permanent = True
     
+    # 로그인 기록 저장
+    try:
+        log_conn = get_db_connection()
+        log_conn.execute(
+            'INSERT INTO login_logs (user_id, email, ip, user_agent) VALUES (?, ?, ?, ?)',
+            (user['id'], user['email'], request.remote_addr, request.user_agent.string)
+        )
+        log_conn.commit()
+        log_conn.close()
+    except Exception as e:
+        print(f"[LoginLog] Error: {e}")
+
     return jsonify({'status': 'ok', 'email': user['email'], 'is_paid': bool(user['is_paid'])}), 200
 
 @app.route('/api/auth/logout', methods=['POST'])

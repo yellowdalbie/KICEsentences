@@ -23,6 +23,10 @@ from pathlib import Path
 from flask import (Blueprint, g, jsonify, make_response, redirect,
                    render_template, request)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# 메인 서비스 DB 파일 경로 (dashboard.py와 동기화)
+MAIN_DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
+
 landing_bp = Blueprint('landing_bp', __name__)
 
 DB_PATH = Path(__file__).parent / 'landing' / 'data.sqlite'
@@ -264,6 +268,29 @@ def admin():
         'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
     }
 
+    # 메인 DB에서 가입된 사용자 및 로그인 기록 가져오기
+    users = []
+    login_logs = []
+    total_users = 0
+    if os.path.exists(MAIN_DB_FILE):
+        try:
+            main_conn = sqlite3.connect(MAIN_DB_FILE)
+            main_conn.row_factory = sqlite3.Row
+            users = main_conn.execute(
+                'SELECT email, is_paid, created_at FROM users ORDER BY id DESC'
+            ).fetchall()
+            total_users = len(users)
+            
+            login_logs = main_conn.execute(
+                'SELECT email, ip, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
+            ).fetchall()
+            
+            main_conn.close()
+        except Exception as e:
+            print(f"[Admin] Error fetching data from main DB: {e}")
+
+    stats['subscribers'] = total_users # 기존 통계 항목 재활용 (UI 호환용)
+
     recent_dl = db.execute(
         'SELECT platform, country, city, user_agent, created_at FROM downloads ORDER BY id DESC LIMIT 30'
     ).fetchall()
@@ -301,7 +328,8 @@ def admin():
         country_stats=country_stats,
         daily_stats=daily_stats,
         daily_dl=daily_dl,
-        emails=emails,
+        emails=users, # 기존 변수명 사용 (template 수정 최소화)
+        login_logs=login_logs,
         errors=errors,
     )
 

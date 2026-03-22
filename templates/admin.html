@@ -179,18 +179,38 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   </table>
 </div>
 
-<!-- 구독 이메일 -->
-<h2>이메일 구독자 ({{ stats.subscribers }}명)</h2>
+<!-- 가입 사용자 -->
+<h2>가입된 사용자 ({{ stats.subscribers }}명)</h2>
 <div class="section-box">
   <div class="email-list" id="email-list">
   {% for row in emails %}
     <div class="email-row">
       <span class="email-addr">{{ row.email }}</span>
-      <span class="email-meta">{{ row.country }} · {{ row.created_at }}</span>
+      {% if row.is_paid %}
+      <span class="badge" style="background:var(--magenta); color:#fff; font-size:0.6rem;">PAID</span>
+      {% endif %}
+      <span class="email-meta">{{ row.created_at }}</span>
     </div>
   {% endfor %}
   </div>
   <button class="copy-btn" onclick="copyEmails()">이메일 목록 복사</button>
+</div>
+
+<!-- 로그인 기록 -->
+<h2>최근 로그인 기록</h2>
+<div class="section-box">
+  <div class="email-list">
+  {% for log in login_logs %}
+    <div class="email-row" style="font-size:0.8rem;">
+      <span class="email-addr">{{ log.email }}</span>
+      <span style="color:var(--text-dim); margin-right:10px;">{{ log.ip }}</span>
+      <span style="color:var(--text-dim); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:300px;" title="{{ log.user_agent }}">{{ log.user_agent }}</span>
+      <span class="email-meta">{{ log.created_at }}</span>
+    </div>
+  {% else %}
+    <p style="color:var(--text-dim); padding:10px;">로그인 기록이 없습니다.</p>
+  {% endfor %}
+  </div>
 </div>
 
 <script>

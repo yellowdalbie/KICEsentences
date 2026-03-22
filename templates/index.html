@@ -49,6 +49,10 @@
                     </button>
                 </div>
                 <div class="search-helper-text" id="keyword-search-guide" style="position:relative;">
+                    <button class="nav-report-btn" onclick="openErrorReportModal()" style="margin-right:8px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        오류 신고
+                    </button>
                     <button class="tip-toggle-btn" onclick="openTipModal()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         활용 팁
@@ -1524,6 +1528,41 @@
       <span>KICE Lynx v2025.11</span>
     </div>
     {% endif %}
+
+    <!-- 오류 신고 모달 -->
+    <div id="error-report-overlay">
+        <div class="error-modal-card">
+            <button class="error-modal-close" onclick="closeErrorReportModal()">×</button>
+            <div class="error-banner">
+                정답이 없는 문항, 해설이 잘못된 문항 등등<br>
+                문항 번호만 알려주세요.<br>
+                개선하는 데 큰 도움이 됩니다.
+            </div>
+            
+            <div class="error-row" id="err-step-year">
+                <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-1">
+                    <span class="error-group-label">[A/B]</span>
+                </div>
+                <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-2">
+                    <span class="error-group-label">[가/나]</span>
+                </div>
+                <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-3">
+                    <span class="error-group-label" style="font-size:0.65rem;">[확/미/기]</span>
+                </div>
+                <div class="error-yr-btns" id="yr-group-4">
+                    <span class="error-group-label">[통합]</span>
+                </div>
+            </div>
+
+            <div class="error-grid" id="err-step-grid" style="display:none; margin-top:10px;">
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:15px;" id="err-submit-zone">
+                <div id="err-selected-list" style="display:flex; flex-wrap:wrap; gap:6px; flex:1; max-height:80px; overflow-y:auto; padding-right:10px;"></div>
+                <button class="error-submit-btn" id="err-submit-btn" style="width:130px; margin-top:0; flex-shrink:0;" disabled onclick="submitErrorReport()">오류 신고 제출</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

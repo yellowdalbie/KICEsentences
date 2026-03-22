@@ -1447,3 +1447,237 @@ window.enableTitleEditing = function() {
     });
     if (titles.length > 0) titles[0].focus();
 };
+
+// ── 오류 신고 모달 로직 ──────────────────────────────────
+let reportedErrors = new Set();
+let selectedErrProbs = new Set();
+let selectedErrYear = '';
+let selectedErrExam = '';
+
+const yrs1 = [2014, 2015, 2016];
+const yrs2 = [2017, 2018, 2019, 2020, 2021];
+const yrs3 = [2022, 2023, 2024, 2025, 2026, 2027];
+const yrs4 = [2028];
+
+function getYrWrapHtml(yr) {
+    return `
+    <div class="yr-wrap" data-yr="${yr}">
+      <button class="error-btn yr-btn">${yr}</button>
+      <div class="error-split-btns" style="display:none;">
+        <button class="split-btn exam-btn" data-yr="${yr}" data-exam="6모">6</button>
+        <button class="split-btn exam-btn" data-yr="${yr}" data-exam="9모">9</button>
+        <button class="split-btn exam-btn" data-yr="${yr}" data-exam="수능">수</button>
+      </div>
+    </div>
+  `;
+}
+
+function initErrorReporting() {
+    const group1 = document.getElementById('yr-group-1');
+    const group2 = document.getElementById('yr-group-2');
+    const group3 = document.getElementById('yr-group-3');
+    const group4 = document.getElementById('yr-group-4');
+
+    if (group1) group1.insertAdjacentHTML('beforeend', yrs1.map(getYrWrapHtml).join(''));
+    if (group2) group2.insertAdjacentHTML('beforeend', yrs2.map(getYrWrapHtml).join(''));
+    if (group3) group3.insertAdjacentHTML('beforeend', yrs3.map(getYrWrapHtml).join(''));
+    if (group4) group4.insertAdjacentHTML('beforeend', yrs4.map(getYrWrapHtml).join(''));
+
+    document.querySelectorAll('.yr-wrap').forEach(wrap => {
+        const yrBtn = wrap.querySelector('.yr-btn');
+        const splits = wrap.querySelector('.error-split-btns');
+        if (yrBtn && splits) {
+            yrBtn.onclick = () => {
+                document.querySelectorAll('.error-split-btns').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.yr-btn').forEach(el => { el.style.display = 'block'; });
+
+                yrBtn.style.display = 'none';
+                splits.style.display = 'flex';
+
+                selectedErrYear = wrap.dataset.yr;
+                selectedErrExam = '';
+                const grid = document.getElementById('err-step-grid');
+                if (grid) grid.style.display = 'none';
+                document.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+            };
+        }
+    });
+
+    document.querySelectorAll('.exam-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedErrYear = btn.dataset.yr;
+            selectedErrExam = btn.dataset.exam;
+            renderErrorGrid();
+        };
+    });
+}
+
+// Initialize on load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initErrorReporting);
+} else {
+    initErrorReporting();
+}
+
+async function openErrorReportModal() {
+    const overlay = document.getElementById('error-report-overlay');
+    if (overlay) overlay.style.display = 'flex';
+    try {
+        const res = await fetch('/api/errors');
+        if (res.ok) {
+            const data = await res.json();
+            reportedErrors = new Set(data.errors);
+        }
+    } catch (e) { }
+    resetErrorModalState();
+}
+
+function closeErrorReportModal() {
+    const overlay = document.getElementById('error-report-overlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
+function resetErrorModalState() {
+    selectedErrYear = ''; selectedErrExam = '';
+    document.querySelectorAll('.error-split-btns').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.yr-btn').forEach(el => el.style.display = 'block');
+    document.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+    const grid = document.getElementById('err-step-grid');
+    if (grid) grid.style.display = 'none';
+    const submitBtn = document.getElementById('err-submit-btn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = '오류 신고 제출';
+    }
+    selectedErrProbs.clear();
+    renderErrSelectedList();
+}
+
+function renderErrSelectedList() {
+    const container = document.getElementById('err-selected-list');
+    if (!container) return;
+    container.innerHTML = '';
+    selectedErrProbs.forEach(pid => {
+        container.innerHTML += `<div class="err-cart-item">${pid} <span class="err-cart-rm" onclick="removeErrProb('${pid}')">×</span></div>`;
+    });
+    const submitBtn = document.getElementById('err-submit-btn');
+    if (submitBtn) submitBtn.disabled = selectedErrProbs.size === 0;
+}
+
+function removeErrProb(pid) {
+    selectedErrProbs.delete(pid);
+    renderErrSelectedList();
+    const btn = document.querySelector(`.error-prob-btn[data-pid="${pid}"]`);
+    if (btn) btn.classList.remove('selected');
+}
+
+function renderErrorGrid() {
+    const y = parseInt(selectedErrYear);
+    const gridContainer = document.getElementById('err-step-grid');
+    if (!gridContainer) return;
+    gridContainer.style.display = 'flex';
+    gridContainer.innerHTML = '';
+
+    let html = '';
+
+    const createBlock = (label, prefixForPid, rows) => {
+        let h = `<div style="display:flex; align-items:flex-start; margin-bottom:4px; gap:8px;">`;
+        if (label) h += `<span style="font-size:0.75rem; color:var(--accent-cyan); font-weight:700; width:35px; flex-shrink:0; padding-top:6px;">${label}</span>`;
+
+        h += `<div style="display:flex; flex-direction:column; gap:6px; flex:1;">`;
+        for (let r of rows) {
+            h += `<div class="error-grid-row">`;
+            for (let i = r.start; i <= r.end; i++) {
+                const numStr = i < 10 ? '0' + i : '' + i;
+
+                let qExam = selectedErrExam === '수능' ? '수능' : '.' + selectedErrExam;
+                let pid = `${selectedErrYear}${qExam}${prefixForPid}_${numStr}`;
+                if (y >= 2028) pid = `${selectedErrYear}${qExam}_${numStr}`;
+                else if (y >= 2022) {
+                    if (prefixForPid === '') pid = `${selectedErrYear}${qExam}_${numStr}`;
+                    else pid = `${selectedErrYear}${qExam}${prefixForPid}_${numStr}`;
+                }
+
+                const isRep = reportedErrors.has(pid);
+                const isSel = selectedErrProbs.has(pid);
+                h += `<button class="error-prob-btn ${isSel ? 'selected' : ''}" data-pid="${pid}" ${isRep ? 'disabled title="이미 접수됨"' : ''}>${numStr}</button>`;
+            }
+            h += `</div>`;
+        }
+        h += `</div></div>`;
+        return h;
+    };
+
+    if (y >= 2014 && y <= 2016) {
+        html += createBlock('A형', 'A', [{ start: 1, end: 13 }, { start: 14, end: 21 }, { start: 22, end: 25 }, { start: 26, end: 30 }]);
+        html += createBlock('B형', 'B', [{ start: 1, end: 13 }, { start: 14, end: 21 }, { start: 22, end: 25 }, { start: 26, end: 30 }]);
+    } else if (y >= 2017 && y <= 2021) {
+        html += createBlock('가형', '가', [{ start: 1, end: 13 }, { start: 14, end: 21 }, { start: 22, end: 25 }, { start: 26, end: 30 }]);
+        html += createBlock('나형', '나', [{ start: 1, end: 13 }, { start: 14, end: 21 }, { start: 22, end: 25 }, { start: 26, end: 30 }]);
+    } else if (y >= 2022 && y <= 2027) {
+        html += createBlock('공통', '', [{ start: 1, end: 8 }, { start: 9, end: 15 }, { start: 16, end: 19 }, { start: 20, end: 22 }]);
+        html += createBlock('확통', '확', [{ start: 23, end: 30 }]);
+        html += createBlock('미적', '미', [{ start: 23, end: 30 }]);
+        html += createBlock('기하', '기', [{ start: 23, end: 30 }]);
+    } else if (y >= 2028) {
+        html += createBlock('통합', '', [{ start: 1, end: 13 }, { start: 14, end: 21 }, { start: 22, end: 25 }, { start: 26, end: 30 }]);
+    }
+
+    gridContainer.innerHTML = html;
+
+    gridContainer.querySelectorAll('.error-prob-btn').forEach(btn => {
+        btn.onclick = () => {
+            const pid = btn.dataset.pid;
+            if (selectedErrProbs.has(pid)) {
+                selectedErrProbs.delete(pid);
+                btn.classList.remove('selected');
+            } else {
+                selectedErrProbs.add(pid);
+                btn.classList.add('selected');
+            }
+            renderErrSelectedList();
+        };
+    });
+}
+
+async function submitErrorReport() {
+    if (selectedErrProbs.size === 0) return;
+    const btn = document.getElementById('err-submit-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = '처리 중...';
+    }
+
+    try {
+        const res = await fetch('/api/errors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ problem_ids: Array.from(selectedErrProbs) })
+        });
+        if (res.ok) {
+            selectedErrProbs.forEach(pid => reportedErrors.add(pid));
+            showCustomAlert('오류 신고가 성공적으로 접수되었습니다. 신고해주셔서 감사합니다!');
+            closeErrorReportModal();
+        } else {
+            showCustomAlert('오류 신고 접수에 실패했습니다. (서버 오류)');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = '오류 신고 제출';
+            }
+        }
+    } catch (e) {
+        showCustomAlert('제출 중 네트워크 오류가 발생했습니다.');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = '오류 신고 제출';
+        }
+    }
+}
+
+// Expose modal functions
+window.openErrorReportModal = openErrorReportModal;
+window.closeErrorReportModal = closeErrorReportModal;
+window.submitErrorReport = submitErrorReport;
+window.removeErrProb = removeErrProb;
