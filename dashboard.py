@@ -189,7 +189,7 @@ def log_access():
         ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
         geo = get_geo(ip)
         conn = get_db_connection()
-        conn.execute('INSERT INTO access_logs (ip, country, city, user_agent, path) VALUES (?, ?, ?, ?, ?)',
+        conn.execute('INSERT INTO access_logs (ip, country, city, user_agent, path, created_at) VALUES (?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
                      (ip, geo.get('country', ''), geo.get('city', ''), request.user_agent.string, request.path))
         conn.commit()
         conn.close()
@@ -255,7 +255,7 @@ def auth_login():
     try:
         log_conn = get_db_connection()
         log_conn.execute(
-            'INSERT INTO login_logs (user_id, email, ip, user_agent) VALUES (?, ?, ?, ?)',
+            'INSERT INTO login_logs (user_id, email, ip, user_agent, created_at) VALUES (?, ?, ?, ?, datetime("now", "+9 hours"))',
             (user['id'], user['email'], request.remote_addr, request.user_agent.string)
         )
         log_conn.commit()
@@ -283,6 +283,26 @@ def auth_change_password():
     conn.execute('UPDATE users SET password_hash=? WHERE id=?', (hashed, session['user_id']))
     conn.commit()
     conn.close()
+    return jsonify({'status': 'ok'}), 200
+
+@app.route('/api/auth/delete_account', methods=['POST'])
+def auth_delete_account():
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인이 필요합니다.'}), 401
+    
+    user_id = session['user_id']
+    conn = get_db_connection()
+    try:
+        conn.execute('DELETE FROM users WHERE id=?', (user_id,))
+        conn.execute('DELETE FROM login_logs WHERE user_id=?', (user_id,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': f'삭제 중 오류 발생: {e}'}), 500
+    finally:
+        conn.close()
+    
+    session.clear()
     return jsonify({'status': 'ok'}), 200
 
 @app.route('/api/auth/me', methods=['GET'])

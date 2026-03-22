@@ -1347,7 +1347,14 @@ const CHANGE_PW_MODAL_HTML = `
       style="width: 100%; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.95rem; font-weight: 700; color: #030712; cursor: pointer; box-shadow: 0 4px 16px rgba(6,182,212,0.3);"
       onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(6,182,212,0.45)'"
       onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(6,182,212,0.3)'"
-    >\ub514\ubc14\ubc00\ubc88\ud638 \ubcc0\uacbd</button>
+    >\ube44\ubc00\ubc88\ud638 \ubcc0\uacbd</button>
+    
+    <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1.2rem; text-align: center;">
+      <button onclick="deleteAccount()" 
+        style="background: none; border: none; color: #64748b; font-size: 0.8rem; cursor: pointer; text-decoration: underline; transition: color 0.2s;"
+        onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'"
+      >\uacc4\uc815 \uc0ad\uc81c\ud558\uae30</button>
+    </div>
   </div>
 </div>
 `;
@@ -1408,6 +1415,27 @@ window.submitChangePassword = async function() {
     } catch (e) {
         errorEl.textContent = '\uc11c\ubc84 \ud1b5\uc2e0 \uc2e4\ud328';
         errorEl.style.display = 'block';
+    }
+};
+
+window.deleteAccount = async function() {
+    if (!confirm('정말로 계정을 삭제하시겠습니까?\n\n모든 정보와 학습 기록이 영구적으로 삭제되며 복구할 수 없습니다.')) {
+        return;
+    }
+    
+    try {
+        const res = await fetch('/api/auth/delete_account', { method: 'POST' });
+        if (res.ok) {
+            closeChangePasswordModal();
+            await initAuth();
+            showCustomAlert('계정이 성공적으로 삭제되었습니다. 이용해 주셔서 감사합니다.');
+        } else {
+            const data = await res.json();
+            showCustomAlert('삭제 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+    } catch (e) {
+        console.error(e);
+        showCustomAlert('서버 통신 실패');
     }
 };
 
