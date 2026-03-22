@@ -154,14 +154,22 @@ def get_db_connection():
                   user_agent TEXT,
                   path TEXT,
                   created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS search_stats
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  user_email TEXT,
+                  search_type TEXT,
+                  created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
     # Ensure columns exist in access_logs (Migration)
     try:
         cursor = conn.execute("PRAGMA table_info(access_logs)")
         columns = [row['name'] for row in cursor.fetchall()]
-        if columns and 'country' not in columns:
-            conn.execute("ALTER TABLE access_logs ADD COLUMN country TEXT")
-        if columns and 'city' not in columns:
-            conn.execute("ALTER TABLE access_logs ADD COLUMN city TEXT")
+        if columns:
+            if 'country' not in columns:
+                conn.execute("ALTER TABLE access_logs ADD COLUMN country TEXT")
+            if 'city' not in columns:
+                conn.execute("ALTER TABLE access_logs ADD COLUMN city TEXT")
+            if 'user_email' not in columns:
+                conn.execute("ALTER TABLE access_logs ADD COLUMN user_email TEXT")
     except:
         pass
         
@@ -188,13 +196,24 @@ def log_access():
     try:
         ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
         geo = get_geo(ip)
+        email = session.get('user_email')
         conn = get_db_connection()
-        conn.execute('INSERT INTO access_logs (ip, country, city, user_agent, path, created_at) VALUES (?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
-                     (ip, geo.get('country', ''), geo.get('city', ''), request.user_agent.string, request.path))
+        conn.execute('INSERT INTO access_logs (ip, country, city, user_agent, path, user_email, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
+                     (ip, geo.get('country', ''), geo.get('city', ''), request.user_agent.string, request.path, email))
         conn.commit()
         conn.close()
     except Exception as e:
         print(f"Error logging access: {e}")
+
+def log_search(search_type):
+    email = session.get('user_email')
+    try:
+        conn = get_db_connection()
+        conn.execute('INSERT INTO search_stats (user_email, search_type) VALUES (?, ?)', (email, search_type))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error logging search: {e}")
 
 # ── Authentication API ─────────────────────────────────────────
 
@@ -360,6 +379,7 @@ def serve_thumbnail(problem_id):
 
 @app.route('/api/similar_steps/<int:step_id>')
 def similar_steps(step_id):
+    log_search('개념유사도')
     if _search_engine is None:
         return jsonify({'error': '검색 엔진이 초기화되지 않았습니다. build_vectors.py를 실행하세요.'}), 503
 
@@ -419,6 +439,7 @@ def similar_steps(step_id):
 
 @app.route('/api/similar_problems/<problem_id>')
 def similar_problems(problem_id):
+    log_search('개념유사도')
     """
     문항-레벨 유사도 검색.
 
@@ -562,6 +583,7 @@ def stats():
 
 @app.route('/api/search')
 def search():
+    log_search('개념유사도')
     query = request.args.get('q', '').strip()
     if not query:
         return jsonify({"results": []})
@@ -695,6 +717,7 @@ def steps_by_problems():
 
 @app.route('/api/steps_by_concept')
 def steps_by_concept():
+    log_search('성취기준')
     """concept_id(CPT-...)가 적용된 문항들의 모든 스텝을 반환.
     해당 성취기준을 가진 스텝만이 아니라, 그 문항의 전체 스텝을 반환한다."""
     concept_id = request.args.get('concept_id', '').strip()
@@ -1057,6 +1080,7 @@ def extract_snippet(text, highlights, surround=80):
 
 @app.route('/api/search_expression', methods=['GET'])
 def search_expression():
+    log_search('기출표현')
     query = request.args.get('q', '').strip()
     if not query:
         return jsonify({"count": 0, "results": []})
@@ -1103,6 +1127,7 @@ def search_expression():
 
 @app.route('/api/search_probid')
 def search_probid():
+    log_search('문항번호')
     query = request.args.get('q', '').strip()
     if not query:
         return jsonify({"results": []})

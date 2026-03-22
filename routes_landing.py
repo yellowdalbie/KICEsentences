@@ -282,6 +282,9 @@ def admin():
     login_logs = []
     access_logs = []
     total_users = 0
+    email_filter = request.args.get('email')
+    stats['search_totals'] = {}
+
     if os.path.exists(MAIN_DB_FILE):
         try:
             main_conn = sqlite3.connect(MAIN_DB_FILE)
@@ -295,18 +298,26 @@ def admin():
                 'SELECT email, ip, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
             ).fetchall()
             
-            access_logs = main_conn.execute(
-                'SELECT ip, country, city, path, user_agent, created_at FROM access_logs ORDER BY id DESC LIMIT 100'
-            ).fetchall()
+            if email_filter:
+                access_logs = main_conn.execute(
+                    'SELECT ip, country, city, path, user_email, created_at FROM access_logs WHERE user_email = ? ORDER BY id DESC LIMIT 200',
+                    (email_filter,)
+                ).fetchall()
+            else:
+                access_logs = main_conn.execute(
+                    'SELECT ip, country, city, path, user_email, created_at FROM access_logs ORDER BY id DESC LIMIT 100'
+                ).fetchall()
+            
+            # 검색 통계
+            search_rows = main_conn.execute('SELECT search_type, COUNT(*) as cnt FROM search_stats GROUP BY search_type').fetchall()
+            stats['search_totals'] = { r['search_type']: r['cnt'] for r in search_rows }
             
             main_conn.close()
         except Exception as e:
             print(f"[Admin] Error fetching data from main DB: {e}")
 
-    stats['subscribers'] = total_users # 기존 통계 항목 재활용 (UI 호환용)
-
-    recent_dl = [] # 다운로드 기록은 더 이상 표시하지 않음
-
+    stats['subscribers'] = total_users
+    
     country_stats = db.execute(
         '''SELECT country, COUNT(*) as cnt FROM visits
            WHERE country != "" GROUP BY country ORDER BY cnt DESC LIMIT 15'''
@@ -317,6 +328,9 @@ def admin():
                   COUNT(DISTINCT visitor_id) as uniq
            FROM visits GROUP BY day ORDER BY day DESC LIMIT 14'''
     ).fetchall()
+
+    return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats, 
+                           emails=users, login_logs=login_logs, access_logs=access_logs, errors=errors, email_filter=email_filter)
 
     daily_dl = [] # 다운로드 통계는 더 이상 표시하지 않음
 

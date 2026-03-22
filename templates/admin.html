@@ -80,8 +80,29 @@ tr:hover td { background:rgba(255,255,255,0.03); }
     <div class="stat-val">{{ stats.return_visitors }}</div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">이메일 구독자</div>
+    <div class="stat-label">가입자</div>
     <div class="stat-val green">{{ stats.subscribers }}</div>
+  </div>
+</div>
+
+<!-- 검색 요청 수 -->
+<h2>검색 요청 수 (누적)</h2>
+<div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
+  <div class="stat-card" style="padding:0.8rem 1rem;">
+    <div class="stat-label">개념유사도</div>
+    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('개념유사도', 0) }}</div>
+  </div>
+  <div class="stat-card" style="padding:0.8rem 1rem;">
+    <div class="stat-label">기출표현</div>
+    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('기출표현', 0) }}</div>
+  </div>
+  <div class="stat-card" style="padding:0.8rem 1rem;">
+    <div class="stat-label">문항번호</div>
+    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('문항번호', 0) }}</div>
+  </div>
+  <div class="stat-card" style="padding:0.8rem 1rem;">
+    <div class="stat-label">성취기준</div>
+    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('성취기준', 0) }}</div>
   </div>
 </div>
 
@@ -137,19 +158,28 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 </div>
 
 <!-- 최근 접속 기록 -->
-<h2>최근 접속 기록 (최근 100건)</h2>
-<div class="section-box">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:2rem;">
+  <h2 style="margin:0;">
+    최근 접속 기록 
+    {% if email_filter %}<span style="color:var(--cyan); font-size:0.9rem; margin-left:10px;">[{{ email_filter }}]</span>{% else %}(최근 100건){% endif %}
+  </h2>
+  {% if email_filter %}
+  <button onclick="clearFilter()" class="copy-btn" style="margin-top:0; font-size:0.75rem; padding:0.3rem 0.6rem;">전체 보기</button>
+  {% endif %}
+</div>
+<div class="section-box" style="margin-top:1rem;">
   <table>
-    <thead><tr><th>IP</th><th>위치</th><th>경로</th><th>시각</th></tr></thead>
+    <thead><tr><th>IP</th><th>위치</th><th>사용자</th><th>경로</th><th>시각</th></tr></thead>
     <tbody>
     {% for row in access_logs %}
     <tr>
-      <td style="font-size:0.85rem; color:var(--accent-cyan)">{{ row.ip }}</td>
+      <td style="font-size:0.85rem; color:var(--cyan)">{{ row.ip }}</td>
       <td style="font-size:0.85rem;">
         {% if row.country %}{{ row.country }} / {{ row.city }}{% else %}-{% endif %}
       </td>
-      <td style="font-size:0.85rem; color:var(--text-dim)">{{ row.path }}</td>
-      <td style="color:var(--text-dim); font-size:0.8rem;">{{ row.created_at }}</td>
+      <td style="font-size:0.85rem; color:var(--text)">{{ row.user_email or '-' }}</td>
+      <td style="font-size:0.85rem; color:var(--muted)">{{ row.path }}</td>
+      <td style="color:var(--muted); font-size:0.8rem;">{{ row.created_at }}</td>
     </tr>
     {% else %}
     <tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">접속 기록이 없습니다.</td></tr>
@@ -164,7 +194,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   <div class="email-list" id="email-list">
   {% for row in emails %}
     <div class="email-row">
-      <span class="email-addr">{{ row.email }}</span>
+      <span class="email-addr" style="cursor:pointer; text-decoration:underline;" onclick="filterByUser('{{ row.email }}')" title="접속 기록 보기">{{ row.email }}</span>
       {% if row.is_paid %}
       <span class="badge" style="background:var(--magenta); color:#fff; font-size:0.6rem;">PAID</span>
       {% endif %}
@@ -226,6 +256,18 @@ async function deleteAllErrors() {
 function copyEmails() {
   const list = [{% for row in emails %}'{{ row.email }}',{% endfor %}];
   navigator.clipboard.writeText(list.join('\n')).then(() => alert('복사됨: ' + list.length + '개'));
+}
+
+function filterByUser(email) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('email', email);
+  window.location.href = url.toString();
+}
+
+function clearFilter() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('email');
+  window.location.href = url.toString();
 }
 </script>
 </body>
