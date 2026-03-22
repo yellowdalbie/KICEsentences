@@ -246,6 +246,19 @@ def delete_error():
     db.close()
     return jsonify({'status': 'ok'}), 200
 
+@landing_bp.route('/api/errors/delete_all', methods=['POST'])
+def delete_all_errors():
+    data = request.get_json(silent=True) or {}
+    key = data.get('key')
+    if key != ADMIN_KEY:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    db = get_db()
+    db.execute('DELETE FROM error_reports')
+    db.commit()
+    db.close()
+    return jsonify({'status': 'ok'}), 200
+
 
 # ── 관리자 대시보드 ──────────────────────────────────────────
 @landing_bp.route('/admin')

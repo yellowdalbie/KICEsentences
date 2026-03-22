@@ -86,8 +86,13 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 </div>
 
 <!-- 접수된 오류 신고 -->
-<h2>접수된 오류 신고 ({{ errors|length }}건)</h2>
-<div class="section-box">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:2rem;">
+  <h2 style="margin:0;">접수된 오류 신고 ({{ errors|length }}건)</h2>
+  {% if errors|length > 0 %}
+  <button onclick="deleteAllErrors()" class="copy-btn" style="margin-top:0; color:#f87171; border-color:rgba(239,68,68,0.2); font-size:0.7rem; padding:0.3rem 0.6rem;">전체 삭제</button>
+  {% endif %}
+</div>
+<div class="section-box" style="margin-top:1rem;">
   <div class="error-list" style="display:flex; flex-wrap:wrap; gap:10px;">
     {% for err in errors %}
     <div class="error-item" id="err-{{ err.problem_id }}" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:6px 12px; display:flex; align-items:center; gap:8px;">
@@ -198,6 +203,21 @@ async function deleteError(problem_id) {
   });
   if (res.ok) {
       document.getElementById('err-' + problem_id).remove();
+  } else {
+      alert("삭제 권한이 없거나 실패했습니다.");
+  }
+}
+
+async function deleteAllErrors() {
+  if (!confirm("모든 오류 신고를 일괄 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
+  const key = new URLSearchParams(window.location.search).get('key');
+  const res = await fetch('/api/errors/delete_all', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ key })
+  });
+  if (res.ok) {
+      location.reload();
   } else {
       alert("삭제 권한이 없거나 실패했습니다.");
   }
