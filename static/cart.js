@@ -1453,7 +1453,7 @@ window.submitChangePassword = async function() {
 };
 
 window.deleteAccount = async function() {
-    showCustomConfirm('정말로 계정을 삭제하시겠습니까?\n모든 정보와 학습 기록이 영구적으로 삭제되며 복구할 수 없습니다.', async () => {
+    showCustomConfirm('정말로 계정을 삭제하시겠습니까?\n모든 정보가 영구적으로 삭제되며 복구할 수 없습니다.', async () => {
         try {
             const res = await fetch('/api/auth/delete_account', { method: 'POST' });
             if (res.ok) {
