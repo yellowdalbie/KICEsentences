@@ -1,3 +1,4 @@
+import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # .env 로드 (다른 모듈 임포트 전에 실행하여 환경 변수 전파)
@@ -12,7 +13,6 @@ if os.path.exists(env_path):
 import sqlite3
 import json
 import re
-import os
 import unicodedata
 import subprocess
 import numpy as np
