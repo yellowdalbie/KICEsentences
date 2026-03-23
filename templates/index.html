@@ -30,10 +30,12 @@
                 </button>
             </div>
 
+            {% if not offline_mode %}
             <div id="auth-app-section" style="position: fixed; right: 1.5rem; top: 1.2rem; display: flex; align-items: center; gap: 0.8rem; z-index: 9999;">
                 <button onclick="openAuthModal('login')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; backdrop-filter: blur(4px);">로그인</button>
                 <button onclick="openAuthModal('register')" style="background: var(--accent-cyan); border: none; color: #030712; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 700; box-shadow: 0 4px 12px rgba(6,182,212,0.3);">회원가입</button>
             </div>
+            {% endif %}
 
             <!-- Search Mode Selector -->
             <div class="search-mode-pills">
@@ -57,10 +59,12 @@
                 </div>
                 <div class="search-helper-text" id="keyword-search-guide">
                     <span>수학 개념어 또는 풀이 방법 입력</span>
+                    {% if not offline_mode %}
                     <button class="nav-report-btn" onclick="openErrorReportModal()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         오류 신고
                     </button>
+                    {% endif %}
                 </div>
             </div>
 
@@ -88,10 +92,12 @@
                         </svg>
                     </a>
                     <span>AND: 공백 | OR: 파이프(|) | NOT: 하이픈(-) | 구문: "따옴표"</span>
+                    {% if not offline_mode %}
                     <button class="nav-report-btn" onclick="openErrorReportModal()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         오류 신고
                     </button>
+                    {% endif %}
                 </div>
             </div>
 
@@ -117,10 +123,12 @@
                 </div>
                 <div class="search-helper-text">
                     <span>예) 2024수능_30 · 2023.9모_15 · 2019수능나_26</span>
+                    {% if not offline_mode %}
                     <button class="nav-report-btn" onclick="openErrorReportModal()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         오류 신고
                     </button>
+                    {% endif %}
                 </div>
             </div>
         </header>
@@ -1557,6 +1565,7 @@
     </div>
     {% endif %}
 
+    {% if not offline_mode %}
     <!-- 오류 신고 모달 -->
     <div id="error-report-overlay">
         <div class="error-modal-card">
@@ -1591,6 +1600,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </body>
 
 </html>

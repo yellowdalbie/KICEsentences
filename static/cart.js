@@ -1338,6 +1338,7 @@ function updateAuthNavUI() {
 }
 
 function runAuthInit() {
+    if (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE) return;
     injectAuthModal();
     initAuth();
 }
@@ -1470,6 +1471,7 @@ window.deleteAccount = async function() {
 
 
 window.checkAuthForPreview = function() {
+    if (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE) return true;
     if (!window.AUTH_STATE.isLoggedIn) {
         showCustomAlert(
             '해당 기능을 이용하시려면 로그인이 필요합니다.\n\n(로그인/가입 후 무료 이용 가능)',
@@ -1481,6 +1483,7 @@ window.checkAuthForPreview = function() {
 };
 
 window.checkPaidForBeta = function(featureName) {
+    if (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE) return true;
     if (!window.AUTH_STATE.isLoggedIn) {
         showCustomAlert(
             '해당 기능을 이용하시려면 로그인이 필요합니다.\n\n(로그인/가입 후 이용 가능)',
