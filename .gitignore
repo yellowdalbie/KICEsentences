@@ -8,7 +8,6 @@ __pycache__/
 # Environment and Secrets
 .env
 admin.key
-download.key
 
 # Databases (allow only main DB)
 *.db
