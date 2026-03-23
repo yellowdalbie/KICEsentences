@@ -14,7 +14,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2.5rem 1.5rem;
 }
 .card {
   background: rgba(255,255,255,0.05);
@@ -22,26 +22,43 @@ body {
   border-top-color: rgba(255,255,255,0.18);
   border-radius: 16px;
   padding: 2.5rem 3rem;
-  max-width: 520px;
+  max-width: 560px;
   width: 100%;
 }
 h1 {
   font-size: 1.4rem;
   font-weight: 700;
-  margin-bottom: 0.4rem;
-  color: #f8fafc;
+  margin-bottom: 0.3rem;
 }
 .version {
   font-size: 0.82rem;
   color: #06b6d4;
   font-weight: 600;
-  margin-bottom: 2rem;
+  margin-bottom: 1.8rem;
   letter-spacing: 0.05em;
 }
-.dl-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.section-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #475569;
+  margin-bottom: 0.75rem;
+}
+.guide-img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.75rem;
+}
+.guide-note {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-bottom: 1.8rem;
+  line-height: 1.6;
+}
+.guide-note strong {
+  color: #94a3b8;
 }
 .dl-item {
   display: flex;
@@ -52,6 +69,7 @@ h1 {
   border-radius: 10px;
   padding: 0.9rem 1.2rem;
   gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 .dl-label {
   font-size: 0.95rem;
@@ -77,42 +95,47 @@ h1 {
   flex-shrink: 0;
 }
 .dl-btn:hover { opacity: 0.82; }
-.note {
-  margin-top: 1.8rem;
+.why-note {
   font-size: 0.78rem;
   color: #475569;
-  line-height: 1.6;
+  line-height: 1.7;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 1.2rem;
+}
+.why-note strong {
+  color: #64748b;
+  display: block;
+  margin-bottom: 0.3rem;
 }
 </style>
 </head>
 <body>
 <div class="card">
   <h1>KICE Lynx 다운로드</h1>
-  <div class="version">{{ version }}</div>
-  <div class="dl-list">
-    <div class="dl-item">
-      <div>
-        <div class="dl-label">macOS (Apple Silicon)</div>
-        <div class="dl-size">{{ sizes['mac-arm64'] }}</div>
-      </div>
-      <a class="dl-btn" href="{{ urls['mac-arm64'] }}">다운로드</a>
+  <div class="version">Windows · {{ version }}</div>
+
+  <div class="section-label">Windows 실행 방법</div>
+  <img class="guide-img" src="/static/windows_guide.png" alt="Windows 실행 가이드">
+  <p class="guide-note">
+    <strong>이 가이드는 배포 패키지 안에도 포함되어 있습니다.</strong><br>
+    압축을 해제한 폴더에서 동일한 이미지 파일을 확인할 수 있습니다.
+  </p>
+
+  <div class="dl-item">
+    <div>
+      <div class="dl-label">Windows (64-bit)</div>
+      <div class="dl-size">{{ sizes['windows'] }}</div>
     </div>
-    <div class="dl-item">
-      <div>
-        <div class="dl-label">macOS (Intel)</div>
-        <div class="dl-size">{{ sizes['mac-x86'] }}</div>
-      </div>
-      <a class="dl-btn" href="{{ urls['mac-x86'] }}">다운로드</a>
-    </div>
-    <div class="dl-item">
-      <div>
-        <div class="dl-label">Windows</div>
-        <div class="dl-size">{{ sizes['windows'] }}</div>
-      </div>
-      <a class="dl-btn" href="{{ urls['windows'] }}">다운로드</a>
-    </div>
+    <a class="dl-btn" href="{{ urls['windows'] }}">다운로드</a>
   </div>
-  <p class="note">GitHub Releases에서 직접 파일을 내려받습니다.<br>파일명: KICE_Lynx_{{ version }}_[플랫폼].zip</p>
+
+  <p class="why-note">
+    <strong>실행 파일(.exe)을 만들지 못한 이유</strong>
+    Windows에서 PyInstaller 등으로 단일 .exe를 생성하면 보안 소프트웨어가
+    바이러스로 오탐하는 문제가 빈번히 발생합니다. 코드 서명 인증서 없이는
+    이를 피하기 어렵기 때문에, 현재는 Python embeddable 패키지를 직접 포함한
+    방식으로 배포합니다.
+  </p>
 </div>
 </body>
 </html>
