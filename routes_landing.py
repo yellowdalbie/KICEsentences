@@ -32,6 +32,8 @@ landing_bp = Blueprint('landing_bp', __name__)
 DB_PATH = Path(__file__).parent / 'landing' / 'data.sqlite'
 ADMIN_KEY = os.environ.get('ADMIN_KEY', 'change-me')
 
+DOWNLOAD_KEY_FILE = Path(__file__).parent / 'download.key'
+
 VERSION = 'v2025.11'
 DOWNLOAD_URLS = {
     'mac-arm64': f'https://github.com/yellowdalbie/KICEsentences/releases/download/{VERSION}/KICE_Lynx_{VERSION}_mac-arm64.zip',
@@ -146,12 +148,10 @@ def landing_index():
     )
     db.commit()
 
-    total_dl = db.execute('SELECT COUNT(*) FROM downloads').fetchone()[0]
     db.close()
 
     resp = make_response(render_template(
         'landing.html',
-        total_downloads=total_dl,
         version=VERSION,
         file_sizes=FILE_SIZES,
     ))
@@ -370,6 +370,34 @@ def admin():
 
     return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats, 
                            emails=users, login_logs=login_logs, access_logs=access_logs, errors=errors, email_filter=email_filter)
+
+
+# ── 다운로드 전용 페이지 ─────────────────────────────────────
+def _load_download_key():
+    if DOWNLOAD_KEY_FILE.exists():
+        return DOWNLOAD_KEY_FILE.read_text(encoding='utf-8').strip()
+    return None
+
+
+def _check_download_key():
+    key = request.args.get('key') or request.headers.get('X-Download-Key')
+    expected = _load_download_key()
+    if not expected or key != expected:
+        return False
+    return True
+
+
+@landing_bp.route('/get')
+def download_portal():
+    if not _check_download_key():
+        return '접근 거부: 유효하지 않은 키입니다.', 403
+    return render_template(
+        'download_portal.html',
+        version=VERSION,
+        urls=DOWNLOAD_URLS,
+        sizes=FILE_SIZES,
+        key=request.args.get('key', ''),
+    )
 
 
 # ── ping ────────────────────────────────────────────────────

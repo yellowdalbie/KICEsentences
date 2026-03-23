@@ -1026,9 +1026,6 @@ function setPrintPill(btn) {
     const target = btn.dataset.target;
     const val = btn.dataset.value;
 
-    if (target === 'explanation-display-opt' && val === 'separate') {
-        if (!checkPaidForBeta("해설 작성")) return;
-    }
 
     document.querySelectorAll(`.print-pill[data-target="${target}"]`).forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -1499,13 +1496,21 @@ window.checkPaidForBeta = function(featureName) {
 };
 
 window.enableTitleEditing = function() {
-    if (!window.checkPaidForBeta("타이틀 수정")) return;
     const titles = document.querySelectorAll('.exam-title');
     titles.forEach(t => {
         t.contentEditable = "true";
-        t.style.color = "gray";
+        t.textContent = "";
     });
-    if (titles.length > 0) titles[0].focus();
+    if (titles.length > 0) {
+        const t = titles[0];
+        t.focus();
+        const range = document.createRange();
+        range.setStart(t, 0);
+        range.collapse(true);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
 };
 
 // ── 오류 신고 모달 로직 ──────────────────────────────────

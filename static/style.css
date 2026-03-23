@@ -1373,6 +1373,7 @@ body {
     display: flex;
     gap: 8px;
     flex-shrink: 0;
+    margin-left: auto;
 }
 
 .print-btn-pdf {
