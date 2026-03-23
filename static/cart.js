@@ -251,6 +251,15 @@ cartPreviewBtn.addEventListener('click', () => {
     openPrintPreview();
 });
 
+function logCartEvent(eventType, problemIds) {
+    if (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE) return;
+    fetch('/api/log_event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_type: eventType, problem_ids: problemIds })
+    }).catch(() => {});
+}
+
 async function openPrintPreview() {
     printModalBody.innerHTML = '<div style="display:flex; justify-content:center; padding:3rem;"><div class="loader">이미지 및 정답을 불러오는 중...</div></div>';
     printModal.style.display = 'flex';
@@ -264,6 +273,7 @@ async function openPrintPreview() {
     problemCart.classList.remove('open');
 
     const ids = Array.from(cartProblemIds);
+    logCartEvent('open_preview', ids);
     // 장바구니에 담은 순서 그대로 유지 (정렬하지 않음)
 
 
@@ -1031,6 +1041,11 @@ function setPrintPill(btn) {
     btn.classList.add('active');
     document.getElementById(target).value = val;
     openPrintPreview();
+}
+
+function logAndPrint() {
+    logCartEvent('save_pdf', Array.from(cartProblemIds));
+    window.print();
 }
 
 function closePrintPreview() {

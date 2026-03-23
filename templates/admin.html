@@ -7,42 +7,49 @@
 <style>
 :root {
   --bg: #070b14; --bg-card: rgba(255,255,255,0.05); --bg-card2: rgba(255,255,255,0.08);
-  --cyan: #06b6d4; --magenta: #d946ef; --green: #22c55e;
+  --cyan: #06b6d4; --magenta: #d946ef; --green: #22c55e; --amber: #f59e0b; --red: #f87171;
   --text: #f8fafc; --muted: #94a3b8; --border: rgba(255,255,255,0.10);
   --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:var(--bg); color:var(--text); font-family:var(--font); padding:2rem; font-size:0.88rem; }
 h1  { font-size:1.3rem; font-weight:700; margin-bottom:2rem; color:var(--cyan); }
-h2  { font-size:1rem; font-weight:600; margin:2rem 0 1rem; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase; }
+h2  { font-size:0.72rem; font-weight:600; margin:2rem 0 0.8rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
 
-.stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:1rem; margin-bottom:2rem; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:1rem; margin-bottom:1rem; }
 .stat-card {
   background:var(--bg-card2); border:1px solid var(--border); border-radius:12px;
-  padding:1.2rem 1.4rem;
+  padding:1.1rem 1.3rem;
 }
-.stat-label { font-size:0.72rem; color:var(--muted); margin-bottom:0.4rem; }
-.stat-val   { font-size:1.8rem; font-weight:700; line-height:1; }
+.stat-label { font-size:0.7rem; color:var(--muted); margin-bottom:0.35rem; }
+.stat-val   { font-size:1.7rem; font-weight:700; line-height:1; }
 .stat-val.cyan    { color:var(--cyan); }
 .stat-val.magenta { color:var(--magenta); }
 .stat-val.green   { color:var(--green); }
+.stat-val.amber   { color:var(--amber); }
 
 table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-th { text-align:left; padding:0.5rem 0.8rem; color:var(--muted); border-bottom:1px solid var(--border); font-weight:600; }
-td { padding:0.5rem 0.8rem; border-bottom:1px solid rgba(255,255,255,0.04); }
+th { text-align:left; padding:0.5rem 0.8rem; color:var(--muted); border-bottom:1px solid var(--border); font-weight:600; font-size:0.75rem; }
+td { padding:0.45rem 0.8rem; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:middle; }
 tr:hover td { background:rgba(255,255,255,0.03); }
 
 .badge {
   display:inline-block; padding:0.15rem 0.5rem; border-radius:4px;
-  font-size:0.7rem; font-weight:600;
+  font-size:0.68rem; font-weight:600;
 }
-.badge-mac { background:rgba(6,182,212,0.15); color:var(--cyan); }
-.badge-win { background:rgba(99,102,241,0.15); color:#818cf8; }
+.badge-paid { background:rgba(217,70,239,0.2); color:var(--magenta); }
+.badge-ev   { background:rgba(6,182,212,0.15); color:var(--cyan); font-size:0.65rem; }
+.badge-ev.open   { background:rgba(99,102,241,0.2); color:#818cf8; }
+.badge-ev.save   { background:rgba(34,197,94,0.15); color:var(--green); }
+.badge-ev.double { background:rgba(245,158,11,0.15); color:var(--amber); }
 
 .section-box { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.2rem; margin-bottom:1.5rem; overflow-x:auto; }
 
-.email-list { display:flex; flex-direction:column; gap:0.3rem; }
-.email-row  { display:flex; gap:1rem; align-items:center; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+.grid-4 { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.5rem; }
+
+.email-list { display:flex; flex-direction:column; gap:0.2rem; }
+.email-row  { display:flex; gap:1rem; align-items:center; padding:0.35rem 0; border-bottom:1px solid rgba(255,255,255,0.04); }
 .email-addr { color:var(--cyan); }
 .email-meta { font-size:0.75rem; color:var(--muted); }
 
@@ -52,12 +59,15 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   font-size:0.78rem; font-family:var(--font);
 }
 .copy-btn:hover { background:rgba(255,255,255,0.12); }
+.del-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; line-height:1; margin-left:6px; }
+.del-btn:hover { color:var(--red); }
 </style>
 </head>
 <body>
 <h1>KICE Lynx 관리자 대시보드</h1>
 
-<!-- 핵심 지표 -->
+<!-- ① 핵심 지표 -->
+<h2>방문 현황</h2>
 <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-label">누적 방문</div>
@@ -83,34 +93,51 @@ tr:hover td { background:rgba(255,255,255,0.03); }
     <div class="stat-label">가입자</div>
     <div class="stat-val green">{{ stats.subscribers }}</div>
   </div>
+  <div class="stat-card">
+    <div class="stat-label">다운로드 페이지 조회</div>
+    <div class="stat-val amber">{{ stats.portal_visits }}</div>
+  </div>
 </div>
 
-<!-- 검색 요청 수 -->
-<h2>검색 요청 수 (누적)</h2>
-<div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
+<!-- ② 검색 + 장바구니/인쇄 -->
+<h2>기능 사용 현황 (누적)</h2>
+<div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));">
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">개념유사도</div>
-    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('개념유사도', 0) }}</div>
+    <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('개념유사도', 0) }}</div>
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">기출표현</div>
-    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('기출표현', 0) }}</div>
+    <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('기출표현', 0) }}</div>
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">문항번호</div>
-    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('문항번호', 0) }}</div>
+    <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('문항번호', 0) }}</div>
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">성취기준</div>
-    <div class="stat-val" style="font-size:1.4rem; color:var(--text);">{{ stats.search_totals.get('성취기준', 0) }}</div>
+    <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('성취기준', 0) }}</div>
+  </div>
+  <div class="stat-card" style="padding:0.8rem 1rem;">
+    <div class="stat-label">인쇄 미리보기</div>
+    <div class="stat-val" style="font-size:1.4rem; color:#818cf8;">{{ stats.cart_totals.get('open_preview', 0) }}</div>
+  </div>
+  <div class="stat-card" style="padding:0.8rem 1rem;">
+    <div class="stat-label">PDF 저장</div>
+    <div class="stat-val" style="font-size:1.4rem; color:var(--green);">{{ stats.cart_totals.get('save_pdf', 0) }}</div>
+  </div>
+  <div class="stat-card" style="padding:0.8rem 1rem;">
+    <div class="stat-label">더블 기능</div>
+    <div class="stat-val" style="font-size:1.4rem; color:var(--amber);">{{ stats.cart_totals.get('double_cart', 0) }}</div>
   </div>
 </div>
 
-<!-- 인기 검색어 & 성취기준 -->
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-top:2rem;">
+<!-- ③ 인기 검색어 4개 + 0건 검색어 -->
+<h2>검색어 분석</h2>
+<div class="grid-4" style="margin-bottom:1.5rem;">
   <!-- 개념유사도 -->
   <div>
-    <h2 style="font-size:1.1rem;">인기 개념유사도 (Top 10)</h2>
+    <div style="font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem;">인기 개념유사도 (Top 10)</div>
     <div class="section-box" style="padding:0; overflow:hidden;">
       <table style="font-size:0.78rem;">
         <thead><tr><th>검색어</th><th>횟수</th></tr></thead>
@@ -127,7 +154,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 
   <!-- 기출표현 -->
   <div>
-    <h2 style="font-size:1.1rem;">인기 기출표현 (Top 10)</h2>
+    <div style="font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem;">인기 기출표현 (Top 10)</div>
     <div class="section-box" style="padding:0; overflow:hidden;">
       <table style="font-size:0.78rem;">
         <thead><tr><th>검색어</th><th>횟수</th></tr></thead>
@@ -144,7 +171,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 
   <!-- 문항번호 -->
   <div>
-    <h2 style="font-size:1.1rem;">인기 문항번호 (Top 10)</h2>
+    <div style="font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem;">인기 문항번호 (Top 10)</div>
     <div class="section-box" style="padding:0; overflow:hidden;">
       <table style="font-size:0.78rem;">
         <thead><tr><th>검색어</th><th>횟수</th></tr></thead>
@@ -161,7 +188,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 
   <!-- 성취기준 -->
   <div>
-    <h2 style="font-size:1.1rem;">인기 성취기준 (Top 10)</h2>
+    <div style="font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem;">인기 성취기준 (Top 10)</div>
     <div class="section-box" style="padding:0; overflow:hidden;">
       <table style="font-size:0.78rem;">
         <thead><tr><th>성취기준</th><th>횟수</th></tr></thead>
@@ -170,9 +197,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
           <tr>
             <td>
               <div style="color:var(--cyan); font-weight:600;">{{ row.concept_id }}</div>
-              <div style="font-size:0.7rem; color:var(--muted); max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ row.standard_name }}">
-                {{ row.standard_name or '-' }}
-              </div>
+              <div style="font-size:0.68rem; color:var(--muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ row.standard_name }}">{{ row.standard_name or '-' }}</div>
             </td>
             <td>{{ row.cnt }}</td>
           </tr>
@@ -185,20 +210,71 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   </div>
 </div>
 
-<!-- 접수된 오류 신고 -->
-<div style="display:flex; justify-content:space-between; align-items:center; margin-top:2rem;">
+<!-- 0건 결과 검색어 -->
+<div class="grid-2" style="margin-bottom:2rem;">
+  <div>
+    <div style="font-size:0.78rem; color:var(--red); margin-bottom:0.5rem;">결과 0건 검색어 — 개념유사도 (Top 10)</div>
+    <div class="section-box" style="padding:0; overflow:hidden;">
+      <table style="font-size:0.78rem;">
+        <thead><tr><th>검색어</th><th>횟수</th></tr></thead>
+        <tbody>
+          {% for row in stats.zero_result_concepts %}
+          <tr><td style="color:var(--red);">{{ row.query_text }}</td><td>{{ row.cnt }}</td></tr>
+          {% else %}
+          <tr><td colspan="2" style="text-align:center; color:var(--muted); padding:1rem;">없음</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 최근 장바구니/인쇄 이벤트 -->
+  <div>
+    <div style="font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem;">최근 장바구니 · 인쇄 이벤트 (50건)</div>
+    <div class="section-box" style="padding:0; overflow:hidden; max-height:320px; overflow-y:auto;">
+      <table style="font-size:0.78rem;">
+        <thead><tr><th>이벤트</th><th>문항 수</th><th>사용자</th><th>시각</th></tr></thead>
+        <tbody>
+          {% for row in stats.recent_cart_logs %}
+          <tr>
+            <td>
+              {% if row.event_type == 'open_preview' %}
+              <span class="badge badge-ev open">미리보기</span>
+              {% elif row.event_type == 'save_pdf' %}
+              <span class="badge badge-ev save">PDF저장</span>
+              {% elif row.event_type == 'double_cart' %}
+              <span class="badge badge-ev double">더블</span>
+              {% else %}
+              <span class="badge badge-ev">{{ row.event_type }}</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--text);">{{ row.problem_count }}</td>
+            <td style="color:var(--muted); font-size:0.75rem;">{{ row.user_email or '-' }}</td>
+            <td style="color:var(--muted); font-size:0.75rem; white-space:nowrap;">{{ row.created_at[:16] if row.created_at else '-' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:1rem;">데이터 없음</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 오류 신고 -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
   <h2 style="margin:0;">접수된 오류 신고 ({{ errors|length }}건)</h2>
   {% if errors|length > 0 %}
-  <button onclick="deleteAllErrors()" class="copy-btn" style="margin-top:0; color:#f87171; border-color:rgba(239,68,68,0.2); font-size:0.7rem; padding:0.3rem 0.6rem;">전체 삭제</button>
+  <button onclick="deleteAllErrors()" class="copy-btn" style="margin-top:0; color:var(--red); border-color:rgba(239,68,68,0.2); font-size:0.7rem; padding:0.3rem 0.6rem;">전체 삭제</button>
   {% endif %}
 </div>
-<div class="section-box" style="margin-top:1rem;">
-  <div class="error-list" style="display:flex; flex-wrap:wrap; gap:10px;">
+<div class="section-box" style="margin-top:0.8rem;">
+  <div style="display:flex; flex-wrap:wrap; gap:10px;">
     {% for err in errors %}
-    <div class="error-item" id="err-{{ err.problem_id }}" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:6px 12px; display:flex; align-items:center; gap:8px;">
-      <span style="font-family:var(--font); color:var(--cyan); font-weight:600; font-size:0.85rem;">{{ err.problem_id }}</span>
-      <span style="font-size:0.7rem; color:var(--muted)">{{ err.created_at.split(' ')[0] }}</span>
-      <button onclick="deleteError('{{ err.problem_id }}')" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.1rem; margin-left:6px; line-height:1;" title="해제 및 삭제">×</button>
+    <div id="err-{{ err.problem_id }}" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:6px 12px; display:flex; align-items:center; gap:8px;">
+      <span style="color:var(--cyan); font-weight:600; font-size:0.85rem;">{{ err.problem_id }}</span>
+      <span style="font-size:0.7rem; color:var(--muted)">{{ err.created_at.split(' ')[0] if err.created_at else '' }}</span>
+      <button class="del-btn" onclick="deleteError('{{ err.problem_id }}')" title="해제 및 삭제">×</button>
     </div>
     {% else %}
     <span style="color:var(--muted); font-size:0.8rem;">현재 접수된 오류가 없습니다.</span>
@@ -206,99 +282,105 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   </div>
 </div>
 
-<!-- 일별 방문 -->
-<h2>일별 방문 (최근 14일)</h2>
-<div class="section-box">
-  <table>
-    <thead><tr><th>날짜</th><th>방문</th><th>순방문</th></tr></thead>
-    <tbody>
-    {% for row in daily_stats %}
-    <tr>
-      <td>{{ row.day }}</td>
-      <td>{{ row.visits }}</td>
-      <td>{{ row.uniq }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+<!-- ⑤ 일별 방문 + 국가별 -->
+<div class="grid-2">
+  <div>
+    <h2>일별 방문 (최근 14일)</h2>
+    <div class="section-box">
+      <table>
+        <thead><tr><th>날짜</th><th>방문</th><th>순방문</th></tr></thead>
+        <tbody>
+        {% for row in daily_stats %}
+        <tr>
+          <td>{{ row.day }}</td>
+          <td>{{ row.visits }}</td>
+          <td>{{ row.uniq }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div>
+    <h2>국가별 방문자 (상위 15)</h2>
+    <div class="section-box">
+      <table>
+        <thead><tr><th>국가</th><th>방문 수</th></tr></thead>
+        <tbody>
+        {% for row in country_stats %}
+        <tr><td>{{ row.country }}</td><td>{{ row.cnt }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<!-- 국가별 방문 -->
-<h2>국가별 방문자 (상위 15)</h2>
-<div class="section-box">
-  <table>
-    <thead><tr><th>국가</th><th>방문 수</th></tr></thead>
-    <tbody>
-    {% for row in country_stats %}
-    <tr><td>{{ row.country }}</td><td>{{ row.cnt }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<!-- 최근 접속 기록 -->
-<div style="display:flex; justify-content:space-between; align-items:center; margin-top:2rem;">
+<!-- ⑥ 최근 접속 기록 -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
   <h2 style="margin:0;">
-    최근 접속 기록 
+    최근 접속 기록
     {% if email_filter %}<span style="color:var(--cyan); font-size:0.9rem; margin-left:10px;">[{{ email_filter }}]</span>{% else %}(최근 100건){% endif %}
   </h2>
   {% if email_filter %}
   <button onclick="clearFilter()" class="copy-btn" style="margin-top:0; font-size:0.75rem; padding:0.3rem 0.6rem;">전체 보기</button>
   {% endif %}
 </div>
-<div class="section-box" style="margin-top:1rem;">
+<div class="section-box" style="margin-top:0.8rem;">
   <table>
     <thead><tr><th>IP</th><th>위치</th><th>사용자</th><th>경로</th><th>시각</th></tr></thead>
     <tbody>
     {% for row in access_logs %}
     <tr>
-      <td style="font-size:0.85rem; color:var(--cyan)">{{ row.ip }}</td>
-      <td style="font-size:0.85rem;">
-        {% if row.country %}{{ row.country }} / {{ row.city }}{% else %}-{% endif %}
-      </td>
-      <td style="font-size:0.85rem; color:var(--text)">{{ row.user_email or '-' }}</td>
-      <td style="font-size:0.85rem; color:var(--muted)">{{ row.path }}</td>
-      <td style="color:var(--muted); font-size:0.8rem;">{{ row.created_at }}</td>
+      <td style="color:var(--cyan); font-size:0.82rem;">{{ row.ip }}</td>
+      <td style="font-size:0.82rem;">{% if row.country %}{{ row.country }}{% if row.city %} / {{ row.city }}{% endif %}{% else %}-{% endif %}</td>
+      <td style="font-size:0.82rem;">{{ row.user_email or '-' }}</td>
+      <td style="color:var(--muted); font-size:0.8rem;">{{ row.path }}</td>
+      <td style="color:var(--muted); font-size:0.78rem; white-space:nowrap;">{{ row.created_at[:16] if row.created_at else '-' }}</td>
     </tr>
     {% else %}
-    <tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">접속 기록이 없습니다.</td></tr>
+    <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:20px;">접속 기록이 없습니다.</td></tr>
     {% endfor %}
     </tbody>
   </table>
 </div>
 
-<!-- 가입 사용자 -->
+<!-- ⑦ 가입 사용자 -->
 <h2>가입된 사용자 ({{ stats.subscribers }}명)</h2>
 <div class="section-box">
   <div class="email-list" id="email-list">
   {% for row in emails %}
     <div class="email-row">
       <span class="email-addr" style="cursor:pointer; text-decoration:underline;" onclick="filterByUser('{{ row.email }}')" title="접속 기록 보기">{{ row.email }}</span>
-      {% if row.is_paid %}
-      <span class="badge" style="background:var(--magenta); color:#fff; font-size:0.6rem;">PAID</span>
-      {% endif %}
-      <span class="email-meta">{{ row.created_at }}</span>
+      {% if row.is_paid %}<span class="badge badge-paid">PAID</span>{% endif %}
+      <span class="email-meta">{{ row.created_at[:16] if row.created_at else '' }}</span>
     </div>
   {% endfor %}
   </div>
   <button class="copy-btn" onclick="copyEmails()">이메일 목록 복사</button>
 </div>
 
-<!-- 로그인 기록 -->
-<h2>최근 로그인 기록</h2>
+<!-- ⑧ 로그인 기록 -->
+<h2>최근 로그인 기록 (50건)</h2>
 <div class="section-box">
-  <div class="email-list">
-  {% for log in login_logs %}
-    <div class="email-row" style="font-size:0.8rem;">
-      <span class="email-addr">{{ log.email }}</span>
-      <span style="color:var(--text-dim); margin-right:10px;">{{ log.ip }}</span>
-      <span style="color:var(--text-dim); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:300px;" title="{{ log.user_agent }}">{{ log.user_agent }}</span>
-      <span class="email-meta">{{ log.created_at }}</span>
-    </div>
-  {% else %}
-    <p style="color:var(--text-dim); padding:10px;">로그인 기록이 없습니다.</p>
-  {% endfor %}
-  </div>
+  <table>
+    <thead><tr><th>이메일</th><th>위치</th><th>IP</th><th>UA</th><th>시각</th></tr></thead>
+    <tbody>
+    {% for log in login_logs %}
+    <tr>
+      <td style="color:var(--cyan);">{{ log.email }}</td>
+      <td style="font-size:0.8rem;">
+        {% if log.country %}{{ log.country }}{% if log.city %} / {{ log.city }}{% endif %}{% else %}-{% endif %}
+      </td>
+      <td style="font-size:0.8rem; color:var(--muted);">{{ log.ip }}</td>
+      <td style="font-size:0.75rem; color:var(--muted); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="{{ log.user_agent }}">{{ log.user_agent }}</td>
+      <td style="font-size:0.78rem; color:var(--muted); white-space:nowrap;">{{ log.created_at[:16] if log.created_at else '' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:1rem;">로그인 기록이 없습니다.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 <script>
@@ -325,11 +407,8 @@ async function deleteAllErrors() {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ key })
   });
-  if (res.ok) {
-      location.reload();
-  } else {
-      alert("삭제 권한이 없거나 실패했습니다.");
-  }
+  if (res.ok) { location.reload(); }
+  else { alert("삭제 권한이 없거나 실패했습니다."); }
 }
 
 function copyEmails() {

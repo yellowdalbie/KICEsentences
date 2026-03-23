@@ -67,7 +67,7 @@ def init_db():
             user_agent  TEXT,
             referer     TEXT,
             is_new      INTEGER DEFAULT 1,
-            created_at  TEXT DEFAULT (datetime('now'))
+            created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE TABLE IF NOT EXISTS downloads (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,21 +77,28 @@ def init_db():
             country     TEXT,
             city        TEXT,
             user_agent  TEXT,
-            created_at  TEXT DEFAULT (datetime('now'))
+            created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE TABLE IF NOT EXISTS subscribers (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             email       TEXT UNIQUE,
             visitor_id  TEXT,
             country     TEXT,
-            created_at  TEXT DEFAULT (datetime('now'))
+            created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE TABLE IF NOT EXISTS error_reports (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             problem_id  TEXT UNIQUE,
             status      TEXT DEFAULT 'reported',
             visitor_id  TEXT,
-            created_at  TEXT DEFAULT (datetime('now'))
+            created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
+        );
+        CREATE TABLE IF NOT EXISTS portal_logs (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            visitor_id  TEXT,
+            ip          TEXT,
+            country     TEXT,
+            created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE INDEX IF NOT EXISTS idx_visits_vid    ON visits(visitor_id);
         CREATE INDEX IF NOT EXISTS idx_visits_date   ON visits(created_at);
@@ -139,8 +146,8 @@ def landing_index():
     ).fetchone()
 
     db.execute(
-        '''INSERT INTO visits (visitor_id, ip, country, region, city, user_agent, referer, is_new)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+        '''INSERT INTO visits (visitor_id, ip, country, region, city, user_agent, referer, is_new, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '+9 hours'))''',
         (g.visitor_id, ip,
          geo.get('country', ''), geo.get('regionName', ''), geo.get('city', ''),
          request.user_agent.string, request.referrer or '',
@@ -180,8 +187,8 @@ def download(platform):
     geo = get_geo(ip)
 
     db.execute(
-        '''INSERT INTO downloads (visitor_id, platform, ip, country, city, user_agent)
-           VALUES (?, ?, ?, ?, ?, ?)''',
+        '''INSERT INTO downloads (visitor_id, platform, ip, country, city, user_agent, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, datetime('now', '+9 hours'))''',
         (g.visitor_id, platform, ip,
          geo.get('country', ''), geo.get('city', ''),
          request.user_agent.string)
@@ -271,15 +278,19 @@ def admin():
     stats = {
         'total_visits':    db.execute('SELECT COUNT(*) FROM visits').fetchone()[0],
         'unique_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits').fetchone()[0],
-        'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at)=date('now', '+9 hours')").fetchone()[0],
-        'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at)=date('now', '+9 hours')").fetchone()[0],
+        'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at)=date('now')").fetchone()[0],
+        'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at)=date('now')").fetchone()[0],
         'subscribers':     0,
         'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
+        'portal_visits':   db.execute('SELECT COUNT(*) FROM portal_logs').fetchone()[0],
         'search_totals':   {},
         'top_concepts':    [],
         'top_expressions': [],
         'top_probids':     [],
-        'top_units':       []
+        'top_units':       [],
+        'zero_result_concepts': [],
+        'cart_totals':     {},
+        'recent_cart_logs': [],
     }
 
     # 메인 DB에서 가입된 사용자, 로그인 기록, 접속 기록 가져오기
@@ -300,7 +311,7 @@ def admin():
             total_users = len(users)
             
             login_logs = main_conn.execute(
-                'SELECT email, ip, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
+                'SELECT email, ip, country, city, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
             ).fetchall()
             
             if email_filter:
@@ -345,7 +356,28 @@ def admin():
                 GROUP BY s.query_text
                 ORDER BY cnt DESC LIMIT 10
             ''').fetchall()
-            
+
+            # 0건 결과 검색어 (개념유사도, Top 10)
+            stats['zero_result_concepts'] = main_conn.execute('''
+                SELECT query_text, COUNT(*) as cnt FROM search_stats
+                WHERE search_type = '개념유사도' AND result_count = 0
+                  AND query_text IS NOT NULL AND query_text != ""
+                  AND query_text NOT LIKE 'step_id:%' AND query_text NOT LIKE 'prob_id:%'
+                GROUP BY query_text ORDER BY cnt DESC LIMIT 10
+            ''').fetchall()
+
+            # 장바구니/인쇄 이벤트 집계
+            cart_rows = main_conn.execute(
+                "SELECT event_type, COUNT(*) as cnt FROM cart_logs GROUP BY event_type"
+            ).fetchall()
+            stats['cart_totals'] = {r['event_type']: r['cnt'] for r in cart_rows}
+
+            # 최근 장바구니/인쇄 이벤트 (50건)
+            stats['recent_cart_logs'] = main_conn.execute('''
+                SELECT user_email, event_type, problem_count, problem_ids, created_at
+                FROM cart_logs ORDER BY id DESC LIMIT 50
+            ''').fetchall()
+
             main_conn.close()
         except Exception as e:
             print(f"[Admin] Error fetching data from main DB: {e}")
@@ -368,7 +400,7 @@ def admin():
 
     db.close()
 
-    return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats, 
+    return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats,
                            emails=users, login_logs=login_logs, access_logs=access_logs, errors=errors, email_filter=email_filter)
 
 
@@ -377,6 +409,18 @@ def admin():
 def download_portal(token):
     if token != DOWNLOAD_TOKEN:
         return '', 404
+    try:
+        ip = get_ip()
+        geo = get_geo(ip)
+        db = get_db()
+        db.execute(
+            "INSERT INTO portal_logs (visitor_id, ip, country, created_at) VALUES (?, ?, ?, datetime('now', '+9 hours'))",
+            (g.visitor_id, ip, geo.get('country', ''))
+        )
+        db.commit()
+        db.close()
+    except Exception:
+        pass
     return render_template(
         'download_portal.html',
         version=VERSION,

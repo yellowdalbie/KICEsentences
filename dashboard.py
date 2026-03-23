@@ -138,14 +138,16 @@ def get_db_connection():
                   email TEXT UNIQUE NOT NULL,
                   password_hash TEXT NOT NULL,
                   is_paid INTEGER DEFAULT 0,
-                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+                  created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
     conn.execute('''CREATE TABLE IF NOT EXISTS login_logs
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   user_id INTEGER,
                   email TEXT,
                   ip TEXT,
+                  country TEXT,
+                  city TEXT,
                   user_agent TEXT,
-                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+                  created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
     conn.execute('''CREATE TABLE IF NOT EXISTS access_logs
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   ip TEXT,
@@ -153,22 +155,33 @@ def get_db_connection():
                   city TEXT,
                   user_agent TEXT,
                   path TEXT,
-                  created_at DATETIME DEFAULT CURRENT_TIMESTAMP)''')
+                  created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
     conn.execute('''CREATE TABLE IF NOT EXISTS search_stats
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   user_email TEXT,
                   search_type TEXT,
                   query_text TEXT,
+                  result_count INTEGER,
                   created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
-    # Migration for existing search_stats
+    conn.execute('''CREATE TABLE IF NOT EXISTS cart_logs
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  user_email TEXT,
+                  event_type TEXT,
+                  problem_count INTEGER,
+                  problem_ids TEXT,
+                  created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
+    # Migration: search_stats
     try:
         cursor = conn.execute("PRAGMA table_info(search_stats)")
         columns = [row['name'] for row in cursor.fetchall()]
-        if columns and 'query_text' not in columns:
-            conn.execute("ALTER TABLE search_stats ADD COLUMN query_text TEXT")
+        if columns:
+            if 'query_text' not in columns:
+                conn.execute("ALTER TABLE search_stats ADD COLUMN query_text TEXT")
+            if 'result_count' not in columns:
+                conn.execute("ALTER TABLE search_stats ADD COLUMN result_count INTEGER")
     except:
         pass
-    # Ensure columns exist in access_logs (Migration)
+    # Migration: access_logs
     try:
         cursor = conn.execute("PRAGMA table_info(access_logs)")
         columns = [row['name'] for row in cursor.fetchall()]
@@ -179,6 +192,17 @@ def get_db_connection():
                 conn.execute("ALTER TABLE access_logs ADD COLUMN city TEXT")
             if 'user_email' not in columns:
                 conn.execute("ALTER TABLE access_logs ADD COLUMN user_email TEXT")
+    except:
+        pass
+    # Migration: login_logs
+    try:
+        cursor = conn.execute("PRAGMA table_info(login_logs)")
+        columns = [row['name'] for row in cursor.fetchall()]
+        if columns:
+            if 'country' not in columns:
+                conn.execute("ALTER TABLE login_logs ADD COLUMN country TEXT")
+            if 'city' not in columns:
+                conn.execute("ALTER TABLE login_logs ADD COLUMN city TEXT")
     except:
         pass
         
@@ -214,11 +238,14 @@ def log_access():
     except Exception as e:
         print(f"Error logging access: {e}")
 
-def log_search(search_type, query_text=None):
-    email = session.get('user_email')
+def log_search(search_type, query_text=None, result_count=None):
+    email = session.get('user_email') or session.get('email')
     try:
         conn = get_db_connection()
-        conn.execute('INSERT INTO search_stats (user_email, search_type, query_text) VALUES (?, ?, ?)', (email, search_type, query_text))
+        conn.execute(
+            'INSERT INTO search_stats (user_email, search_type, query_text, result_count) VALUES (?, ?, ?, ?)',
+            (email, search_type, query_text, result_count)
+        )
         conn.commit()
         conn.close()
     except Exception as e:
@@ -245,7 +272,7 @@ def auth_register():
         return jsonify({'error': '이미 가입된 이메일 계정입니다.'}), 400
         
     hashed_pw = generate_password_hash(pw)
-    conn.execute('INSERT INTO users (email, password_hash, is_paid) VALUES (?, ?, ?)', (email, hashed_pw, 0))
+    conn.execute('INSERT INTO users (email, password_hash, is_paid, created_at) VALUES (?, ?, ?, datetime("now", "+9 hours"))', (email, hashed_pw, 0))
     conn.commit()
     
     # 바로 로그인 처리
@@ -281,10 +308,12 @@ def auth_login():
     
     # 로그인 기록 저장
     try:
+        login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+        login_geo = get_geo(login_ip)
         log_conn = get_db_connection()
         log_conn.execute(
-            'INSERT INTO login_logs (user_id, email, ip, user_agent, created_at) VALUES (?, ?, ?, ?, datetime("now", "+9 hours"))',
-            (user['id'], user['email'], request.remote_addr, request.user_agent.string)
+            'INSERT INTO login_logs (user_id, email, ip, country, city, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
+            (user['id'], user['email'], login_ip, login_geo.get('country', ''), login_geo.get('city', ''), request.user_agent.string)
         )
         log_conn.commit()
         log_conn.close()
@@ -593,8 +622,8 @@ def stats():
 @app.route('/api/search')
 def search():
     query = request.args.get('q', '').strip()
-    log_search('개념유사도', query)
     if not query:
+        log_search('개념유사도', query, result_count=0)
         return jsonify({"results": []})
         
     conn = get_db_connection()
@@ -614,11 +643,11 @@ def search():
             )
             SELECT s.step_id, s.problem_id, s.step_number, s.explanation_text, s.explanation_html,
                    (SELECT COUNT(*) FROM steps s2 WHERE s2.problem_id = s.problem_id) AS total_steps,
-                   COALESCE(s.step_title, '') AS trigger_text, 
+                   COALESCE(s.step_title, '') AS trigger_text,
                    s.step_title,
                    '' AS normalized_text,
-                   s.action_concept_id, 
-                   c.standard_name, 
+                   s.action_concept_id,
+                   c.standard_name,
                    c.id AS ref_code
             FROM steps s
             JOIN matched_problems mp ON s.problem_id = mp.problem_id
@@ -626,6 +655,8 @@ def search():
             ORDER BY s.problem_id DESC, s.step_number ASC
         ''', (f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%', f'%{query}%')).fetchall()]
         conn.close()
+        prob_count = len(set(r['problem_id'] for r in results))
+        log_search('개념유사도', query, result_count=prob_count)
         return jsonify({"results": results})
     
     # Semantic Search Flow (오프라인 어휘 룩업)
@@ -685,8 +716,9 @@ def search():
         results.append(res_dict)
         
     results.sort(key=lambda r: (-r['cos_similarity'], r['step_number']))
-    
+
     conn.close()
+    log_search('개념유사도', query, result_count=len(top_unique_probs))
     return jsonify({"results": results})
 
 
@@ -727,7 +759,6 @@ def steps_by_problems():
 @app.route('/api/steps_by_concept')
 def steps_by_concept():
     concept_id = request.args.get('concept_id', '').strip()
-    log_search('성취기준', concept_id)
     """concept_id(CPT-...)가 적용된 문항들의 모든 스텝을 반환.
     해당 성취기준을 가진 스텝만이 아니라, 그 문항의 전체 스텝을 반환한다."""
     concept_id = request.args.get('concept_id', '').strip()
@@ -751,9 +782,12 @@ def steps_by_concept():
         LEFT JOIN concepts c ON s.action_concept_id = c.id
         ORDER BY s.problem_id DESC, s.step_number ASC
     ''', (concept_id,)).fetchall()
+    result_list = [dict(r) for r in rows]
+    prob_count = len(set(r['problem_id'] for r in result_list))
+    log_search('성취기준', concept_id, result_count=prob_count)
     conn.close()
 
-    return jsonify({'results': [dict(r) for r in rows]})
+    return jsonify({'results': result_list})
 
 @app.route('/api/problem_answers', methods=['POST'])
 def problem_answers():
@@ -1091,8 +1125,8 @@ def extract_snippet(text, highlights, surround=80):
 @app.route('/api/search_expression', methods=['GET'])
 def search_expression():
     query = request.args.get('q', '').strip()
-    log_search('기출표현', query)
     if not query:
+        log_search('기출표현', query, result_count=0)
         return jsonify({"count": 0, "results": []})
         
     if not os.path.exists(MD_REF_DIR):
@@ -1130,6 +1164,7 @@ def search_expression():
                     "highlights": highlights
                 })
 
+    log_search('기출표현', query, result_count=len(matched_files))
     return jsonify({
         "count": len(matched_files),
         "results": matched_files
@@ -1138,10 +1173,10 @@ def search_expression():
 @app.route('/api/search_probid')
 def search_probid():
     query = request.args.get('q', '').strip()
-    log_search('문항번호', query)
     if not query:
+        log_search('문항번호', query, result_count=0)
         return jsonify({"results": []})
-        
+
     conn = get_db_connection()
     # Fetch all records since we need to do complex regex matching and the DB might be small enough.
     # Alternatively, we just fetch distinct problem_ids and do Python filtering.
@@ -1198,6 +1233,8 @@ def search_probid():
             if is_subsequence(norm_query, norm_pid):
                 matched_results.append(row)
 
+    prob_count = len(set(r['problem_id'] for r in matched_results))
+    log_search('문항번호', query, result_count=prob_count)
     return jsonify({"results": matched_results})
 
 @app.route('/docs/search_rules')
@@ -1481,6 +1518,29 @@ def admin_step_detail(step_id):
     })
 
 
+@app.route('/api/log_event', methods=['POST'])
+def log_event():
+    if OFFLINE_MODE:
+        return jsonify({'status': 'ok'}), 200
+    data = request.get_json(silent=True) or {}
+    event_type = data.get('event_type', '').strip()
+    problem_ids = data.get('problem_ids', [])
+    if not event_type:
+        return jsonify({'error': 'event_type required'}), 400
+    email = session.get('user_email') or session.get('email')
+    try:
+        conn = get_db_connection()
+        conn.execute(
+            'INSERT INTO cart_logs (user_email, event_type, problem_count, problem_ids) VALUES (?, ?, ?, ?)',
+            (email, event_type, len(problem_ids), ','.join(str(p) for p in problem_ids))
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[log_event] Error: {e}")
+    return jsonify({'status': 'ok'}), 200
+
+
 @app.route('/api/double_cart', methods=['POST'])
 def double_cart():
     """
@@ -1564,6 +1624,19 @@ def double_cart():
         added.append({'original': src_pid, 'match': cand_pid, 'score': score})
 
     unmatched = [pid for pid in cart_ids if pid not in used_sources]
+
+    # 더블 기능 사용 로그
+    try:
+        email = session.get('user_email') or session.get('email')
+        conn = get_db_connection()
+        conn.execute(
+            'INSERT INTO cart_logs (user_email, event_type, problem_count, problem_ids) VALUES (?, ?, ?, ?)',
+            (email, 'double_cart', len(cart_ids), ','.join(cart_ids))
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[double_cart log] Error: {e}")
 
     return jsonify({'added': added, 'unmatched': unmatched})
 
