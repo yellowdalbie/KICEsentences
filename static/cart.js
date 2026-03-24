@@ -535,6 +535,13 @@ function renderSidebar() {
 
 // ── 페이지 렌더링 (순서 변경 시 재호출) ──
 async function renderPreviewPages() {
+    // 재렌더 전에 사용자가 수정한 타이틀이 있으면 currentAutoTitle에 보존
+    const existingTitle = printModalBody.querySelector('.exam-title');
+    if (existingTitle) {
+        const t = existingTitle.textContent.trim();
+        if (t) currentAutoTitle = t;
+    }
+
     const items = _previewLoadedItems;
     const answerOpt = _previewAnswerOpt;
     const expOpt = _previewExpOpt;
