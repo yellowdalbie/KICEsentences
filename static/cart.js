@@ -325,7 +325,8 @@ async function openPrintPreview() {
     printModal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
-    // Hide auth buttons to avoid overlap with print preview
+    // Hide floating UI elements to avoid overlap with print preview
+    document.body.classList.add('preview-open');
     const authSection = document.getElementById('auth-app-section');
     if (authSection) authSection.style.display = 'none';
 
@@ -757,6 +758,17 @@ async function renderPreviewPages() {
         });
     }
 
+    // currentAutoTitle로 인쇄 레이아웃 기본 타이틀 교체
+    if (currentAutoTitle) {
+        const examTitles = printModalBody.querySelectorAll('.exam-title');
+        if (examTitles.length >= 1) {
+            examTitles[0].textContent = currentAutoTitle;
+        }
+        if (examTitles.length >= 2) {
+            examTitles[1].textContent = currentAutoTitle + ' 해설지';
+        }
+    }
+
     // 문제지 타이틀 수정 시 해설지 타이틀 동기화
     const examTitles = printModalBody.querySelectorAll('.exam-title');
     if (examTitles.length > 1) {
@@ -1113,9 +1125,10 @@ async function logAndPrint() {
     // fallback: 사이드바에 data-problem-id 없으면 cartProblemIds 사용
     const finalIds = orderedIds.length > 0 ? orderedIds : Array.from(cartProblemIds);
 
-    // 현재 타이틀 추출
-    const examTitleEl = document.querySelector('.exam-title');
-    const title = (examTitleEl?.textContent || '').trim() || currentAutoTitle || '문항 세트';
+    // 현재 타이틀 추출 (사용자가 직접 수정했을 경우 우선, 아니면 자동 생성 타이틀)
+    const examTitleEl = printModalBody?.querySelector('.exam-title');
+    const editedTitle = (examTitleEl?.textContent || '').trim();
+    const title = editedTitle || currentAutoTitle || '문항 세트';
 
     if (!(typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE)) {
         // 완전저장
@@ -1154,7 +1167,8 @@ function closePrintPreview() {
     document.body.style.overflow = ''; // Restore background scrolling
     printModalBody.innerHTML = ''; // clear memory
 
-    // Restore auth buttons
+    // Restore floating UI elements
+    document.body.classList.remove('preview-open');
     const authSection = document.getElementById('auth-app-section');
     if (authSection) authSection.style.display = '';
 

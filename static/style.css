@@ -1272,6 +1272,11 @@ body {
     z-index: -1;
 }
 
+/* 인쇄 미리보기 열릴 때 활용팁 버튼 숨김 */
+body.preview-open #global-actions-left {
+    display: none !important;
+}
+
 #print-preview-header {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(60px) saturate(200%);
@@ -1282,7 +1287,7 @@ body {
         0 4px 32px rgba(0, 0, 0, 0.50);
     padding: 0.75rem 1.5rem;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
     z-index: 10;
     flex-shrink: 0;
@@ -1290,14 +1295,7 @@ body {
 }
 
 .print-header-title {
-    font-family: var(--font-sans);
-    font-size: 0.88rem;
-    font-weight: 600;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: rgba(248, 250, 252, 0.65);
-    white-space: nowrap;
-    flex-shrink: 0;
+    display: none;
 }
 
 .print-header-controls {
@@ -1373,7 +1371,7 @@ body {
     display: flex;
     gap: 8px;
     flex-shrink: 0;
-    margin-left: auto;
+    margin-left: 2rem;
 }
 
 .print-btn-pdf {
