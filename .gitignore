@@ -9,7 +9,9 @@ __pycache__/
 .env
 admin.key
 
-# Databases (allow only main DB)
+# Databases
+# kice_database.sqlite: 콘텐츠 DB - git으로 관리
+# kice_userdata.sqlite: 유저 데이터 DB - 서버 전용, git 미추적
 *.db
 *.sqlite
 !kice_database.sqlite

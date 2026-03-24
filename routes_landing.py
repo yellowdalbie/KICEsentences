@@ -24,8 +24,8 @@ from flask import (Blueprint, g, jsonify, make_response, redirect,
                    render_template, request)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# 메인 서비스 DB 파일 경로 (dashboard.py와 동기화)
-MAIN_DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
+# 유저 데이터 DB 파일 경로 (dashboard.py와 동기화)
+MAIN_DB_FILE = os.path.join(BASE_DIR, 'kice_userdata.sqlite')
 
 landing_bp = Blueprint('landing_bp', __name__)
 

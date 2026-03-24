@@ -31,6 +31,7 @@ app.register_blueprint(landing_bp)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 
 DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
+USER_DB_FILE = os.path.join(BASE_DIR, 'kice_userdata.sqlite')
 THUMBNAIL_DIR = os.path.join(BASE_DIR, 'static', 'thumbnails')
 VECTORS_FILE = os.path.join(BASE_DIR, 'kice_step_vectors.npz')
 STEP_CLUSTERS_FILE = os.path.join(BASE_DIR, 'step_clusters.json')
@@ -130,14 +131,22 @@ load_search_engine()
 
 
 def get_db_connection():
+    """콘텐츠 DB (problems, steps, concepts 등) - git으로 관리"""
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
-    # Ensure tables exist
+    return conn
+
+
+def get_user_db():
+    """유저 데이터 DB (users, logs, sets 등) - 서버 전용, git 미추적"""
+    conn = sqlite3.connect(USER_DB_FILE)
+    conn.row_factory = sqlite3.Row
     conn.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   email TEXT UNIQUE NOT NULL,
                   password_hash TEXT NOT NULL,
                   is_paid INTEGER DEFAULT 0,
+                  display_name TEXT,
                   created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
     conn.execute('''CREATE TABLE IF NOT EXISTS login_logs
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -155,6 +164,7 @@ def get_db_connection():
                   city TEXT,
                   user_agent TEXT,
                   path TEXT,
+                  user_email TEXT,
                   created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
     conn.execute('''CREATE TABLE IF NOT EXISTS search_stats
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -170,52 +180,6 @@ def get_db_connection():
                   problem_count INTEGER,
                   problem_ids TEXT,
                   created_at DATETIME DEFAULT (datetime('now', '+9 hours')))''')
-    # Migration: search_stats
-    try:
-        cursor = conn.execute("PRAGMA table_info(search_stats)")
-        columns = [row['name'] for row in cursor.fetchall()]
-        if columns:
-            if 'query_text' not in columns:
-                conn.execute("ALTER TABLE search_stats ADD COLUMN query_text TEXT")
-            if 'result_count' not in columns:
-                conn.execute("ALTER TABLE search_stats ADD COLUMN result_count INTEGER")
-    except:
-        pass
-    # Migration: access_logs
-    try:
-        cursor = conn.execute("PRAGMA table_info(access_logs)")
-        columns = [row['name'] for row in cursor.fetchall()]
-        if columns:
-            if 'country' not in columns:
-                conn.execute("ALTER TABLE access_logs ADD COLUMN country TEXT")
-            if 'city' not in columns:
-                conn.execute("ALTER TABLE access_logs ADD COLUMN city TEXT")
-            if 'user_email' not in columns:
-                conn.execute("ALTER TABLE access_logs ADD COLUMN user_email TEXT")
-    except:
-        pass
-    # Migration: login_logs
-    try:
-        cursor = conn.execute("PRAGMA table_info(login_logs)")
-        columns = [row['name'] for row in cursor.fetchall()]
-        if columns:
-            if 'country' not in columns:
-                conn.execute("ALTER TABLE login_logs ADD COLUMN country TEXT")
-            if 'city' not in columns:
-                conn.execute("ALTER TABLE login_logs ADD COLUMN city TEXT")
-    except:
-        pass
-
-    # Migration: users.display_name
-    try:
-        cursor = conn.execute("PRAGMA table_info(users)")
-        columns = [row['name'] for row in cursor.fetchall()]
-        if 'display_name' not in columns:
-            conn.execute("ALTER TABLE users ADD COLUMN display_name TEXT")
-    except:
-        pass
-
-    # New table: problem_sets
     conn.execute('''CREATE TABLE IF NOT EXISTS problem_sets (
         id           INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id      INTEGER NOT NULL,
@@ -230,7 +194,6 @@ def get_db_connection():
     )''')
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sets_user ON problem_sets(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sets_status ON problem_sets(user_id, status)")
-
     conn.commit()
     return conn
 
@@ -255,7 +218,7 @@ def log_access():
         ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
         geo = get_geo(ip)
         email = session.get('user_email')
-        conn = get_db_connection()
+        conn = get_user_db()
         conn.execute('INSERT INTO access_logs (ip, country, city, user_agent, path, user_email, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
                      (ip, geo.get('country', ''), geo.get('city', ''), request.user_agent.string, request.path, email))
         conn.commit()
@@ -266,7 +229,7 @@ def log_access():
 def log_search(search_type, query_text=None, result_count=None):
     email = session.get('user_email') or session.get('email')
     try:
-        conn = get_db_connection()
+        conn = get_user_db()
         conn.execute(
             'INSERT INTO search_stats (user_email, search_type, query_text, result_count) VALUES (?, ?, ?, ?)',
             (email, search_type, query_text, result_count)
@@ -290,7 +253,7 @@ def auth_register():
     if len(pw) < 6:
         return jsonify({'error': '비밀번호는 최소 6자리 이상이어야 합니다.'}), 400
         
-    conn = get_db_connection()
+    conn = get_user_db()
     user = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()
     if user:
         conn.close()
@@ -319,7 +282,7 @@ def auth_login():
     if not email or not pw:
         return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
         
-    conn = get_db_connection()
+    conn = get_user_db()
     user = conn.execute('SELECT id, email, password_hash, is_paid FROM users WHERE email=?', (email,)).fetchone()
     conn.close()
     
@@ -335,7 +298,7 @@ def auth_login():
     try:
         login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
         login_geo = get_geo(login_ip)
-        log_conn = get_db_connection()
+        log_conn = get_user_db()
         log_conn.execute(
             'INSERT INTO login_logs (user_id, email, ip, country, city, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
             (user['id'], user['email'], login_ip, login_geo.get('country', ''), login_geo.get('city', ''), request.user_agent.string)
@@ -361,7 +324,7 @@ def auth_change_password():
     if len(new_password) < 6:
         return jsonify({'error': '비밀번호는 6자리 이상이어야 합니다.'}), 400
     hashed = generate_password_hash(new_password)
-    conn = get_db_connection()
+    conn = get_user_db()
     conn.execute('UPDATE users SET password_hash=? WHERE id=?', (hashed, session['user_id']))
     conn.commit()
     conn.close()
@@ -373,7 +336,7 @@ def auth_delete_account():
         return jsonify({'error': '로그인이 필요합니다.'}), 401
     
     user_id = session['user_id']
-    conn = get_db_connection()
+    conn = get_user_db()
     try:
         conn.execute('DELETE FROM users WHERE id=?', (user_id,))
         conn.execute('DELETE FROM login_logs WHERE user_id=?', (user_id,))
@@ -391,7 +354,7 @@ def auth_delete_account():
 def auth_me():
     if 'user_id' in session:
         # DB에서 최신 is_paid 상태 조회
-        conn = get_db_connection()
+        conn = get_user_db()
         user = conn.execute('SELECT is_paid, display_name FROM users WHERE id=?', (session['user_id'],)).fetchone()
         conn.close()
         if user:
@@ -1557,7 +1520,7 @@ def log_event():
         return jsonify({'error': 'event_type required'}), 400
     email = session.get('user_email') or session.get('email')
     try:
-        conn = get_db_connection()
+        conn = get_user_db()
         conn.execute(
             'INSERT INTO cart_logs (user_email, event_type, problem_count, problem_ids) VALUES (?, ?, ?, ?)',
             (email, event_type, len(problem_ids), ','.join(str(p) for p in problem_ids))
@@ -1656,7 +1619,7 @@ def double_cart():
     # 더블 기능 사용 로그
     try:
         email = session.get('user_email') or session.get('email')
-        conn = get_db_connection()
+        conn = get_user_db()
         conn.execute(
             'INSERT INTO cart_logs (user_email, event_type, problem_count, problem_ids) VALUES (?, ?, ?, ?)',
             (email, 'double_cart', len(cart_ids), ','.join(cart_ids))
@@ -1752,7 +1715,7 @@ def sets_save_temp():
     if not problem_ids:
         return jsonify({'error': '문항 없음'}), 400
     import json as json_module
-    conn = get_db_connection()
+    conn = get_user_db()
     conn.execute("DELETE FROM problem_sets WHERE user_id=? AND status='temp'", (user_id,))
     cursor = conn.execute(
         "INSERT INTO problem_sets (user_id, status, title, problem_ids, source_query) VALUES (?, 'temp', ?, ?, ?)",
@@ -1772,7 +1735,7 @@ def sets_restore():
         return jsonify({'has_temp': False})
     user_id = session['user_id']
     import json as json_module
-    conn = get_db_connection()
+    conn = get_user_db()
     row = conn.execute(
         "SELECT id, title, problem_ids, created_at FROM problem_sets WHERE user_id=? AND status='temp'",
         (user_id,)
@@ -1796,7 +1759,7 @@ def sets_delete_temp():
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
     user_id = session['user_id']
-    conn = get_db_connection()
+    conn = get_user_db()
     conn.execute("DELETE FROM problem_sets WHERE user_id=? AND status='temp'", (user_id,))
     conn.commit()
     conn.close()
@@ -1818,7 +1781,7 @@ def sets_save_final():
         return jsonify({'error': '문항 없음'}), 400
     import json as json_module
     ids_json = json_module.dumps(problem_ids, ensure_ascii=False)
-    conn = get_db_connection()
+    conn = get_user_db()
     # 기존 temp 레코드를 final로 승격
     existing = conn.execute(
         "SELECT id FROM problem_sets WHERE user_id=? AND status='temp'",
@@ -1849,7 +1812,7 @@ def sets_my():
         return jsonify({'error': '로그인 필요'}), 401
     user_id = session['user_id']
     import json as json_module
-    conn = get_db_connection()
+    conn = get_user_db()
     rows = conn.execute(
         "SELECT id, status, title, problem_ids, is_favorite, created_at FROM problem_sets WHERE user_id=? ORDER BY is_favorite DESC, updated_at DESC",
         (user_id,)
@@ -1881,7 +1844,7 @@ def sets_get(set_id):
         return jsonify({'error': '로그인 필요'}), 401
     user_id = session['user_id']
     import json as json_module
-    conn = get_db_connection()
+    conn = get_user_db()
     row = conn.execute(
         "SELECT id, status, title, problem_ids, is_favorite, created_at FROM problem_sets WHERE id=? AND user_id=?",
         (set_id, user_id)
@@ -1906,7 +1869,7 @@ def sets_delete(set_id):
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
     user_id = session['user_id']
-    conn = get_db_connection()
+    conn = get_user_db()
     conn.execute("DELETE FROM problem_sets WHERE id=? AND user_id=?", (set_id, user_id))
     conn.commit()
     conn.close()
@@ -1920,7 +1883,7 @@ def sets_toggle_favorite(set_id):
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
     user_id = session['user_id']
-    conn = get_db_connection()
+    conn = get_user_db()
     conn.execute(
         "UPDATE problem_sets SET is_favorite=CASE WHEN is_favorite=1 THEN 0 ELSE 1 END, updated_at=datetime('now','+9 hours') WHERE id=? AND user_id=?",
         (set_id, user_id)
@@ -1939,7 +1902,7 @@ def update_display_name():
     display_name = (data.get('display_name') or '').strip()
     if len(display_name) > 20:
         return jsonify({'error': '별칭은 최대 20자입니다.'}), 400
-    conn = get_db_connection()
+    conn = get_user_db()
     conn.execute(
         "UPDATE users SET display_name=? WHERE id=?",
         (display_name or None, session['user_id'])
