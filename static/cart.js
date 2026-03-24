@@ -7,7 +7,6 @@ const cartBadge = document.getElementById('cart-badge');
 const cartEmptyMsg = document.getElementById('cart-empty-msg');
 const cartToggleBtn = document.getElementById('cart-toggle-btn');
 const problemCart = document.getElementById('problem-cart');
-const cartPreviewBtn = document.getElementById('cart-preview-btn');
 
 // Print Modal elements
 const printModal = document.getElementById('print-preview-modal');
@@ -19,6 +18,12 @@ let _previewLoadedItems = [];
 let _previewAnswerOpt = 'none';
 let _previewExpOpt = 'none';
 let _selectedSidebarIdx = null;
+
+// ── 문항지 세트 기능 ──────────────────────────────────────────
+const searchQueryLog = [];
+let restoredTempIds = null;
+let cartRestoreWarningShown = false;
+let currentAutoTitle = '';
 
 // ── 전역 썸네일 tooltip (document.body에 직접 붙여 transform 영향 차단) ──
 let _cartThumbTooltipEl = null;
@@ -110,6 +115,24 @@ function toggleCartItem(problemId) {
     if (cartProblemIds.has(strId)) {
         cartProblemIds.delete(strId);
     } else {
+        // 새로 추가하는 경우만 체크
+        // 복원 경고 (세션 1회)
+        if (restoredTempIds && restoredTempIds.length > 0 && !cartRestoreWarningShown) {
+            cartRestoreWarningShown = true;
+            const choice = confirm(
+                `이전에 담아두셨던 ${restoredTempIds.length}문항이 있습니다.\n\n[확인] 이어서 추가하기\n[취소] 장바구니 비우고 새로 담기`
+            );
+            if (!choice) {
+                cartProblemIds.clear();
+                restoredTempIds = null;
+                dismissRestoreBanner();
+                fetch('/api/sets/restore', { method: 'DELETE' });
+            }
+        }
+        // 20문항 초과 경고
+        if (cartProblemIds.size === 20) {
+            alert('21번째 문항부터는 인쇄 미리보기 로딩이 다소 느릴 수 있습니다.');
+        }
         cartProblemIds.add(strId);
         // Auto-open cart if it's the first item added
         if (cartProblemIds.size === 1 && !problemCart.classList.contains('open')) {
@@ -240,15 +263,46 @@ window.doubleCart = doubleCart;
 
 
 // Print Preview Logic
-cartPreviewBtn.addEventListener('click', () => {
-    if (cartProblemIds.size === 0) {
-        showCustomAlert("장바구니가 비어 있습니다.");
-        return;
+document.addEventListener('DOMContentLoaded', () => {
+    const previewBtn = document.getElementById('preview-btn');
+    if (previewBtn) {
+        previewBtn.addEventListener('click', async () => {
+            if (cartProblemIds.size === 0) {
+                showCustomAlert('장바구니가 비어 있습니다.');
+                return;
+            }
+            if (!checkAuthForPreview()) return;
+
+            const ids = Array.from(cartProblemIds);
+
+            if (!(typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE)) {
+                // 자동 명칭 생성
+                try {
+                    const titleRes = await fetch(`/api/sets/auto_title?ids=${encodeURIComponent(ids.join(','))}`);
+                    const titleData = await titleRes.json();
+                    currentAutoTitle = titleData.title || '문항 세트';
+                } catch(e) {
+                    currentAutoTitle = '문항 세트';
+                }
+                // 임시저장
+                try {
+                    await fetch('/api/sets/temp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            problem_ids: ids,
+                            title: currentAutoTitle,
+                            source_query: getBestSearchQuery()
+                        })
+                    });
+                    restoredTempIds = [...ids];
+                    dismissRestoreBanner();
+                } catch(e) { /* 실패해도 미리보기는 열기 */ }
+            }
+
+            openPrintPreview();
+        });
     }
-
-    if (!checkAuthForPreview()) return;
-
-    openPrintPreview();
 });
 
 function logCartEvent(eventType, problemIds) {
@@ -343,6 +397,7 @@ function renderSidebar() {
         li.className = 'sidebar-item' + (isSelected ? ' selected' : '');
         li.draggable = true;
         li.dataset.idx = idx;
+        li.dataset.problemId = item.pid;
         li.innerHTML = `
             <div class="sidebar-item-row" style="flex:1; width:100%;">
                 <div class="sidebar-drag-handle" title="드래그하여 순서 변경">⠿</div>
@@ -1043,9 +1098,49 @@ function setPrintPill(btn) {
     openPrintPreview();
 }
 
-function logAndPrint() {
-    logCartEvent('save_pdf', Array.from(cartProblemIds));
+async function logAndPrint() {
+    // 사이드바 현재 순서에서 problem_ids 추출
+    const sidebarItems = document.querySelectorAll('#sidebar-order-list li');
+    const orderedIds = Array.from(sidebarItems)
+        .map(li => li.dataset.problemId)
+        .filter(Boolean);
+    // fallback: 사이드바에 data-problem-id 없으면 cartProblemIds 사용
+    const finalIds = orderedIds.length > 0 ? orderedIds : Array.from(cartProblemIds);
+
+    // 현재 타이틀 추출
+    const examTitleEl = document.querySelector('.exam-title');
+    const title = (examTitleEl?.textContent || '').trim() || currentAutoTitle || '문항 세트';
+
+    if (!(typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE)) {
+        // 완전저장
+        try {
+            await fetch('/api/sets/final', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    problem_ids: finalIds,
+                    title: title,
+                    source_query: getBestSearchQuery()
+                })
+            });
+        } catch(e) { /* 저장 실패해도 인쇄는 진행 */ }
+    }
+
+    // PDF 파일명 설정 (document.title 트릭)
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const datetime = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+    const pdfFilename = `${title}_${datetime}`;
+    const originalTitle = document.title;
+    document.title = pdfFilename;
+
     window.print();
+
+    window.addEventListener('afterprint', () => {
+        document.title = originalTitle;
+    }, { once: true });
+
+    logCartEvent('save_pdf', finalIds);
 }
 
 function closePrintPreview() {
@@ -1302,11 +1397,15 @@ async function initAuth() {
         window.AUTH_STATE = {
             isLoggedIn: data.isLoggedIn || false,
             email: data.email || '',
-            isPaid: data.isPaid || false
+            isPaid: data.isPaid || false,
+            displayName: data.displayName || ''
         };
+        if (data.isLoggedIn) {
+            restoreTempOnLogin();
+        }
     } catch (e) {
         console.error('Auth state fetch failed:', e);
-        window.AUTH_STATE = { isLoggedIn: false, email: '', isPaid: false };
+        window.AUTH_STATE = { isLoggedIn: false, email: '', isPaid: false, displayName: '' };
     }
     updateAuthNavUI();
 }
@@ -1314,39 +1413,41 @@ async function initAuth() {
 function updateAuthNavUI() {
     const appSection = document.getElementById('auth-app-section');
     if (!appSection) return;
-    
+
     // Clear existing contents
     appSection.innerHTML = '';
-    
+
     if (window.AUTH_STATE.isLoggedIn) {
-        const username = (window.AUTH_STATE.email || '').split('@')[0];
-        
-        const emailSpan = document.createElement('span');
-        emailSpan.textContent = username;
-        emailSpan.title = '\ube44\ubc00\ubc88\ud638 \ubcc0\uacbd';
-        emailSpan.style.cssText = 'color: var(--text-muted); font-size: 0.76rem; font-weight: 500; cursor: pointer; text-decoration-line: underline; text-underline-offset: 3px; text-decoration-style: dotted; transition: color 0.2s;';
-        emailSpan.addEventListener('mouseenter', () => emailSpan.style.color = 'var(--accent-cyan)');
-        emailSpan.addEventListener('mouseleave', () => emailSpan.style.color = '');
-        emailSpan.addEventListener('click', () => window.openChangePasswordModal());
-        
+        const email = window.AUTH_STATE.email || '';
+        const displayName = window.AUTH_STATE.displayName || email.split('@')[0];
+
+        const nameSpan = document.createElement('span');
+        nameSpan.id = 'auth-display-name';
+        nameSpan.textContent = displayName;
+        nameSpan.title = '마이페이지';
+        nameSpan.style.cssText = 'color: var(--text-muted); font-size: 0.76rem; font-weight: 500; cursor: pointer; text-decoration-line: underline; text-underline-offset: 3px; text-decoration-style: dotted; transition: color 0.2s;';
+        nameSpan.addEventListener('mouseenter', () => nameSpan.style.color = 'var(--accent-cyan)');
+        nameSpan.addEventListener('mouseleave', () => nameSpan.style.color = '');
+        nameSpan.addEventListener('click', () => openMyPage());
+
         const logoutBtn = document.createElement('button');
         logoutBtn.textContent = '\ub85c\uadf8\uc544\uc6c3';
         logoutBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.4rem 0.7rem; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(4px);';
         logoutBtn.addEventListener('click', () => window.logout());
-        
-        appSection.appendChild(emailSpan);
+
+        appSection.appendChild(nameSpan);
         appSection.appendChild(logoutBtn);
     } else {
         const loginBtn = document.createElement('button');
         loginBtn.textContent = '\ub85c\uadf8\uc778';
         loginBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; backdrop-filter: blur(4px);';
         loginBtn.addEventListener('click', () => window.openAuthModal('login'));
-        
+
         const registerBtn = document.createElement('button');
         registerBtn.textContent = '\ud68c\uc6d0\uac00\uc785';
         registerBtn.style.cssText = 'background: var(--accent-cyan); border: none; color: #030712; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 700; box-shadow: 0 4px 12px rgba(6,182,212,0.3);';
         registerBtn.addEventListener('click', () => window.openAuthModal('register'));
-        
+
         appSection.appendChild(loginBtn);
         appSection.appendChild(registerBtn);
     }
@@ -1766,3 +1867,322 @@ window.openErrorReportModal = openErrorReportModal;
 window.closeErrorReportModal = closeErrorReportModal;
 window.submitErrorReport = submitErrorReport;
 window.removeErrProb = removeErrProb;
+
+
+// ── 검색어 추적 ───────────────────────────────────────────────
+
+function recordSearchQuery(query, type) {
+    if (!query || (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE)) return;
+    searchQueryLog.push({ query, type, addedCount: 0, ts: Date.now() });
+    if (searchQueryLog.length > 20) searchQueryLog.shift();
+}
+
+function markQueryUsed(query) {
+    const entry = [...searchQueryLog].reverse().find(e => e.query === query);
+    if (entry) entry.addedCount++;
+}
+
+function getBestSearchQuery() {
+    const used = searchQueryLog.filter(e => e.addedCount > 0);
+    if (used.length > 0) {
+        return used.sort((a, b) => b.addedCount - a.addedCount || b.ts - a.ts)[0].query;
+    }
+    return searchQueryLog.length > 0 ? searchQueryLog[searchQueryLog.length - 1].query : null;
+}
+
+function cartMatchesTemp() {
+    if (!restoredTempIds) return false;
+    const current = Array.from(cartProblemIds);
+    if (current.length !== restoredTempIds.length) return false;
+    return current.every((id, i) => id === restoredTempIds[i]);
+}
+
+function dismissRestoreBanner() {
+    const banner = document.getElementById('cart-restore-banner');
+    if (banner) banner.style.display = 'none';
+}
+
+async function onRestoreBannerClick() {
+    if (!confirm('복원된 문항을 지우고 새로 시작하시겠습니까?')) return;
+    cartProblemIds.clear();
+    restoredTempIds = null;
+    updateCartUI();
+    dismissRestoreBanner();
+    await fetch('/api/sets/restore', { method: 'DELETE' });
+}
+
+async function restoreTempOnLogin() {
+    if (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE) return;
+    try {
+        const res = await fetch('/api/sets/restore');
+        const data = await res.json();
+        if (!data.has_temp || !data.problem_ids || data.problem_ids.length === 0) return;
+        data.problem_ids.forEach(id => cartProblemIds.add(id));
+        restoredTempIds = [...data.problem_ids];
+        updateCartUI();
+        const banner = document.getElementById('cart-restore-banner');
+        const msg = document.getElementById('cart-restore-msg');
+        if (banner && msg) {
+            msg.textContent = `이전 작업 복원됨 · ${data.problem_ids.length}문항`;
+            banner.style.display = 'flex';
+        }
+    } catch(e) {}
+}
+
+
+// ── 문항지 세트 뷰 ────────────────────────────────────────────
+
+function showSetsView() {
+    const cartView = document.getElementById('cart-view');
+    const setsView = document.getElementById('sets-view');
+    if (cartView) cartView.style.display = 'none';
+    if (setsView) { setsView.style.display = 'flex'; loadMySets(); }
+}
+
+function showCartView() {
+    const cartView = document.getElementById('cart-view');
+    const setsView = document.getElementById('sets-view');
+    if (setsView) setsView.style.display = 'none';
+    if (cartView) cartView.style.display = 'flex';
+}
+
+async function loadMySets() {
+    const container = document.getElementById('sets-list-container');
+    if (!container) return;
+    container.innerHTML = '<div style="padding:1rem; color:var(--text-muted); font-size:0.82rem;">불러오는 중...</div>';
+    try {
+        const res = await fetch('/api/sets/my');
+        const { sets } = await res.json();
+        renderSetsList(sets, container);
+    } catch(e) {
+        container.innerHTML = '<div style="padding:1rem; color:#f87171; font-size:0.82rem;">불러오기 실패</div>';
+    }
+}
+
+function renderSetsList(sets, container) {
+    container.innerHTML = '';
+    if (!sets || sets.length === 0) {
+        container.innerHTML = '<div style="padding:1.5rem 0.5rem; text-align:center; color:var(--text-muted); font-size:0.82rem;">저장된 문항지가 없습니다.</div>';
+        return;
+    }
+    sets.forEach(set => {
+        const item = document.createElement('div');
+        item.className = 'set-item';
+        item.dataset.setId = set.id;
+        const favClass = set.is_favorite ? 'set-fav-btn active' : 'set-fav-btn';
+        const tempBadge = set.status === 'temp' ? '<span class="badge-temp">임시</span>' : '';
+        item.innerHTML = `
+            <div class="set-item-main" onclick="loadSetToCart(${set.id})" title="${set.problem_count}문항">
+                <div class="set-item-title">${tempBadge}${escapeHtmlStr(set.title)}</div>
+                <div class="set-item-meta">${set.created_at}</div>
+            </div>
+            <button class="${favClass}" onclick="toggleFavoriteSet(event,${set.id})" title="즐겨찾기">★</button>
+            <button class="set-del-btn" onclick="deleteSetItem(event,${set.id})" title="삭제">×</button>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function escapeHtmlStr(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function loadSetToCart(setId) {
+    if (cartProblemIds.size > 0 && !cartMatchesTemp()) {
+        if (!confirm(`현재 담긴 ${cartProblemIds.size}문항이 사라집니다. 교체하시겠습니까?`)) return;
+    }
+    try {
+        const res = await fetch(`/api/sets/${setId}`);
+        const set = await res.json();
+        cartProblemIds.clear();
+        set.problem_ids.forEach(id => cartProblemIds.add(id));
+        restoredTempIds = [...set.problem_ids];
+        cartRestoreWarningShown = true;
+        updateCartUI();
+        showCartView();
+    } catch(e) {
+        alert('불러오기 실패');
+    }
+}
+
+async function toggleFavoriteSet(event, setId) {
+    event.stopPropagation();
+    try {
+        const res = await fetch(`/api/sets/${setId}/favorite`, { method: 'PATCH' });
+        const { is_favorite } = await res.json();
+        event.target.classList.toggle('active', is_favorite === 1);
+        loadMySets();
+    } catch(e) {}
+}
+
+async function deleteSetItem(event, setId) {
+    event.stopPropagation();
+    if (!confirm('이 문항지를 삭제하시겠습니까?')) return;
+    try {
+        await fetch(`/api/sets/${setId}`, { method: 'DELETE' });
+        const el = document.querySelector(`.set-item[data-set-id="${setId}"]`);
+        if (el) el.remove();
+    } catch(e) { alert('삭제 실패'); }
+}
+
+// [작성된 문항지] 버튼 이벤트
+document.addEventListener('DOMContentLoaded', () => {
+    const btnMySets = document.getElementById('btn-my-sets');
+    if (!btnMySets) return;
+    btnMySets.addEventListener('click', async () => {
+        if (!window.AUTH_STATE || !window.AUTH_STATE.isLoggedIn) {
+            showCustomAlert('로그인 후 이용 가능합니다.', () => openAuthModal('login'));
+            return;
+        }
+        const hasItems = cartProblemIds.size > 0;
+        const alreadySaved = cartMatchesTemp();
+        if (hasItems && !alreadySaved) {
+            const wantSave = confirm('현재 담은 문항을 저장하시겠습니까?');
+            if (wantSave) {
+                const ids = Array.from(cartProblemIds);
+                let autoTitle = '문항 세트';
+                try {
+                    const tr = await fetch(`/api/sets/auto_title?ids=${encodeURIComponent(ids.join(','))}`);
+                    autoTitle = (await tr.json()).title || autoTitle;
+                } catch(e) {}
+                const inputTitle = prompt('저장할 이름을 입력하세요 (비우면 자동 생성):', autoTitle);
+                if (inputTitle === null) return;
+                await fetch('/api/sets/final', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        problem_ids: ids,
+                        title: inputTitle.trim() || autoTitle,
+                        source_query: getBestSearchQuery()
+                    })
+                });
+                restoredTempIds = [...ids];
+            }
+        }
+        showSetsView();
+    });
+});
+
+// window 전역 노출
+window.showSetsView = showSetsView;
+window.showCartView = showCartView;
+window.loadSetToCart = loadSetToCart;
+window.toggleFavoriteSet = toggleFavoriteSet;
+window.deleteSetItem = deleteSetItem;
+window.dismissRestoreBanner = dismissRestoreBanner;
+window.onRestoreBannerClick = onRestoreBannerClick;
+
+
+// ── 마이페이지 ────────────────────────────────────────────────
+
+function openMyPage() {
+    const modal = document.getElementById('mypage-modal');
+    if (!modal) return;
+    // 사용자 정보 채우기
+    const email = window.AUTH_STATE?.email || '';
+    const displayName = document.getElementById('auth-display-name')?.textContent || email.split('@')[0];
+    const usernameEl = document.getElementById('mypage-username');
+    if (usernameEl) usernameEl.textContent = displayName || email.split('@')[0];
+    const emailEl = document.getElementById('mypage-email');
+    if (emailEl) emailEl.textContent = email;
+    const nameInput = document.getElementById('display-name-input');
+    if (nameInput) nameInput.value = displayName !== email.split('@')[0] ? displayName : '';
+    const hintEl = document.getElementById('display-name-hint');
+    if (hintEl) hintEl.textContent = `현재: ${displayName}`;
+    // 첫 번째 탭(내 문항지) 활성화
+    document.querySelectorAll('.mypage-tab').forEach(b => b.classList.remove('active'));
+    const firstTab = document.querySelector('.mypage-tab[data-tab="my-sets-tab"]');
+    if (firstTab) firstTab.classList.add('active');
+    document.querySelectorAll('.mypage-tab-content').forEach(c => c.style.display = 'none');
+    const setsTab = document.getElementById('my-sets-tab');
+    if (setsTab) setsTab.style.display = 'block';
+    loadMypageSets();
+    modal.style.display = 'flex';
+}
+
+function closeMyPage() {
+    const modal = document.getElementById('mypage-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function openChangePwModal() {
+    window.openChangePasswordModal && window.openChangePasswordModal();
+}
+
+function confirmDeleteAccount() {
+    window.deleteAccount && window.deleteAccount();
+}
+
+function switchMypageTab(btn) {
+    document.querySelectorAll('.mypage-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.mypage-tab-content').forEach(c => c.style.display = 'none');
+    const target = document.getElementById(btn.dataset.tab);
+    if (target) target.style.display = 'block';
+    if (btn.dataset.tab === 'my-sets-tab') loadMypageSets();
+}
+
+async function loadMypageSets() {
+    const container = document.getElementById('mypage-sets-list');
+    if (!container) return;
+    container.innerHTML = '<div style="padding:1rem; color:var(--text-muted); font-size:0.82rem;">불러오는 중...</div>';
+    try {
+        const res = await fetch('/api/sets/my');
+        const { sets } = await res.json();
+        renderSetsList(sets, container);
+        // 마이페이지에서 loadSetToCart 호출 시 모달도 닫기
+        container.querySelectorAll('.set-item-main').forEach(el => {
+            const setId = el.closest('.set-item')?.dataset.setId;
+            if (setId) {
+                el.onclick = async () => {
+                    closeMyPage();
+                    await loadSetToCart(parseInt(setId));
+                    // 장바구니 열기
+                    if (problemCart && !problemCart.classList.contains('open')) {
+                        problemCart.classList.add('open');
+                    }
+                };
+            }
+        });
+    } catch(e) {
+        container.innerHTML = '<div style="padding:1rem; color:#f87171; font-size:0.82rem;">불러오기 실패</div>';
+    }
+}
+
+async function saveDisplayName() {
+    const input = document.getElementById('display-name-input');
+    if (!input) return;
+    const name = input.value.trim();
+    try {
+        const res = await fetch('/api/users/display_name', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ display_name: name })
+        });
+        if (res.ok) {
+            const hintEl = document.getElementById('display-name-hint');
+            if (hintEl) hintEl.textContent = `저장됨: ${name || '(이메일 앞부분 사용)'}`;
+            // 우상단 표시 업데이트
+            const displayNameEl = document.getElementById('auth-display-name');
+            if (displayNameEl && window.AUTH_STATE) {
+                displayNameEl.textContent = name || window.AUTH_STATE.email.split('@')[0];
+            }
+            const usernameEl = document.getElementById('mypage-username');
+            if (usernameEl) usernameEl.textContent = name || window.AUTH_STATE?.email.split('@')[0];
+        }
+    } catch(e) { alert('저장 실패'); }
+}
+
+// 모달 외부 클릭 닫기
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('mypage-modal');
+    if (modal && e.target === modal) closeMyPage();
+});
+
+// window 전역 노출
+window.openMyPage = openMyPage;
+window.closeMyPage = closeMyPage;
+window.openChangePwModal = openChangePwModal;
+window.confirmDeleteAccount = confirmDeleteAccount;
+window.switchMypageTab = switchMypageTab;
+window.saveDisplayName = saveDisplayName;

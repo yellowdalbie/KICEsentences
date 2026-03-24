@@ -205,7 +205,32 @@ def get_db_connection():
                 conn.execute("ALTER TABLE login_logs ADD COLUMN city TEXT")
     except:
         pass
-        
+
+    # Migration: users.display_name
+    try:
+        cursor = conn.execute("PRAGMA table_info(users)")
+        columns = [row['name'] for row in cursor.fetchall()]
+        if 'display_name' not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN display_name TEXT")
+    except:
+        pass
+
+    # New table: problem_sets
+    conn.execute('''CREATE TABLE IF NOT EXISTS problem_sets (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id      INTEGER NOT NULL,
+        status       TEXT    NOT NULL DEFAULT 'final',
+        title        TEXT    NOT NULL,
+        problem_ids  TEXT    NOT NULL,
+        print_config TEXT,
+        is_favorite  INTEGER NOT NULL DEFAULT 0,
+        source_query TEXT,
+        created_at   DATETIME DEFAULT (datetime('now', '+9 hours')),
+        updated_at   DATETIME DEFAULT (datetime('now', '+9 hours'))
+    )''')
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_sets_user ON problem_sets(user_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_sets_status ON problem_sets(user_id, status)")
+
     conn.commit()
     return conn
 
@@ -365,18 +390,21 @@ def auth_delete_account():
 @app.route('/api/auth/me', methods=['GET'])
 def auth_me():
     if 'user_id' in session:
-        # DB에서 최신 is_paid 상태 조회 
+        # DB에서 최신 is_paid 상태 조회
         conn = get_db_connection()
-        user = conn.execute('SELECT is_paid FROM users WHERE id=?', (session['user_id'],)).fetchone()
+        user = conn.execute('SELECT is_paid, display_name FROM users WHERE id=?', (session['user_id'],)).fetchone()
         conn.close()
         if user:
             session['is_paid'] = user['is_paid']  # 세션 캐시 갱신
+            email = session['email']
+            display_name = user['display_name'] if user['display_name'] else email.split('@')[0]
             return jsonify({
                 'isLoggedIn': True,
-                'email': session['email'],
-                'isPaid': bool(user['is_paid'])
+                'email': email,
+                'isPaid': bool(user['is_paid']),
+                'displayName': display_name
             }), 200
-            
+
     return jsonify({'isLoggedIn': False, 'isPaid': False}), 200
 
 # ─────────────────────────────────────────────────────────────
@@ -1639,6 +1667,286 @@ def double_cart():
         print(f"[double_cart log] Error: {e}")
 
     return jsonify({'added': added, 'unmatched': unmatched})
+
+
+# ── 문항지 세트 기능 ──────────────────────────────────────────────
+
+def _generate_set_title(problem_ids):
+    """problem_ids 배열로부터 자동 세트 명칭 생성"""
+    if not problem_ids:
+        return '문항 세트'
+    try:
+        conn = get_db_connection()
+        placeholders = ','.join('?' for _ in problem_ids)
+        rows = conn.execute(f'''
+            SELECT s.action_concept_id
+            FROM steps s
+            WHERE s.problem_id IN ({placeholders})
+              AND s.action_concept_id IS NOT NULL
+        ''', problem_ids).fetchall()
+        conn.close()
+
+        # 성취기준 분류 집계
+        from collections import Counter
+        cpt_counter = Counter()
+        for row in rows:
+            cid = row['action_concept_id'] or ''
+            if 'CA1' in cid:
+                cpt_counter['미적분Ⅰ'] += 1
+            elif 'STA' in cid:
+                cpt_counter['확률과통계'] += 1
+            elif 'ALG' in cid:
+                cpt_counter['대수'] += 1
+            elif 'CM1' in cid or 'CM2' in cid:
+                cpt_counter['공통수학'] += 1
+            elif 'MID' in cid:
+                cpt_counter['중학수학'] += 1
+
+        subject = cpt_counter.most_common(1)[0][0] if cpt_counter else '혼합'
+
+        # 난이도 힌트 (문항번호 기준)
+        nums = []
+        for pid in problem_ids:
+            try:
+                n = int(pid.rsplit('_', 1)[-1])
+                nums.append(n)
+            except:
+                pass
+        difficulty = ''
+        if nums:
+            high_count = sum(1 for n in nums if n >= 21)
+            low_count = sum(1 for n in nums if n <= 15)
+            if high_count > len(nums) / 2:
+                difficulty = ' 고난도'
+            elif low_count > len(nums) / 2:
+                difficulty = ' 기본'
+
+        return f'{subject}{difficulty} {len(problem_ids)}문항'
+    except:
+        return f'{len(problem_ids)}문항 세트'
+
+
+@app.route('/api/sets/auto_title')
+def sets_auto_title():
+    if OFFLINE_MODE:
+        return jsonify({'title': '문항 세트'})
+    ids_str = request.args.get('ids', '').strip()
+    if not ids_str:
+        return jsonify({'title': '문항 세트'})
+    problem_ids = [x.strip() for x in ids_str.split(',') if x.strip()]
+    title = _generate_set_title(problem_ids)
+    return jsonify({'title': title})
+
+
+@app.route('/api/sets/temp', methods=['POST'])
+def sets_save_temp():
+    if OFFLINE_MODE:
+        return jsonify({'status': 'ok'})
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    user_id = session['user_id']
+    data = request.get_json(silent=True) or {}
+    problem_ids = data.get('problem_ids', [])
+    title = data.get('title', '문항 세트')
+    source_query = data.get('source_query')
+    if not problem_ids:
+        return jsonify({'error': '문항 없음'}), 400
+    import json as json_module
+    conn = get_db_connection()
+    conn.execute("DELETE FROM problem_sets WHERE user_id=? AND status='temp'", (user_id,))
+    cursor = conn.execute(
+        "INSERT INTO problem_sets (user_id, status, title, problem_ids, source_query) VALUES (?, 'temp', ?, ?, ?)",
+        (user_id, title, json_module.dumps(problem_ids, ensure_ascii=False), source_query)
+    )
+    new_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok', 'id': new_id})
+
+
+@app.route('/api/sets/restore', methods=['GET'])
+def sets_restore():
+    if OFFLINE_MODE:
+        return jsonify({'has_temp': False})
+    if 'user_id' not in session:
+        return jsonify({'has_temp': False})
+    user_id = session['user_id']
+    import json as json_module
+    conn = get_db_connection()
+    row = conn.execute(
+        "SELECT id, title, problem_ids, created_at FROM problem_sets WHERE user_id=? AND status='temp'",
+        (user_id,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'has_temp': False})
+    return jsonify({
+        'has_temp': True,
+        'id': row['id'],
+        'title': row['title'],
+        'problem_ids': json_module.loads(row['problem_ids']),
+        'created_at': row['created_at']
+    })
+
+
+@app.route('/api/sets/restore', methods=['DELETE'])
+def sets_delete_temp():
+    if OFFLINE_MODE:
+        return jsonify({'status': 'ok'})
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    user_id = session['user_id']
+    conn = get_db_connection()
+    conn.execute("DELETE FROM problem_sets WHERE user_id=? AND status='temp'", (user_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok'})
+
+
+@app.route('/api/sets/final', methods=['POST'])
+def sets_save_final():
+    if OFFLINE_MODE:
+        return jsonify({'status': 'ok'})
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    user_id = session['user_id']
+    data = request.get_json(silent=True) or {}
+    problem_ids = data.get('problem_ids', [])
+    title = (data.get('title') or '').strip() or '문항 세트'
+    source_query = data.get('source_query')
+    if not problem_ids:
+        return jsonify({'error': '문항 없음'}), 400
+    import json as json_module
+    ids_json = json_module.dumps(problem_ids, ensure_ascii=False)
+    conn = get_db_connection()
+    # 기존 temp 레코드를 final로 승격
+    existing = conn.execute(
+        "SELECT id FROM problem_sets WHERE user_id=? AND status='temp'",
+        (user_id,)
+    ).fetchone()
+    if existing:
+        conn.execute(
+            "UPDATE problem_sets SET status='final', title=?, problem_ids=?, updated_at=datetime('now','+9 hours') WHERE id=?",
+            (title, ids_json, existing['id'])
+        )
+        new_id = existing['id']
+    else:
+        cursor = conn.execute(
+            "INSERT INTO problem_sets (user_id, status, title, problem_ids, source_query) VALUES (?, 'final', ?, ?, ?)",
+            (user_id, title, ids_json, source_query)
+        )
+        new_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok', 'id': new_id})
+
+
+@app.route('/api/sets/my')
+def sets_my():
+    if OFFLINE_MODE:
+        return jsonify({'sets': []})
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    user_id = session['user_id']
+    import json as json_module
+    conn = get_db_connection()
+    rows = conn.execute(
+        "SELECT id, status, title, problem_ids, is_favorite, created_at FROM problem_sets WHERE user_id=? ORDER BY is_favorite DESC, updated_at DESC",
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    sets = []
+    for row in rows:
+        try:
+            ids = json_module.loads(row['problem_ids'])
+            count = len(ids)
+        except:
+            count = 0
+        sets.append({
+            'id': row['id'],
+            'status': row['status'],
+            'title': row['title'],
+            'problem_count': count,
+            'is_favorite': row['is_favorite'],
+            'created_at': row['created_at'][:16] if row['created_at'] else ''
+        })
+    return jsonify({'sets': sets})
+
+
+@app.route('/api/sets/<int:set_id>', methods=['GET'])
+def sets_get(set_id):
+    if OFFLINE_MODE:
+        return jsonify({'error': 'not available'}), 404
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    user_id = session['user_id']
+    import json as json_module
+    conn = get_db_connection()
+    row = conn.execute(
+        "SELECT id, status, title, problem_ids, is_favorite, created_at FROM problem_sets WHERE id=? AND user_id=?",
+        (set_id, user_id)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'error': '없음'}), 404
+    return jsonify({
+        'id': row['id'],
+        'status': row['status'],
+        'title': row['title'],
+        'problem_ids': json_module.loads(row['problem_ids']),
+        'is_favorite': row['is_favorite'],
+        'created_at': row['created_at'][:16] if row['created_at'] else ''
+    })
+
+
+@app.route('/api/sets/<int:set_id>', methods=['DELETE'])
+def sets_delete(set_id):
+    if OFFLINE_MODE:
+        return jsonify({'status': 'ok'})
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    user_id = session['user_id']
+    conn = get_db_connection()
+    conn.execute("DELETE FROM problem_sets WHERE id=? AND user_id=?", (set_id, user_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok'})
+
+
+@app.route('/api/sets/<int:set_id>/favorite', methods=['PATCH'])
+def sets_toggle_favorite(set_id):
+    if OFFLINE_MODE:
+        return jsonify({'is_favorite': 0})
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    user_id = session['user_id']
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE problem_sets SET is_favorite=CASE WHEN is_favorite=1 THEN 0 ELSE 1 END, updated_at=datetime('now','+9 hours') WHERE id=? AND user_id=?",
+        (set_id, user_id)
+    )
+    conn.commit()
+    row = conn.execute("SELECT is_favorite FROM problem_sets WHERE id=?", (set_id,)).fetchone()
+    conn.close()
+    return jsonify({'is_favorite': row['is_favorite'] if row else 0})
+
+
+@app.route('/api/users/display_name', methods=['PATCH'])
+def update_display_name():
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인 필요'}), 401
+    data = request.get_json(silent=True) or {}
+    display_name = (data.get('display_name') or '').strip()
+    if len(display_name) > 20:
+        return jsonify({'error': '별칭은 최대 20자입니다.'}), 400
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE users SET display_name=? WHERE id=?",
+        (display_name or None, session['user_id'])
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok', 'display_name': display_name or None})
 
 
 if __name__ == '__main__':
