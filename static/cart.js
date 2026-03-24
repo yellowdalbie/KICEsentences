@@ -133,7 +133,10 @@ function toggleCartItem(problemId) {
                 `이전에 담아두셨던 ${restoredTempIds.length}문항이 있습니다.\n이어서 추가하시겠습니까?`,
                 () => _doAddItem(strId),
                 {
-                    confirmText: '이어서 추가',
+                    confirmText: '유지 및 추가',
+                    confirmStyle: 'safe',
+                    cancelText: '삭제 및 추가',
+                    cancelStyle: 'danger',
                     onCancel: () => {
                         cartProblemIds.clear();
                         restoredTempIds = null;
@@ -1228,6 +1231,7 @@ function showCustomConfirm(message, onConfirm, options = {}) {
     const modal = document.getElementById('custom-confirm-modal');
     const msgEl = document.getElementById('custom-confirm-message');
     const okBtn = document.getElementById('custom-confirm-ok-btn');
+    const cancelBtn = document.getElementById('custom-confirm-cancel-btn');
     const iconEl = document.getElementById('custom-confirm-icon');
     if (!modal || !msgEl) return;
 
@@ -1235,19 +1239,26 @@ function showCustomConfirm(message, onConfirm, options = {}) {
     _customConfirmCancelCallback = options.onCancel || null;
     msgEl.innerHTML = message.replace(/\n/g, '<br>');
 
+    const allStyles = ['cmodal-btn-primary', 'cmodal-btn-safe', 'cmodal-btn-danger', 'cmodal-btn-neutral'];
+
     if (okBtn) {
         okBtn.textContent = options.confirmText || '확인';
-        if (options.dangerous) {
-            okBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
-            okBtn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-        } else {
-            okBtn.style.background = '';
-            okBtn.style.boxShadow = '';
-        }
+        okBtn.style.background = '';
+        okBtn.style.boxShadow = '';
+        okBtn.classList.remove(...allStyles);
+        const confirmStyle = options.confirmStyle || (options.dangerous ? 'danger' : 'primary');
+        okBtn.classList.add(`cmodal-btn-${confirmStyle}`);
+    }
+    if (cancelBtn) {
+        cancelBtn.textContent = options.cancelText || '취소';
+        cancelBtn.classList.remove(...allStyles);
+        const cancelStyle = options.cancelStyle || 'neutral';
+        cancelBtn.classList.add(`cmodal-btn-${cancelStyle}`);
     }
     if (iconEl) {
-        iconEl.style.background = options.dangerous ? 'rgba(239,68,68,0.2)' : 'rgba(139,92,246,0.2)';
-        iconEl.style.color = options.dangerous ? '#f87171' : '#a78bfa';
+        const isDanger = options.dangerous || options.confirmStyle === 'danger';
+        iconEl.style.background = isDanger ? 'rgba(239,68,68,0.2)' : 'rgba(139,92,246,0.2)';
+        iconEl.style.color = isDanger ? '#f87171' : '#a78bfa';
     }
 
     modal.style.display = 'flex';
@@ -2165,7 +2176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         showSetsView();
                     });
                 },
-                { confirmText: '저장', onCancel: () => showSetsView() }
+                { confirmText: '저장', confirmStyle: 'safe', onCancel: () => showSetsView() }
             );
         } else {
             showSetsView();

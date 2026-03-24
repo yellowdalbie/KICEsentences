@@ -1507,7 +1507,7 @@
                 </svg>
             </div>
             <div id="custom-alert-message" class="custom-alert-message">알림 메시지</div>
-            <button class="custom-alert-btn" onclick="closeCustomAlert()">확인</button>
+            <button class="custom-alert-btn cmodal-btn-primary" id="custom-alert-ok-btn" onclick="closeCustomAlert()">확인</button>
         </div>
     </div>
 
@@ -1523,8 +1523,8 @@
             </div>
             <div id="custom-confirm-message" class="custom-alert-message"></div>
             <div style="display: flex; gap: 0.75rem; justify-content: center;">
-                <button class="custom-alert-btn" id="custom-confirm-cancel-btn" onclick="closeCustomConfirm(false)">취소</button>
-                <button class="custom-alert-btn" id="custom-confirm-ok-btn" onclick="closeCustomConfirm(true)">확인</button>
+                <button class="custom-alert-btn cmodal-btn-neutral" id="custom-confirm-cancel-btn" onclick="closeCustomConfirm(false)">취소</button>
+                <button class="custom-alert-btn cmodal-btn-primary" id="custom-confirm-ok-btn" onclick="closeCustomConfirm(true)">확인</button>
             </div>
         </div>
     </div>
@@ -1541,8 +1541,8 @@
             <input id="custom-prompt-input" class="custom-prompt-input" type="text"
                 onkeydown="if(event.key==='Enter')closeCustomPrompt(true);if(event.key==='Escape')closeCustomPrompt(false);">
             <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.25rem;">
-                <button class="custom-alert-btn" id="custom-prompt-cancel-btn" onclick="closeCustomPrompt(false)">취소</button>
-                <button class="custom-alert-btn" id="custom-prompt-ok-btn" onclick="closeCustomPrompt(true)">확인</button>
+                <button class="custom-alert-btn cmodal-btn-neutral" id="custom-prompt-cancel-btn" onclick="closeCustomPrompt(false)">취소</button>
+                <button class="custom-alert-btn cmodal-btn-safe" id="custom-prompt-ok-btn" onclick="closeCustomPrompt(true)">확인</button>
             </div>
         </div>
     </div>
