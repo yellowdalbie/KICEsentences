@@ -2054,7 +2054,7 @@ body {
         position: relative !important;
     }
 }
-#custom-alert-modal, #custom-confirm-modal {
+#custom-alert-modal, #custom-confirm-modal, #custom-prompt-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -2085,7 +2085,8 @@ body {
 }
 
 #custom-alert-modal.show .custom-alert-content,
-#custom-confirm-modal.show .custom-alert-content {
+#custom-confirm-modal.show .custom-alert-content,
+#custom-prompt-modal.show .custom-alert-content {
     transform: scale(1);
     opacity: 1;
 }
@@ -2126,6 +2127,38 @@ body {
     background: var(--accent-blue);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+#custom-confirm-cancel-btn, #custom-prompt-cancel-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px 24px;
+}
+#custom-confirm-cancel-btn:hover, #custom-prompt-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    box-shadow: none;
+}
+#custom-confirm-ok-btn, #custom-prompt-ok-btn {
+    padding: 8px 24px;
+}
+
+.custom-prompt-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    color: #f8fafc;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.custom-prompt-input:focus {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
 }
 
 /* Link Icon Styling */

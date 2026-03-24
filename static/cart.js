@@ -108,39 +108,45 @@ function updateCartUI() {
     refreshTableCartVisuals();
 }
 
+function _doAddItem(strId) {
+    if (cartProblemIds.size === 20) {
+        showCustomAlert('21번째 문항부터는 인쇄 미리보기 로딩이 다소 느릴 수 있습니다.');
+    }
+    cartProblemIds.add(strId);
+    if (cartProblemIds.size === 1 && !problemCart.classList.contains('open')) {
+        problemCart.classList.add('open');
+    }
+    updateCartUI();
+}
+
 function toggleCartItem(problemId) {
     if (!problemId) return;
     const strId = String(problemId);
 
     if (cartProblemIds.has(strId)) {
         cartProblemIds.delete(strId);
+        updateCartUI();
     } else {
-        // 새로 추가하는 경우만 체크
-        // 복원 경고 (세션 1회)
         if (restoredTempIds && restoredTempIds.length > 0 && !cartRestoreWarningShown) {
             cartRestoreWarningShown = true;
-            const choice = confirm(
-                `이전에 담아두셨던 ${restoredTempIds.length}문항이 있습니다.\n\n[확인] 이어서 추가하기\n[취소] 장바구니 비우고 새로 담기`
+            showCustomConfirm(
+                `이전에 담아두셨던 ${restoredTempIds.length}문항이 있습니다.\n이어서 추가하시겠습니까?`,
+                () => _doAddItem(strId),
+                {
+                    confirmText: '이어서 추가',
+                    onCancel: () => {
+                        cartProblemIds.clear();
+                        restoredTempIds = null;
+                        dismissRestoreBanner();
+                        fetch('/api/sets/restore', { method: 'DELETE' });
+                        _doAddItem(strId);
+                    }
+                }
             );
-            if (!choice) {
-                cartProblemIds.clear();
-                restoredTempIds = null;
-                dismissRestoreBanner();
-                fetch('/api/sets/restore', { method: 'DELETE' });
-            }
-        }
-        // 20문항 초과 경고
-        if (cartProblemIds.size === 20) {
-            alert('21번째 문항부터는 인쇄 미리보기 로딩이 다소 느릴 수 있습니다.');
-        }
-        cartProblemIds.add(strId);
-        // Auto-open cart if it's the first item added
-        if (cartProblemIds.size === 1 && !problemCart.classList.contains('open')) {
-            problemCart.classList.add('open');
+        } else {
+            _doAddItem(strId);
         }
     }
-
-    updateCartUI();
 }
 
 function refreshTableCartVisuals() {
@@ -1195,19 +1201,36 @@ window.closeCustomAlert = closeCustomAlert;
 
 // Custom Confirm Functions
 let _customConfirmCallback = null;
+let _customConfirmCancelCallback = null;
 
-function showCustomConfirm(message, onConfirm) {
+function showCustomConfirm(message, onConfirm, options = {}) {
     const modal = document.getElementById('custom-confirm-modal');
     const msgEl = document.getElementById('custom-confirm-message');
+    const okBtn = document.getElementById('custom-confirm-ok-btn');
+    const iconEl = document.getElementById('custom-confirm-icon');
     if (!modal || !msgEl) return;
 
     _customConfirmCallback = onConfirm || null;
+    _customConfirmCancelCallback = options.onCancel || null;
     msgEl.innerHTML = message.replace(/\n/g, '<br>');
-    modal.style.display = 'flex';
 
-    setTimeout(() => {
-        modal.classList.add('show');
-    }, 10);
+    if (okBtn) {
+        okBtn.textContent = options.confirmText || '확인';
+        if (options.dangerous) {
+            okBtn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+            okBtn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+        } else {
+            okBtn.style.background = '';
+            okBtn.style.boxShadow = '';
+        }
+    }
+    if (iconEl) {
+        iconEl.style.background = options.dangerous ? 'rgba(239,68,68,0.2)' : 'rgba(139,92,246,0.2)';
+        iconEl.style.color = options.dangerous ? '#f87171' : '#a78bfa';
+    }
+
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
 }
 
 function closeCustomConfirm(isConfirmed) {
@@ -1219,13 +1242,55 @@ function closeCustomConfirm(isConfirmed) {
         modal.style.display = 'none';
         if (isConfirmed && typeof _customConfirmCallback === 'function') {
             _customConfirmCallback();
+        } else if (!isConfirmed && typeof _customConfirmCancelCallback === 'function') {
+            _customConfirmCancelCallback();
         }
         _customConfirmCallback = null;
+        _customConfirmCancelCallback = null;
     }, 300);
 }
 
 window.showCustomConfirm = showCustomConfirm;
 window.closeCustomConfirm = closeCustomConfirm;
+
+// Custom Prompt Functions
+let _customPromptCallback = null;
+
+function showCustomPrompt(message, defaultValue, onResult) {
+    const modal = document.getElementById('custom-prompt-modal');
+    const msgEl = document.getElementById('custom-prompt-message');
+    const input = document.getElementById('custom-prompt-input');
+    if (!modal || !msgEl || !input) return;
+
+    _customPromptCallback = onResult || null;
+    msgEl.innerHTML = message.replace(/\n/g, '<br>');
+    input.value = defaultValue || '';
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('show');
+        input.focus();
+        input.select();
+    }, 50);
+}
+
+function closeCustomPrompt(isConfirmed) {
+    const modal = document.getElementById('custom-prompt-modal');
+    const input = document.getElementById('custom-prompt-input');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    const value = isConfirmed ? (input ? input.value : '') : null;
+    setTimeout(() => {
+        modal.style.display = 'none';
+        if (typeof _customPromptCallback === 'function') {
+            _customPromptCallback(value);
+        }
+        _customPromptCallback = null;
+    }, 300);
+}
+
+window.showCustomPrompt = showCustomPrompt;
+window.closeCustomPrompt = closeCustomPrompt;
 
 // Initial UI setup
 updateCartUI();
@@ -1902,13 +1967,18 @@ function dismissRestoreBanner() {
     if (banner) banner.style.display = 'none';
 }
 
-async function onRestoreBannerClick() {
-    if (!confirm('복원된 문항을 지우고 새로 시작하시겠습니까?')) return;
-    cartProblemIds.clear();
-    restoredTempIds = null;
-    updateCartUI();
-    dismissRestoreBanner();
-    await fetch('/api/sets/restore', { method: 'DELETE' });
+function onRestoreBannerClick() {
+    showCustomConfirm(
+        '복원된 문항을 지우고 새로 시작하시겠습니까?',
+        async () => {
+            cartProblemIds.clear();
+            restoredTempIds = null;
+            updateCartUI();
+            dismissRestoreBanner();
+            await fetch('/api/sets/restore', { method: 'DELETE' });
+        },
+        { confirmText: '새로 시작', dangerous: true }
+    );
 }
 
 async function restoreTempOnLogin() {
@@ -1988,20 +2058,28 @@ function escapeHtmlStr(str) {
 }
 
 async function loadSetToCart(setId) {
+    const doLoad = async () => {
+        try {
+            const res = await fetch(`/api/sets/${setId}`);
+            const set = await res.json();
+            cartProblemIds.clear();
+            set.problem_ids.forEach(id => cartProblemIds.add(id));
+            restoredTempIds = [...set.problem_ids];
+            cartRestoreWarningShown = true;
+            updateCartUI();
+            showCartView();
+        } catch(e) {
+            showCustomAlert('불러오기 실패');
+        }
+    };
     if (cartProblemIds.size > 0 && !cartMatchesTemp()) {
-        if (!confirm(`현재 담긴 ${cartProblemIds.size}문항이 사라집니다. 교체하시겠습니까?`)) return;
-    }
-    try {
-        const res = await fetch(`/api/sets/${setId}`);
-        const set = await res.json();
-        cartProblemIds.clear();
-        set.problem_ids.forEach(id => cartProblemIds.add(id));
-        restoredTempIds = [...set.problem_ids];
-        cartRestoreWarningShown = true;
-        updateCartUI();
-        showCartView();
-    } catch(e) {
-        alert('불러오기 실패');
+        showCustomConfirm(
+            `현재 담긴 ${cartProblemIds.size}문항이 사라집니다.\n교체하시겠습니까?`,
+            doLoad,
+            { confirmText: '교체', dangerous: true }
+        );
+    } else {
+        await doLoad();
     }
 }
 
@@ -2015,14 +2093,19 @@ async function toggleFavoriteSet(event, setId) {
     } catch(e) {}
 }
 
-async function deleteSetItem(event, setId) {
+function deleteSetItem(event, setId) {
     event.stopPropagation();
-    if (!confirm('이 문항지를 삭제하시겠습니까?')) return;
-    try {
-        await fetch(`/api/sets/${setId}`, { method: 'DELETE' });
-        const el = document.querySelector(`.set-item[data-set-id="${setId}"]`);
-        if (el) el.remove();
-    } catch(e) { alert('삭제 실패'); }
+    showCustomConfirm(
+        '이 문항지를 삭제하시겠습니까?',
+        async () => {
+            try {
+                await fetch(`/api/sets/${setId}`, { method: 'DELETE' });
+                const el = document.querySelector(`.set-item[data-set-id="${setId}"]`);
+                if (el) el.remove();
+            } catch(e) { showCustomAlert('삭제 실패'); }
+        },
+        { confirmText: '삭제', dangerous: true }
+    );
 }
 
 // [작성된 문항지] 버튼 이벤트
@@ -2037,29 +2120,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasItems = cartProblemIds.size > 0;
         const alreadySaved = cartMatchesTemp();
         if (hasItems && !alreadySaved) {
-            const wantSave = confirm('현재 담은 문항을 저장하시겠습니까?');
-            if (wantSave) {
-                const ids = Array.from(cartProblemIds);
-                let autoTitle = '문항 세트';
-                try {
-                    const tr = await fetch(`/api/sets/auto_title?ids=${encodeURIComponent(ids.join(','))}`);
-                    autoTitle = (await tr.json()).title || autoTitle;
-                } catch(e) {}
-                const inputTitle = prompt('저장할 이름을 입력하세요 (비우면 자동 생성):', autoTitle);
-                if (inputTitle === null) return;
-                await fetch('/api/sets/final', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        problem_ids: ids,
-                        title: inputTitle.trim() || autoTitle,
-                        source_query: getBestSearchQuery()
-                    })
-                });
-                restoredTempIds = [...ids];
-            }
+            showCustomConfirm(
+                '현재 담은 문항을 저장하시겠습니까?',
+                async () => {
+                    const ids = Array.from(cartProblemIds);
+                    let autoTitle = '문항 세트';
+                    try {
+                        const tr = await fetch(`/api/sets/auto_title?ids=${encodeURIComponent(ids.join(','))}`);
+                        autoTitle = (await tr.json()).title || autoTitle;
+                    } catch(e) {}
+                    showCustomPrompt('저장할 이름을 입력하세요', autoTitle, async (inputTitle) => {
+                        if (inputTitle === null) return;
+                        await fetch('/api/sets/final', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                problem_ids: ids,
+                                title: inputTitle.trim() || autoTitle,
+                                source_query: getBestSearchQuery()
+                            })
+                        });
+                        restoredTempIds = [...ids];
+                        showSetsView();
+                    });
+                },
+                { confirmText: '저장', onCancel: () => showSetsView() }
+            );
+        } else {
+            showSetsView();
         }
-        showSetsView();
     });
 });
 
@@ -2170,7 +2259,7 @@ async function saveDisplayName() {
             const usernameEl = document.getElementById('mypage-username');
             if (usernameEl) usernameEl.textContent = name || window.AUTH_STATE?.email.split('@')[0];
         }
-    } catch(e) { alert('저장 실패'); }
+    } catch(e) { showCustomAlert('저장 실패'); }
 }
 
 // 모달 외부 클릭 닫기
