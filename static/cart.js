@@ -2223,11 +2223,14 @@ function openMyPage() {
     if (setsTab) setsTab.style.display = 'block';
     loadMypageSets();
     modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
 }
 
 function closeMyPage() {
     const modal = document.getElementById('mypage-modal');
-    if (modal) modal.style.display = 'none';
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => { if (!modal.classList.contains('show')) modal.style.display = 'none'; }, 250);
 }
 
 function openChangePwModal() {
