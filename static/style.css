@@ -1763,13 +1763,12 @@ body.preview-open #global-actions-left {
 
 .csat-num-box {
     display: inline-block;
-    font-size: 1.4rem;
+    font-size: 0.93rem;
     font-weight: 600;
-    /* Thinned from 900 */
     border: 1px solid #111;
-    padding: 2px 8px;
+    padding: 2px 6px;
     margin-bottom: 5px;
-    margin-right: 8px;
+    margin-right: 6px;
     vertical-align: middle;
     color: #000;
 }
@@ -1782,7 +1781,8 @@ body.preview-open #global-actions-left {
     background: #f1f5f9;
     padding: 2px 6px;
     border-radius: 4px;
-    vertical-align: middle;
+    vertical-align: top;
+    margin-bottom: 4px;
     font-family: monospace;
 }
 
@@ -1857,13 +1857,12 @@ body.preview-open #global-actions-left {
 
 .csat-inline-answer {
     font-size: 0.85rem;
-    /* Slightly smaller */
     color: #000;
-    /* Pure black */
     font-weight: normal;
-    /* No bold */
     font-family: inherit;
     margin-left: 10px;
+    align-self: flex-start;
+    margin-bottom: 4px;
 }
 
 .csat-ans-table-end {
