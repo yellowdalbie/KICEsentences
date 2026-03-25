@@ -210,6 +210,28 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   </div>
 </div>
 
+<!-- 인기 Step 검색 (step_id 클릭으로 발생한 별도 검색) -->
+<div style="margin-bottom:1.5rem;">
+  <div style="font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem;">인기 Step (Top 10) — 개념유사도 결과에서 특정 Step 선택</div>
+  <div class="section-box" style="padding:0; overflow:hidden;">
+    <table style="font-size:0.78rem;">
+      <thead><tr><th>문항 ID</th><th>Step</th><th>제목 (요약)</th><th>횟수</th></tr></thead>
+      <tbody>
+        {% for row in stats.top_steps %}
+        <tr>
+          <td style="color:var(--cyan); font-family:monospace; white-space:nowrap;">{{ row.problem_id }}</td>
+          <td style="color:var(--muted); white-space:nowrap; text-align:center;">{{ row.step_number }}</td>
+          <td style="color:var(--text);" title="step_id: {{ row.step_id }}">{{ row.step_title }}{% if row.step_title|length >= 45 %}…{% endif %}</td>
+          <td style="white-space:nowrap;">{{ row.cnt }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="text-align:center; color:var(--muted); padding:1rem;">데이터 없음</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
 <!-- 0건 결과 검색어 -->
 <div class="grid-2" style="margin-bottom:2rem;">
   <div>

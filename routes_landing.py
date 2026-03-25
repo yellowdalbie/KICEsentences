@@ -26,6 +26,8 @@ from flask import (Blueprint, g, jsonify, make_response, redirect,
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 유저 데이터 DB 파일 경로 (dashboard.py와 동기화)
 MAIN_DB_FILE = os.path.join(BASE_DIR, 'kice_userdata.sqlite')
+# 문항/스텝 DB 파일 경로 (step 정보 룩업용)
+KICE_DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
 
 landing_bp = Blueprint('landing_bp', __name__)
 
@@ -55,6 +57,7 @@ def get_db():
 
 
 def init_db():
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     db = get_db()
     db.executescript('''
         CREATE TABLE IF NOT EXISTS visits (
@@ -288,6 +291,7 @@ def admin():
         'top_expressions': [],
         'top_probids':     [],
         'top_units':       [],
+        'top_steps':       [],
         'zero_result_concepts': [],
         'cart_totals':     {},
         'recent_cart_logs': [],
@@ -328,34 +332,40 @@ def admin():
             search_rows = main_conn.execute('SELECT search_type, COUNT(*) as cnt FROM search_stats GROUP BY search_type').fetchall()
             stats['search_totals'] = { r['search_type']: r['cnt'] for r in search_rows }
             
-            # 인기 검색어 (유형별 Top 10)
+            # 인기 검색어 (유형별 Top 10) — step_id: 접두사 항목은 별도 테이블로
             stats['top_concepts'] = main_conn.execute('''
-                SELECT query_text, COUNT(*) as cnt FROM search_stats 
+                SELECT query_text, COUNT(*) as cnt FROM search_stats
                 WHERE search_type = '개념유사도' AND query_text IS NOT NULL AND query_text != ""
+                  AND query_text NOT LIKE 'step_id:%'
                 GROUP BY query_text ORDER BY cnt DESC LIMIT 10
             ''').fetchall()
 
             stats['top_expressions'] = main_conn.execute('''
-                SELECT query_text, COUNT(*) as cnt FROM search_stats 
+                SELECT query_text, COUNT(*) as cnt FROM search_stats
                 WHERE search_type = '기출표현' AND query_text IS NOT NULL AND query_text != ""
                 GROUP BY query_text ORDER BY cnt DESC LIMIT 10
             ''').fetchall()
 
             stats['top_probids'] = main_conn.execute('''
-                SELECT query_text, COUNT(*) as cnt FROM search_stats 
+                SELECT query_text, COUNT(*) as cnt FROM search_stats
                 WHERE search_type = '문항번호' AND query_text IS NOT NULL AND query_text != ""
                 GROUP BY query_text ORDER BY cnt DESC LIMIT 10
             ''').fetchall()
-            
-            # Top 성취기준
-            stats['top_units'] = main_conn.execute('''
-                SELECT s.query_text as concept_id, c.standard_name, COUNT(*) as cnt
-                FROM search_stats s
-                LEFT JOIN concepts c ON s.query_text = c.id
-                WHERE s.search_type = '성취기준' AND s.query_text IS NOT NULL
-                GROUP BY s.query_text
-                ORDER BY cnt DESC LIMIT 10
-            ''').fetchall()
+
+            # Top 성취기준 — concepts JOIN 제거 (다른 DB 파일이라 불가), 이름은 별도 룩업
+            raw_units = [dict(r) for r in main_conn.execute('''
+                SELECT query_text as concept_id, COUNT(*) as cnt
+                FROM search_stats
+                WHERE search_type = '성취기준' AND query_text IS NOT NULL
+                GROUP BY query_text ORDER BY cnt DESC LIMIT 10
+            ''').fetchall()]
+
+            # 인기 Step 검색 (step_id:XXX 형식 항목) — 이름은 별도 룩업
+            raw_top_steps = [dict(r) for r in main_conn.execute('''
+                SELECT query_text, COUNT(*) as cnt FROM search_stats
+                WHERE search_type = '개념유사도' AND query_text LIKE 'step_id:%'
+                GROUP BY query_text ORDER BY cnt DESC LIMIT 10
+            ''').fetchall()]
 
             # 0건 결과 검색어 (개념유사도, Top 10)
             stats['zero_result_concepts'] = main_conn.execute('''
@@ -379,6 +389,61 @@ def admin():
             ''').fetchall()
 
             main_conn.close()
+
+            # ── kice_database.sqlite 에서 성취기준 이름 + Step 정보 룩업 ──
+            if os.path.exists(KICE_DB_FILE):
+                try:
+                    kice_conn = sqlite3.connect(KICE_DB_FILE)
+                    kice_conn.row_factory = sqlite3.Row
+
+                    # top_units: standard_name 보완
+                    top_units_result = []
+                    for row in raw_units:
+                        cid = row['concept_id']
+                        name_row = kice_conn.execute(
+                            'SELECT standard_name FROM concepts WHERE id=?', (cid,)
+                        ).fetchone()
+                        top_units_result.append({
+                            'concept_id': cid,
+                            'standard_name': name_row['standard_name'] if name_row else None,
+                            'cnt': row['cnt'],
+                        })
+                    stats['top_units'] = top_units_result
+
+                    # top_steps: step 정보 보완
+                    top_steps_result = []
+                    for row in raw_top_steps:
+                        qt = row['query_text']   # "step_id:1336"
+                        try:
+                            step_id = int(qt.split(':', 1)[1])
+                        except (ValueError, IndexError):
+                            continue
+                        step_row = kice_conn.execute(
+                            'SELECT problem_id, step_number, step_title FROM steps WHERE step_id=?',
+                            (step_id,)
+                        ).fetchone()
+                        top_steps_result.append({
+                            'step_id': step_id,
+                            'problem_id': step_row['problem_id'] if step_row else '?',
+                            'step_number': step_row['step_number'] if step_row else '?',
+                            'step_title': (step_row['step_title'] or '')[:45] if step_row else '(제목 없음)',
+                            'cnt': row['cnt'],
+                        })
+                    stats['top_steps'] = top_steps_result
+
+                    kice_conn.close()
+                except Exception as e:
+                    print(f"[Admin] kice_db lookup error: {e}")
+                    # fallback: top_units without standard_name
+                    stats['top_units'] = [
+                        {'concept_id': r['concept_id'], 'standard_name': None, 'cnt': r['cnt']}
+                        for r in raw_units
+                    ]
+            else:
+                stats['top_units'] = [
+                    {'concept_id': r['concept_id'], 'standard_name': None, 'cnt': r['cnt']}
+                    for r in raw_units
+                ]
         except Exception as e:
             print(f"[Admin] Error fetching data from main DB: {e}")
 
