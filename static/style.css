@@ -1212,7 +1212,7 @@ body {
     background: #1e293b;
     border: 1px solid rgba(167, 139, 250, 0.5);
     border-radius: 8px;
-    padding: 5px;
+    padding: 5px 5px 5px 5px;
     pointer-events: none;
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
 }
@@ -1754,35 +1754,78 @@ body.preview-open #global-actions-left {
 /* Item Container & Labels */
 .csat-item-container {
     position: relative;
-    /* Grid cell contains the full height of the item */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .csat-item-container.is-long {
     grid-row: 1 / span 2;
 }
 
+/* ── Row 1: pid + 정답 (일반 흐름) ── */
+.csat-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    padding-bottom: 2px;
+    min-height: 0;
+}
+
+/* ── Image area: num-box overlay 포함 ── */
+.csat-img-area {
+    flex: 1;
+    position: relative;
+    overflow: visible;
+    min-height: 0;
+}
+
+/* ── num-box: absolute overlay on image ── */
+.csat-num-overlay {
+    position: absolute;
+    /* ★ 미세조정 포인트: 원본 문항번호와 겹치도록 top/left 조절 */
+    top: 5px;
+    left: -6px;
+    z-index: 2;
+}
+
 .csat-num-box {
-    display: inline-block;
-    font-size: 0.93rem;
+    display: block;
+    font-size: 0.74rem;
     font-weight: 600;
-    border: 1px solid #111;
-    padding: 2px 6px;
-    margin-bottom: 5px;
-    margin-right: 6px;
-    vertical-align: middle;
+    border: 1px solid #fff;
+    padding: 1px 3px;
+    /* ★ 미세조정 포인트: "30"까지 담을 고정 너비, 숫자에 따라 박스 크기 변하지 않음 */
+    width: 28px;
+    min-height: 21px;
+    text-align: center;
+    box-sizing: border-box;
+    /* 이미지 위 흰 배경으로 원본 번호 차폐 */
+    background: white;
     color: #000;
+}
+
+.csat-meta-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.csat-seq-num {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #000;
+    flex-shrink: 0;
 }
 
 .csat-db-id-tag {
     display: inline-block;
     font-size: 0.75rem;
     color: #000;
-    /* Pure black for print */
     background: #f1f5f9;
     padding: 2px 6px;
     border-radius: 4px;
-    vertical-align: top;
-    margin-bottom: 4px;
     font-family: monospace;
 }
 
@@ -1809,7 +1852,7 @@ body.preview-open #global-actions-left {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 45px;
+    width: 54px;
     height: 30px;
     /* Reduced height */
     border: 1px solid #000;
@@ -1819,7 +1862,7 @@ body.preview-open #global-actions-left {
 
 .footer-page-total {
     position: absolute;
-    bottom: 2px;
+    bottom: 1px;
     right: 4px;
     font-size: 0.7rem;
     font-weight: bold;
@@ -1828,9 +1871,9 @@ body.preview-open #global-actions-left {
 
 .footer-page-current {
     position: absolute;
-    top: 2px;
-    left: 4px;
-    font-size: 0.8rem;
+    top: 1px;
+    left: 7px;
+    font-size: 0.7rem;
     font-weight: bold;
     color: #000;
 }
@@ -1852,7 +1895,11 @@ body.preview-open #global-actions-left {
     height: auto;
     display: block;
     mix-blend-mode: multiply;
-    /* Removes white background in bright themes */
+    /* ★ 미세조정 포인트: 확대 비율 (1.00 = 원본, 1.05 = 5% 확대) */
+    transform: scale(1.08);
+    /* top-left 고정 → 우측·하단으로 overflow → clip-path로 클립 */
+    transform-origin: top left;
+    clip-path: inset(0);
 }
 
 .csat-inline-answer {
@@ -1860,9 +1907,6 @@ body.preview-open #global-actions-left {
     color: #000;
     font-weight: normal;
     font-family: inherit;
-    margin-left: 10px;
-    align-self: flex-start;
-    margin-bottom: 4px;
 }
 
 .csat-ans-table-end {
@@ -1933,7 +1977,7 @@ body.preview-open #global-actions-left {
 }
 
 .csat-exp-answer {
-    font-size: 0.85rem;
+    font-size: 0.68rem;
     font-weight: 700;
     color: #000;
     white-space: nowrap;
@@ -1950,7 +1994,7 @@ body.preview-open #global-actions-left {
 
 /* 스텝 타이틀: 굵은 글씨 */
 .csat-exp-step-title {
-    font-size: 0.78rem;
+    font-size: 0.62rem;
     font-weight: 700;
     color: #111;
     margin-bottom: 3px;
@@ -1958,7 +2002,7 @@ body.preview-open #global-actions-left {
 
 /* 스텝 해설: 얇은 글씨 */
 .csat-exp-step-body {
-    font-size: 0.76rem;
+    font-size: 0.61rem;
     font-weight: 300;
     color: #222;
     line-height: 1.55;

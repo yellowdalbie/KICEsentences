@@ -186,6 +186,14 @@ function toggleKebabMenu(e) {
     e.stopPropagation();
     const menu = document.getElementById('cart-kebab-menu');
     const isOpen = menu.style.display === 'block';
+    if (!isOpen) {
+        const btn = document.getElementById('cart-more-btn');
+        const rect = btn.getBoundingClientRect();
+        menu.style.position = 'fixed';
+        menu.style.right = (window.innerWidth - rect.right) + 'px';
+        menu.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+        menu.style.top = 'auto';
+    }
     menu.style.display = isOpen ? 'none' : 'block';
 }
 
@@ -710,19 +718,21 @@ async function renderPreviewPages() {
 
                 let ansHtml = '';
                 if (answerOpt === 'inline' && item.answer) {
-                    ansHtml = `<div class="csat-inline-answer">${item.answer}</div>`;
+                    ansHtml = `<span class="csat-inline-answer">${item.answer}</span>`;
                 }
                 let extraClass = item.isLong ? ' is-long' : '';
                 colDiv.innerHTML += `
                     <div class="csat-item-container${extraClass}">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 5px;">
-                            <div>
-                                <div class="csat-num-box">${item.examNumber}</div>
-                                <div class="csat-db-id-tag">${item.pid}</div>
+                        <div class="csat-meta-row">
+                            <div class="csat-meta-left">
+                                <span class="csat-seq-num">${item.examNumber}.</span>
+                                <span class="csat-db-id-tag">${item.pid}</span>
                             </div>
                             ${ansHtml}
                         </div>
-                        <img src="${item.src}" class="csat-prob-img" alt="${item.pid}" />
+                        <div class="csat-img-area">
+                            <img src="${item.src}" class="csat-prob-img" alt="${item.pid}" />
+                        </div>
                     </div>
                 `;
             });
@@ -978,14 +988,8 @@ async function buildExplanationPages(expItems, problemPageCount) {
             continue;
         }
 
-        // 현재 단에 이미 내용이 있고 다음 단에 통째로 들어갈 수 있으면 이동
-        if (colUsed() > 0 && fullH <= usableNormal) {
-            nextCol();
-            addUnit(buildExpItemHtml(item), fullH);
-            continue;
-        }
-
-        // 단 하나에도 통째로 들어가지 않으면 step 단위로 분할하여 배치
+        // 현재 단 남은 공간에 통째로 안 들어가면 step 단위로 분할 배치
+        // (헤더+Step1이 남은 공간에 들어가면 현재 단에, 아니면 step-splitting이 nextCol 처리)
         const headerEl = el.querySelector('.csat-exp-item-header');
         const headerH  = (headerEl ? headerEl.offsetHeight : 0) + HDR_MB;
         const stepEls  = Array.from(el.querySelectorAll('.csat-exp-step'));
