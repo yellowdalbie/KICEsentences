@@ -84,10 +84,14 @@ function updateCartUI() {
         Array.from(cartProblemIds).forEach(pid => {
             const tag = document.createElement('div');
             tag.className = 'cart-item-tag';
-            tag.innerHTML = `
-                <span>${pid}</span>
-                <span class="cart-item-remove" title="제거">×</span>
-            `;
+            const pidSpan = document.createElement('span');
+            pidSpan.textContent = pid;
+            const rmSpan = document.createElement('span');
+            rmSpan.className = 'cart-item-remove';
+            rmSpan.title = '제거';
+            rmSpan.textContent = '×';
+            tag.appendChild(pidSpan);
+            tag.appendChild(rmSpan);
 
             // ── 기능 1: 썸네일 tooltip (body-level 전역 tooltip 사용) ──
             tag.addEventListener('mouseenter', () => showCartThumbTooltip(pid, tag));
@@ -400,7 +404,12 @@ async function openPrintPreview() {
 
     } catch (e) {
         console.error(e);
-        printModalBody.innerHTML = `<p class="placeholder-text" style="color:red;">오류가 발생했습니다: ${e.message}</p>`;
+        const errP = document.createElement('p');
+        errP.className = 'placeholder-text';
+        errP.style.color = 'red';
+        errP.textContent = `오류가 발생했습니다: ${e.message}`;
+        printModalBody.innerHTML = '';
+        printModalBody.appendChild(errP);
     }
 }
 
@@ -1241,7 +1250,7 @@ function showCustomConfirm(message, onConfirm, options = {}) {
 
     _customConfirmCallback = onConfirm || null;
     _customConfirmCancelCallback = options.onCancel || null;
-    msgEl.innerHTML = message.replace(/\n/g, '<br>');
+    msgEl.innerHTML = escapeHtmlStr(message).replace(/\n/g, '<br>');
 
     const allStyles = ['cmodal-btn-primary', 'cmodal-btn-safe', 'cmodal-btn-danger', 'cmodal-btn-neutral'];
 
@@ -1299,7 +1308,7 @@ function showCustomPrompt(message, defaultValue, onResult) {
     if (!modal || !msgEl || !input) return;
 
     _customPromptCallback = onResult || null;
-    msgEl.innerHTML = message.replace(/\n/g, '<br>');
+    msgEl.innerHTML = escapeHtmlStr(message).replace(/\n/g, '<br>');
     input.value = defaultValue || '';
     modal.style.display = 'flex';
     setTimeout(() => {
@@ -1845,7 +1854,16 @@ function renderErrSelectedList() {
     if (!container) return;
     container.innerHTML = '';
     selectedErrProbs.forEach(pid => {
-        container.innerHTML += `<div class="err-cart-item">${pid} <span class="err-cart-rm" onclick="removeErrProb('${pid}')">×</span></div>`;
+        const item = document.createElement('div');
+        item.className = 'err-cart-item';
+        const pidText = document.createTextNode(pid + ' ');
+        const rmSpan = document.createElement('span');
+        rmSpan.className = 'err-cart-rm';
+        rmSpan.textContent = '×';
+        rmSpan.addEventListener('click', () => removeErrProb(pid));
+        item.appendChild(pidText);
+        item.appendChild(rmSpan);
+        container.appendChild(item);
     });
     const submitBtn = document.getElementById('err-submit-btn');
     if (submitBtn) submitBtn.disabled = selectedErrProbs.size === 0;

@@ -1355,11 +1355,12 @@ def _load_admin_key():
 
 
 def _check_admin_key():
+    import hmac
     key = request.args.get('key') or request.headers.get('X-Admin-Key')
     expected = _load_admin_key()
-    if not expected or key != expected:
+    if not expected or not key:
         return False
-    return True
+    return hmac.compare_digest(key, expected)
 
 
 
