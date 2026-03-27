@@ -1,0 +1,187 @@
+/*
+ * ws_shared.css — KICE Lynx 학습지 공용 스타일
+ *
+ * ┌─────────────────────────────────────────────────────────┐
+ * │  AI가 조정 가능한 변수: :root 의 --ws-* 테마 변수       │
+ * │  변경 금지: --ws-page-*, --ws-pad-* (구조 고정값)       │
+ * └─────────────────────────────────────────────────────────┘
+ */
+
+/* ── 1. 테마 변수 (AI 조정 가능) ─────────────────────────── */
+:root {
+  /* 포인트 컬러 계열 */
+  --ws-accent:             #2563eb;
+  --ws-accent-light:       #dbeafe;
+  --ws-accent-muted:       #93c5fd;
+
+  /* 헤더 */
+  --ws-header-line-color:  #000000;
+
+  /* 개념 박스 */
+  --ws-concept-bg:         #f0f7ff;
+  --ws-concept-border:     #bfdbfe;
+  --ws-concept-title-bg:   #2563eb;
+  --ws-concept-title-text: #ffffff;
+
+  /* 공식 영역 */
+  --ws-formula-bg:         #fffbeb;
+  --ws-formula-border:     #fcd34d;
+
+  /* 해설 Step */
+  --ws-step-title-bg:      #f1f5f9;
+  --ws-step-title-color:   #1e293b;
+  --ws-step-body-color:    #222222;
+
+  /* 타이포그래피 */
+  --ws-font-serif:  "KoPubBatang", "Batang", "Myungjo", serif;
+  --ws-font-sans:   "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --ws-font-math:   "KaTeX_Main", "STIX Two Math", serif;
+  --ws-font-mono:   "D2Coding", "Consolas", monospace;
+
+  --ws-font-size-body:       10pt;
+  --ws-font-size-small:      8.5pt;
+  --ws-font-size-step-title: 0.79rem;
+  --ws-font-size-step-body:  0.76rem;
+
+  /* ── 고정 구조 변수 (변경 금지) ── */
+  --ws-page-w:    210mm;
+  --ws-page-h:    296mm;   /* 297mm - 1px (Chrome 서브픽셀 overflow 방지) */
+  --ws-pad-top:   10mm;
+  --ws-pad-side:  15mm;
+  --ws-pad-bottom:18mm;
+  --ws-footer-top:281mm;   /* page-h - footer 영역 */
+}
+
+/* ── 2. 기본 리셋 ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #e2e8f0;
+  font-family: var(--ws-font-serif);
+  font-size: var(--ws-font-size-body);
+  color: #000;
+}
+
+/* ── 3. 페이지 컨테이너 ─────────────────────────────────── */
+.ws-page {
+  width:       var(--ws-page-w);
+  height:      var(--ws-page-h);
+  background:  #ffffff;
+  margin:      0 auto 2rem auto;
+  padding:     var(--ws-pad-top) var(--ws-pad-side) var(--ws-pad-bottom) var(--ws-pad-side);
+  box-shadow:  0 4px 12px rgba(0,0,0,0.12);
+  box-sizing:  border-box;
+  display:     flex;
+  flex-direction: column;
+  position:    relative;
+  page-break-after: always;
+  overflow:    hidden;
+}
+.ws-page:last-child { page-break-after: auto; }
+
+/* ── 4. 공용 헤더 ───────────────────────────────────────── */
+.ws-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 14px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--ws-header-line-color);
+  flex-shrink: 0;
+  position: relative;
+}
+.ws-header-left   { font-size: 1.8rem; font-weight: 600; color: #000; }
+.ws-header-center {
+  font-size: 1.9rem; font-weight: 600;
+  letter-spacing: 0.25rem;
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: 5px; color: #000;
+}
+.ws-header-right  { font-size: 1rem; font-weight: 600; color: #000; }
+
+/* 제1페이지 전용 대형 헤더 */
+.ws-header-page1 {
+  text-align: center;
+  margin-bottom: 18px;
+  flex-shrink: 0;
+}
+.ws-header-page1 .ws-title-main {
+  font-size: 3rem; font-weight: 600; letter-spacing: 0.5rem;
+  color: #000; display: block; text-align: center;
+}
+.ws-header-page1 .ws-title-sub {
+  font-size: 1.3rem; font-weight: 500; color: #333;
+  display: block; margin-top: 4px;
+}
+.ws-header-page1 .ws-header-divider {
+  border-top: 3px solid #000; margin-top: 8px;
+}
+
+/* ── 5. 공용 문항 번호 박스 ─────────────────────────────── */
+.ws-num-box {
+  display: inline-block;
+  font-size: 1.3rem; font-weight: 600;
+  border: 1px solid #111;
+  padding: 2px 8px;
+  margin-right: 8px;
+  vertical-align: middle;
+  color: #000;
+  font-family: var(--ws-font-sans);
+}
+
+/* ── 6. 공용 푸터 ───────────────────────────────────────── */
+.ws-footer {
+  position: absolute;
+  top:    var(--ws-footer-top);
+  left:   var(--ws-pad-side);
+  right:  var(--ws-pad-side);
+  height: 15mm;
+  padding-bottom: 7mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  background: white;
+  z-index: 10;
+  font-size: 8.5pt;
+  color: #555;
+  font-family: var(--ws-font-serif);
+}
+.ws-footer-page-box {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 45px; height: 30px;
+  border: 1px solid #000;
+  background: linear-gradient(
+    to bottom right,
+    transparent 48.5%, #000 48.5%, #000 51.5%, transparent 51.5%
+  );
+}
+.ws-footer-page-current {
+  position: absolute; top: 2px; left: 4px;
+  font-size: 0.8rem; font-weight: bold; color: #000;
+}
+.ws-footer-page-total {
+  position: absolute; bottom: 2px; right: 4px;
+  font-size: 0.7rem; font-weight: bold; color: #000;
+}
+.ws-footer-note {
+  font-size: 0.65rem; font-weight: normal;
+  letter-spacing: -0.5px; margin-left: auto; padding-right: 5px; color: #64748b;
+}
+
+/* ── 7. 2단 컬럼 레이아웃 ───────────────────────────────── */
+.ws-columns {
+  display: flex; flex: 1; position: relative; min-height: 0;
+}
+.ws-col {
+  flex: 1; padding: 0 10px; min-height: 0;
+}
+.ws-vline {
+  width: 1px; background-color: #000;
+  margin: 0 10px; flex-shrink: 0;
+}
+
+/* ── 8. 인쇄 미디어 쿼리 ────────────────────────────────── */
+@media print {
+  body { background: white; }
+  .ws-page { margin: 0; box-shadow: none; }
+}

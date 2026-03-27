@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<!--
+  Template A — 개념 페이지
+  ───────────────────────────────────────────────────────────────
+  용도  : 성취기준별 핵심 개념·공식 정리 페이지
+  구조  : 헤더 → 개념 박스 1~3개 → 푸터
+  A4 1페이지 = 개념 박스 최대 3개 (각 박스 평균 60~70mm)
+         짧은 박스 2개 + 공식만 1개 → 3박스도 가능
+         긴 박스 1개(서술+공식+예시) → 1박스 페이지도 가능
+  AI 작성 지침:
+    1. <concept-box> 블록 1~3개를 상황에 맞게 배치
+    2. 공식 블록(.ws-formula)은 필요 시만 포함
+    3. 예시 블록(.ws-example)은 선택적으로 포함
+    4. 박스가 3개를 넘으면 동일 구조의 새 페이지 생성
+    5. 이 파일을 복제하여 페이지를 추가하되, ws-footer의 페이지 번호 수정
+  ───────────────────────────────────────────────────────────────
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>개념 정리 페이지</title>
+<link rel="stylesheet" href="ws_shared.css">
+<!-- KaTeX (수식 렌더링) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})">
+</script>
+<style>
+/* ── 개념 페이지 전용 스타일 ── */
+
+/* 성취기준 pill */
+.ws-cpt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ws-accent-light);
+  border: 1px solid var(--ws-accent-muted);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ws-accent);
+  font-family: var(--ws-font-sans);
+  margin-bottom: 10px;
+}
+.ws-cpt-pill-code {
+  font-family: var(--ws-font-mono);
+  font-size: 0.70rem;
+  color: #555;
+}
+
+/* 단원 제목 (헤더 내) */
+.ws-concept-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #000;
+  font-family: var(--ws-font-sans);
+  letter-spacing: -0.01em;
+}
+
+/* 개념 박스 */
+.ws-concept-box {
+  border: 1px solid var(--ws-concept-border);
+  border-radius: 4px;
+  background: var(--ws-concept-bg);
+  margin-bottom: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* 개념 박스 — 제목 바 */
+.ws-concept-box-title {
+  background: var(--ws-concept-title-bg);
+  color: var(--ws-concept-title-text);
+  font-family: var(--ws-font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  letter-spacing: 0.02em;
+}
+
+/* 개념 박스 — 본문 */
+.ws-concept-box-body {
+  padding: 8px 12px;
+  font-size: var(--ws-font-size-body);
+  line-height: 1.7;
+  color: #111;
+}
+.ws-concept-box-body p { margin-bottom: 6px; }
+.ws-concept-box-body p:last-child { margin-bottom: 0; }
+
+/* 공식 블록 (개념 박스 내부 또는 독립) */
+.ws-formula {
+  background: var(--ws-formula-bg);
+  border-left: 3px solid var(--ws-formula-border);
+  border-radius: 0 3px 3px 0;
+  padding: 7px 12px;
+  margin: 6px 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* 예시 블록 */
+.ws-example {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 3px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: #334155;
+}
+.ws-example-label {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--ws-accent);
+  font-family: var(--ws-font-sans);
+  margin-bottom: 3px;
+}
+
+/* 개념 콘텐츠 영역 (flex column, 박스들이 세로 배열) */
+.ws-concept-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 18mm; /* 푸터 공간 확보 */
+}
+
+/* 구분선 */
+.ws-section-divider {
+  border: none;
+  border-top: 1px solid #cbd5e1;
+  margin: 8px 0;
+}
+</style>
+</head>
+<body>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  AI 작성 구역 시작
+  아래 주석을 참고하여 내용을 채우세요.
+  ═══════════════════════════════════════════════════════════════
+-->
+
+<!-- ▶ 페이지 (개념 페이지 1) -->
+<div class="ws-page">
+
+  <!-- 헤더 -->
+  <div class="ws-header">
+    <div class="ws-header-left">
+      <!--
+        페이지 번호. 문제지/해설지 통합 시 전체 순번으로 수정.
+        예: 1, 2, 3 ...
+      -->
+      1
+    </div>
+    <div class="ws-header-center">
+      <!--
+        학습지 제목. 예: "수학 영역" / "수학 I — 개념 정리"
+      -->
+      수학 영역
+    </div>
+    <div class="ws-header-right">
+      <!--
+        섹션 표시. 예: "개념 정리" / 시험지형은 "홀수형"
+      -->
+      개념 정리
+    </div>
+  </div>
+
+  <!-- 성취기준 pill + 단원 제목 -->
+  <div style="margin-bottom: 10px;">
+    <span class="ws-cpt-pill">
+      <!--
+        성취기준 코드와 단원명.
+        예: [12수학I-02] 지수함수와 로그함수
+      -->
+      <span class="ws-cpt-pill-code">12대수02-02</span>
+      삼각함수의 뜻과 그래프
+    </span>
+    <div class="ws-concept-section-title">
+      <!--
+        이 페이지에서 다루는 핵심 소단원명
+        예: "삼각함수의 그래프와 성질"
+      -->
+      삼각함수의 그래프와 성질
+    </div>
+  </div>
+
+  <!-- 개념 콘텐츠 영역 -->
+  <div class="ws-concept-content">
+
+    <!--
+      ┌──────────────────────────────────────────────────────┐
+      │  개념 박스 1 — 정의/개념 설명                        │
+      │  제목 바: 핵심 개념명                               │
+      │  본문: 정의, 조건, 주요 성질 (2~5줄)                │
+      │  공식: 핵심 수식 (KaTeX) — 필요 시 포함             │
+      └──────────────────────────────────────────────────────┘
+    -->
+    <div class="ws-concept-box">
+      <div class="ws-concept-box-title">삼각함수의 정의</div>
+      <div class="ws-concept-box-body">
+        <p>
+          좌표평면에서 원점을 중심으로 하고 반지름의 길이가 $r$인 원 위의 점
+          $P(x,\,y)$에 대해, 동경 $OP$가 $x$축의 양의 방향과 이루는 각의 크기를
+          $\theta$라 할 때 삼각함수를 다음과 같이 정의한다.
+        </p>
+        <div class="ws-formula">
+          $$\sin\theta = \frac{y}{r},\quad \cos\theta = \frac{x}{r},\quad \tan\theta = \frac{y}{x}\ (x\neq 0)$$
+        </div>
+        <p>
+          특히 $r=1$인 단위원에서는 $P(\cos\theta,\,\sin\theta)$이다.
+        </p>
+      </div>
+    </div>
+
+    <!--
+      ┌──────────────────────────────────────────────────────┐
+      │  개념 박스 2 — 그래프 성질 / 주기·대칭              │
+      └──────────────────────────────────────────────────────┘
+    -->
+    <div class="ws-concept-box">
+      <div class="ws-concept-box-title">$y = a\sin(bx+c)+d$ 그래프의 성질</div>
+      <div class="ws-concept-box-body">
+        <p>
+          $a$ : 진폭 $= |a|$&emsp;
+          $b$ : 주기 $= \dfrac{2\pi}{|b|}$&emsp;
+          $c$ : 위상 이동&emsp;
+          $d$ : 수직 이동
+        </p>
+        <div class="ws-formula">
+          $$\text{최댓값} = d + |a|,\quad \text{최솟값} = d - |a|$$
+        </div>
+        <p>
+          $\cos$ 함수도 동일한 구조를 가지며, $y = \cos x$는 $y$축 대칭(우함수),
+          $y = \sin x$는 원점 대칭(기함수)이다.
+        </p>
+      </div>
+    </div>
+
+    <!--
+      ┌──────────────────────────────────────────────────────┐
+      │  개념 박스 3 — 예시 문항 연결 / 핵심 체크           │
+      │  (선택적으로 포함 — 박스가 2개로도 충분하면 삭제)   │
+      └──────────────────────────────────────────────────────┘
+    -->
+    <div class="ws-concept-box">
+      <div class="ws-concept-box-title">핵심 확인 포인트</div>
+      <div class="ws-concept-box-body">
+        <p>① 주기와 진폭을 정확히 계산하는가?</p>
+        <p>② $\sin$·$\cos$ 함수의 대칭성(홀함수/우함수)을 활용하는가?</p>
+        <p>③ $y = f(x)$와 $y = f(-x)$, $y = -f(x)$의 관계를 이해하는가?</p>
+        <div class="ws-example">
+          <div class="ws-example-label">관련 문항 유형</div>
+          최댓값·최솟값 계산, 주기 결정, 그래프의 대칭 조건, 교점 개수 파악
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /ws-concept-content -->
+
+  <!-- 푸터 -->
+  <div class="ws-footer">
+    <div class="ws-footer-page-box">
+      <span class="ws-footer-page-current"><!--현재 페이지-->1</span>
+      <span class="ws-footer-page-total"><!--전체 페이지-->8</span>
+    </div>
+    <div class="ws-footer-note">
+      <!-- 저작권/출처 표기 — 필요 시 수정 -->
+      KICE Lynx 학습지
+    </div>
+  </div>
+
+</div><!-- /ws-page -->
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  페이지를 추가하려면 위 <div class="ws-page"> 블록을 복제하세요.
+  ═══════════════════════════════════════════════════════════════
+-->
+
+</body>
+</html>

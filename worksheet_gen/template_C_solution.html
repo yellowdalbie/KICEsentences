@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<!--
+  Template C — 해설 페이지
+  ───────────────────────────────────────────────────────────────
+  용도  : Step별 해설 배치 페이지 (문항 번호 + 정답 + 풀이 단계)
+  구조  : 헤더 → 2단 컬럼(각 컬럼에 가변 개수 문항) → 푸터
+  배치 규칙:
+    · 컬럼은 flex-direction: column (가변 높이)
+    · 각 .ws-exp-item 높이 = 헤더 + (Step 개수 × Step 평균 높이)
+    · Step이 많아 컬럼에 안 들어가면 → 다음 컬럼/페이지로 분리
+    · 단, Step 단위로 분리 가능 (ws-exp-item-cont 사용)
+  AI 배치 지침:
+    1. 각 .ws-exp-item 에 문항 번호, pid, 정답, Step들을 채우기
+    2. 한 문항의 Step이 너무 많아 페이지를 넘을 경우:
+       - 첫 번째 조각: .ws-exp-item (헤더 포함)
+       - 이후 조각: .ws-exp-item-cont (헤더 없이 Step만)
+    3. 페이지 추가 시 .ws-page 블록 복제 후 번호 수정
+  Step 구조 (step_number, step_title, explanation_html):
+    · explanation_html에 KaTeX 수식 포함 가능 ($...$, $$...$$)
+    · 이미지가 필요한 경우 <img> 직접 삽입
+  ───────────────────────────────────────────────────────────────
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>해설 페이지</title>
+<link rel="stylesheet" href="ws_shared.css">
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})">
+</script>
+<style>
+/* ── 해설 페이지 전용 스타일 ── */
+
+/* 해설 컬럼: grid 해제 후 flex 세로 배치 */
+.ws-col-solution {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+/* 해설 문항 블록 */
+.ws-exp-item {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+.ws-exp-item:last-child { border-bottom: none; }
+
+/* 연속 조각 (헤더 없이 Step만 — 페이지 분할 시) */
+.ws-exp-item-cont {
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+.ws-exp-item-cont:last-child { border-bottom: none; }
+
+/* 문항 헤더 행 (번호 + pid + 정답) */
+.ws-exp-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.ws-exp-item-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ws-exp-answer {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000;
+  font-family: var(--ws-font-sans);
+  white-space: nowrap;
+}
+
+/* pid 태그 */
+.ws-pid-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  color: #000;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  font-family: var(--ws-font-mono);
+}
+
+/* Step 전체 컨테이너 */
+.ws-exp-steps {
+  padding-left: 4px;
+}
+
+/* Step 블록 */
+.ws-exp-step {
+  margin-bottom: 7px;
+}
+.ws-exp-step:last-child { margin-bottom: 0; }
+
+/* Step 제목 */
+.ws-exp-step-title {
+  font-size: var(--ws-font-size-step-title);
+  font-weight: 700;
+  color: var(--ws-step-title-color);
+  margin-bottom: 2px;
+  background: var(--ws-step-title-bg);
+  padding: 2px 5px;
+  border-radius: 2px;
+  font-family: var(--ws-font-sans);
+}
+
+/* Step 본문 */
+.ws-exp-step-body {
+  font-size: var(--ws-font-size-step-body);
+  font-weight: 300;
+  color: var(--ws-step-body-color);
+  line-height: 1.65;
+  padding-left: 4px;
+}
+
+/* 인쇄 시 Step 블록 분절 방지 */
+@media print {
+  .ws-exp-item  { break-inside: avoid; }
+  .ws-exp-step  { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  ▶ 해설 제1페이지
+  ═══════════════════════════════════════════════════════════════
+-->
+<div class="ws-page">
+
+  <!-- 대형 헤더 (해설지 첫 페이지) -->
+  <div class="ws-header-page1">
+    <span class="ws-title-main">수학 영역</span>
+    <div class="ws-title-sub">
+      <!--문제지 제목에 '해설지' 추가. 예: "2028학년도 대학수학능력시험 대비 해설지"-->
+      2028학년도 대학수학능력시험 대비 해설지
+    </div>
+    <div class="ws-header-divider"></div>
+  </div>
+
+  <!-- 2단 컬럼 -->
+  <div class="ws-columns">
+
+    <!-- 좌측 컬럼 -->
+    <div class="ws-col ws-col-solution">
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  해설 문항 블록 — 전체 (isFirstChunk=true)          │
+        │  · 문항 번호, pid, 정답, 모든 Step 포함             │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="ws-exp-item">
+        <div class="ws-exp-item-header">
+          <div class="ws-exp-item-header-left">
+            <span class="ws-num-box">1</span>
+            <span class="ws-pid-tag">2023_수능_15</span>
+          </div>
+          <span class="ws-exp-answer">정답 ③</span>
+        </div>
+        <div class="ws-exp-steps">
+
+          <div class="ws-exp-step">
+            <div class="ws-exp-step-title">Step 1 — 주기와 진폭 파악</div>
+            <div class="ws-exp-step-body">
+              $f(x) = a\sin(bx+c)+d$에서 진폭 $= |a|$, 주기 $= \dfrac{2\pi}{|b|}$.
+              그래프에서 최댓값 $= 5$, 최솟값 $= -1$이므로
+              $|a| = \dfrac{5-(-1)}{2} = 3$, $d = \dfrac{5+(-1)}{2} = 2$.
+            </div>
+          </div>
+
+          <div class="ws-exp-step">
+            <div class="ws-exp-step-title">Step 2 — 주기로 $b$ 결정</div>
+            <div class="ws-exp-step-body">
+              그래프 한 주기의 길이가 $\pi$이므로 $\dfrac{2\pi}{|b|} = \pi$,
+              따라서 $b = 2$.
+            </div>
+          </div>
+
+          <div class="ws-exp-step">
+            <div class="ws-exp-step-title">Step 3 — $a+b+d$ 계산</div>
+            <div class="ws-exp-step-body">
+              $a = 3$ ($a > 0$), $b = 2$, $d = 2$이므로
+              $$a + b + d = 3 + 2 + 2 = 7$$
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  해설 문항 블록 2                                    │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="ws-exp-item">
+        <div class="ws-exp-item-header">
+          <div class="ws-exp-item-header-left">
+            <span class="ws-num-box">2</span>
+            <span class="ws-pid-tag">2023_수능_22</span>
+          </div>
+          <span class="ws-exp-answer">정답 4</span>
+        </div>
+        <div class="ws-exp-steps">
+
+          <div class="ws-exp-step">
+            <div class="ws-exp-step-title">Step 1 — 연속 조건 설정</div>
+            <div class="ws-exp-step-body">
+              $f(x)$가 모든 실수에서 연속이므로 $x = 0$에서 좌극한 $=$ 우극한 $=$ 함숫값.
+              $\displaystyle\lim_{x\to 0^-}f(x) = \lim_{x\to 0^+}f(x) = f(0)$.
+            </div>
+          </div>
+
+          <div class="ws-exp-step">
+            <div class="ws-exp-step-title">Step 2 — 계수 결정</div>
+            <div class="ws-exp-step-body">
+              조건 정리 후 $a = 1$, $b = 3$. 따라서 $a + b = 4$.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /ws-col-solution (좌) -->
+
+    <div class="ws-vline"></div>
+
+    <!-- 우측 컬럼 -->
+    <div class="ws-col ws-col-solution">
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  해설 — 페이지 분할 예시 (이 문항이 이전 페이지에서 │
+        │  시작되어 이 컬럼에서 이어지는 경우)                │
+        │  .ws-exp-item-cont 사용 (문항 헤더 없음)            │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="ws-exp-item-cont">
+        <div class="ws-exp-steps">
+
+          <div class="ws-exp-step">
+            <div class="ws-exp-step-title">Step 3 — (이전 문항 이어서)</div>
+            <div class="ws-exp-step-body">
+              이전 페이지 컬럼에서 Step 2까지 다뤘으므로 Step 3부터 계속.
+              $f'(x) = 0$의 해를 구하면 $x = \dfrac{1}{3}$, $x = 1$.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  이후 문항들 계속 채우기                            │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="ws-exp-item">
+        <div class="ws-exp-item-header">
+          <div class="ws-exp-item-header-left">
+            <span class="ws-num-box">3</span>
+            <span class="ws-pid-tag"><!--pid--></span>
+          </div>
+          <span class="ws-exp-answer"><!--정답--></span>
+        </div>
+        <div class="ws-exp-steps">
+
+          <div class="ws-exp-step">
+            <div class="ws-exp-step-title">Step 1 — <!--타이틀--></div>
+            <div class="ws-exp-step-body">
+              <!--explanation_html 내용-->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /ws-col-solution (우) -->
+
+  </div><!-- /ws-columns -->
+
+  <!-- 푸터 -->
+  <div class="ws-footer">
+    <div class="ws-footer-page-box">
+      <span class="ws-footer-page-current">5</span>
+      <span class="ws-footer-page-total">8</span>
+    </div>
+    <div class="ws-footer-note">KICE Lynx 학습지</div>
+  </div>
+
+</div><!-- /ws-page -->
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  페이지를 추가하려면 위 <div class="ws-page"> 블록을 복제하세요.
+  ═══════════════════════════════════════════════════════════════
+-->
+
+</body>
+</html>

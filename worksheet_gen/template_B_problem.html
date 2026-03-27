@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<!--
+  Template B — 문항 페이지
+  ───────────────────────────────────────────────────────────────
+  용도  : 썸네일 이미지 기반 문항 배치 페이지
+  구조  : 헤더 → 2단 컬럼(각 컬럼 최대 2문항) → 푸터
+  배치 규칙:
+    · 단문항(isLong=false) : 컬럼 내 1행 차지 (50% 높이)
+    · 장문항(isLong=true)  : 컬럼 전체 차지 (100% 높이) → .is-long 클래스 사용
+    · 1페이지당 최대 4문항 (좌2 + 우2)
+    · 장문항은 한 컬럼 전체를 차지 → 반대편 컬럼에 1~2문항 배치 가능
+  이미지 경로:
+    · 온라인 서버: /static/thumbnails/{pid}.png
+    · 오프라인 패키지: 상대경로 또는 base64 inline
+  AI 작성 지침:
+    1. 각 .csat-item-container 에 문항 번호, pid 태그, 이미지 src 채우기
+    2. 장문항은 .csat-item-container.is-long 사용
+    3. 정답표 포함 시 마지막 페이지 우측 하단에 .ws-ans-table 삽입
+    4. 페이지 추가 시 .ws-page 블록 복제 후 페이지 번호 수정
+  ───────────────────────────────────────────────────────────────
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>문항 페이지</title>
+<link rel="stylesheet" href="ws_shared.css">
+<!-- KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})">
+</script>
+<style>
+/* ── 문항 페이지 전용 스타일 ── */
+
+/* 2단 컬럼 — 문항용 (grid 2행 고정) */
+.ws-col-problem {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px;
+}
+
+/* 문항 컨테이너 */
+.csat-item-container {
+  position: relative;
+  overflow: hidden;
+}
+.csat-item-container.is-long {
+  grid-row: 1 / span 2;  /* 장문항: 2행 전체 */
+}
+
+/* 문항 메타 행 (번호 + 정답) */
+.ws-item-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 5px;
+}
+
+/* pid 태그 */
+.ws-pid-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  color: #000;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  font-family: var(--ws-font-mono);
+}
+
+/* 인라인 정답 */
+.ws-inline-answer {
+  font-size: 0.82rem;
+  color: #000;
+  font-weight: normal;
+  font-family: var(--ws-font-serif);
+  margin-left: 10px;
+}
+
+/* 문항 이미지 */
+.ws-prob-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  mix-blend-mode: multiply;
+}
+
+/* 정답표 (페이지 끝에 선택적으로 삽입) */
+.ws-ans-table-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  padding-bottom: 15px;
+}
+.ws-ans-table-title {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 2px solid #111;
+  padding: 3px;
+  color: #111;
+  background: #fff;
+  margin-bottom: 8px;
+}
+.ws-ans-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 0.82rem;
+  table-layout: fixed;
+  margin-bottom: 8px;
+  color: #000;
+}
+.ws-ans-table th,
+.ws-ans-table td {
+  border: 1px solid #111;
+  padding: 5px 2px;
+}
+.ws-ans-table .ws-ans-header {
+  background: #f1f5f9;
+  width: 38px;
+  color: #000;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  ▶ 페이지 1 — 제1페이지 (대형 헤더 포함)
+  ═══════════════════════════════════════════════════════════════
+-->
+<div class="ws-page">
+
+  <!-- 제1페이지 헤더 -->
+  <div class="ws-header-page1">
+    <div style="display:flex; justify-content:center; align-items:flex-end; margin-bottom:3px; position:relative;">
+      <span style="font-size:1.1rem; font-weight:600; border:1px solid #000; border-radius:20px; padding:2px 12px; color:#000; position:absolute; left:0; bottom:6px;">
+        <!--교시 표기. 예: 제 2 교시-->
+        제 2 교시
+      </span>
+      <span class="ws-title-main">수학 영역</span>
+      <span style="font-size:1.2rem; font-weight:600; border:1px solid #000; padding:2px 8px; color:#000; position:absolute; right:0; bottom:6px;">
+        <!--홀수형/짝수형-->
+        홀수형
+      </span>
+    </div>
+    <div class="ws-title-sub">
+      <!--학습지 부제목. 예: "2028학년도 대학수학능력시험 대비 문제지"-->
+      2028학년도 대학수학능력시험 대비 문제지
+    </div>
+    <div class="ws-header-divider"></div>
+  </div>
+
+  <!-- 2단 컬럼 -->
+  <div class="ws-columns">
+
+    <!-- 좌측 컬럼 -->
+    <div class="ws-col ws-col-problem">
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  문항 셀 — 단문항 예시                              │
+        │  · 번호, pid, 이미지 src를 채울 것                  │
+        │  · 정답 표시가 필요하면 .ws-inline-answer 포함      │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="csat-item-container">
+        <div class="ws-item-meta">
+          <div>
+            <span class="ws-num-box">1</span>
+            <span class="ws-pid-tag">2023_수능_15</span>
+          </div>
+          <!-- 인라인 정답 필요 시: <span class="ws-inline-answer">정답: ③</span> -->
+        </div>
+        <img src="/static/thumbnails/2023_수능_15.png" class="ws-prob-img" alt="2023_수능_15">
+      </div>
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  문항 셀 — 단문항 예시 (두 번째)                    │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="csat-item-container">
+        <div class="ws-item-meta">
+          <div>
+            <span class="ws-num-box">2</span>
+            <span class="ws-pid-tag">2023_수능_22</span>
+          </div>
+        </div>
+        <img src="/static/thumbnails/2023_수능_22.png" class="ws-prob-img" alt="2023_수능_22">
+      </div>
+
+    </div><!-- /ws-col (좌) -->
+
+    <div class="ws-vline"></div>
+
+    <!-- 우측 컬럼 -->
+    <div class="ws-col ws-col-problem">
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  문항 셀 — 장문항 예시 (.is-long)                   │
+        │  · 컬럼 전체 차지 → 이 컬럼에 다른 문항 배치 불가  │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="csat-item-container is-long">
+        <div class="ws-item-meta">
+          <div>
+            <span class="ws-num-box">3</span>
+            <span class="ws-pid-tag">2023_수능_30</span>
+          </div>
+        </div>
+        <img src="/static/thumbnails/2023_수능_30.png" class="ws-prob-img" alt="2023_수능_30">
+      </div>
+
+    </div><!-- /ws-col (우) -->
+
+  </div><!-- /ws-columns -->
+
+  <!-- 푸터 -->
+  <div class="ws-footer">
+    <div class="ws-footer-page-box">
+      <span class="ws-footer-page-current">1</span>
+      <span class="ws-footer-page-total">8</span>
+    </div>
+    <div class="ws-footer-note">KICE Lynx 학습지</div>
+  </div>
+
+</div><!-- /ws-page 1 -->
+
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  ▶ 페이지 2 — 일반 페이지 (표준 헤더)
+  ═══════════════════════════════════════════════════════════════
+-->
+<div class="ws-page">
+
+  <!-- 일반 헤더 -->
+  <div class="ws-header">
+    <div class="ws-header-left">2</div>
+    <div class="ws-header-center">수학 영역</div>
+    <div class="ws-header-right">홀수형</div>
+  </div>
+
+  <!-- 2단 컬럼 -->
+  <div class="ws-columns">
+
+    <div class="ws-col ws-col-problem">
+
+      <div class="csat-item-container">
+        <div class="ws-item-meta">
+          <div>
+            <span class="ws-num-box">4</span>
+            <span class="ws-pid-tag"><!--pid--></span>
+          </div>
+        </div>
+        <img src="<!--이미지 경로-->" class="ws-prob-img" alt="">
+      </div>
+
+      <div class="csat-item-container">
+        <div class="ws-item-meta">
+          <div>
+            <span class="ws-num-box">5</span>
+            <span class="ws-pid-tag"><!--pid--></span>
+          </div>
+        </div>
+        <img src="<!--이미지 경로-->" class="ws-prob-img" alt="">
+      </div>
+
+    </div>
+
+    <div class="ws-vline"></div>
+
+    <div class="ws-col ws-col-problem">
+
+      <div class="csat-item-container">
+        <div class="ws-item-meta">
+          <div>
+            <span class="ws-num-box">6</span>
+            <span class="ws-pid-tag"><!--pid--></span>
+          </div>
+        </div>
+        <img src="<!--이미지 경로-->" class="ws-prob-img" alt="">
+      </div>
+
+      <!--
+        ┌─────────────────────────────────────────────────────┐
+        │  정답표 예시 — 마지막 페이지 우측 하단에 배치       │
+        │  (필요 없으면 이 블록 삭제)                         │
+        └─────────────────────────────────────────────────────┘
+      -->
+      <div class="csat-item-container">
+        <div class="ws-ans-table-wrap">
+          <div class="ws-ans-table-title">정답표</div>
+          <table class="ws-ans-table">
+            <tbody>
+              <tr>
+                <th class="ws-ans-header">문항</th>
+                <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td>
+              </tr>
+              <tr>
+                <th class="ws-ans-header">정답</th>
+                <td>③</td><td>①</td><td>128</td><td>②</td><td>④</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="ws-ans-table">
+            <tbody>
+              <tr>
+                <th class="ws-ans-header">문항</th>
+                <td>6</td><td>7</td><td>8</td><td>9</td><td>10</td>
+              </tr>
+              <tr>
+                <th class="ws-ans-header">정답</th>
+                <td>⑤</td><td>②</td><td>③</td><td>15</td><td>①</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /ws-columns -->
+
+  <div class="ws-footer">
+    <div class="ws-footer-page-box">
+      <span class="ws-footer-page-current">2</span>
+      <span class="ws-footer-page-total">8</span>
+    </div>
+    <div class="ws-footer-note">KICE Lynx 학습지</div>
+  </div>
+
+</div><!-- /ws-page 2 -->
+
+</body>
+</html>
