@@ -1699,6 +1699,217 @@
         </div>
       </div>
     </div>
+
+<!-- ══════════════════════════════════════════════════════════
+     TroubleMaker 주문서 생성기 (비밀 기능 — Ctrl+Shift+Alt+M)
+     ══════════════════════════════════════════════════════════ -->
+
+<div id="tm-overlay" style="display:none; position:fixed; inset:0; z-index:99998;
+     background:rgba(3,7,18,0.75); backdrop-filter:blur(6px);" onclick="tmClose()"></div>
+
+<div id="tm-modal" style="display:none; position:fixed; top:50%; left:50%; z-index:99999;
+     transform:translate(-50%,-50%); width:500px; max-width:94vw; max-height:90vh;
+     overflow-y:auto; background:#0f1523; border:1px solid rgba(255,255,255,0.13);
+     border-radius:18px; padding:2rem; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.4rem;">
+    <div style="font-size:1rem; font-weight:700; color:#e2e8f0; letter-spacing:-0.3px;">
+      TroubleMaker 주문서
+    </div>
+    <button onclick="tmClose()" style="background:none; border:none; color:rgba(255,255,255,0.4);
+      font-size:1.2rem; cursor:pointer; padding:0.2rem 0.4rem; line-height:1;">✕</button>
+  </div>
+
+  <!-- 레퍼런스 문항 -->
+  <div class="tm-section">
+    <div class="tm-label">레퍼런스 문항 <span class="tm-badge" id="tm-cart-count"></span></div>
+    <div id="tm-cart-list" class="tm-value-box"></div>
+    <div id="tm-cart-warn" style="display:none; font-size:0.75rem; color:#f87171; margin-top:0.3rem;">
+      장바구니에 문항이 없습니다. 1~3개를 먼저 담아주세요.
+    </div>
+  </div>
+
+  <!-- 주목 성취기준 -->
+  <div class="tm-section">
+    <div class="tm-label">주목 성취기준 <span style="font-size:0.72rem; color:rgba(255,255,255,0.35);">(선택사항)</span></div>
+    <div id="tm-concept-display" class="tm-value-box tm-muted">선택된 성취기준 없음</div>
+  </div>
+
+  <!-- 난이도 -->
+  <div class="tm-section">
+    <div class="tm-label">난이도</div>
+    <div class="tm-radio-group">
+      <label class="tm-radio"><input type="radio" name="tm-difficulty" value="low"> 저난도 <span class="tm-sub">(1~10번급)</span></label>
+      <label class="tm-radio"><input type="radio" name="tm-difficulty" value="medium"> 중난도 <span class="tm-sub">(11~20번급)</span></label>
+      <label class="tm-radio"><input type="radio" name="tm-difficulty" value="high" checked> 고난도 <span class="tm-sub">(21~30번급)</span></label>
+    </div>
+  </div>
+
+  <!-- 참신성 -->
+  <div class="tm-section">
+    <div class="tm-label">참신성</div>
+    <div class="tm-radio-group">
+      <label class="tm-radio"><input type="radio" name="tm-novelty" value="similar"> 유사하게 <span class="tm-sub">(같은 구조, 다른 수치)</span></label>
+      <label class="tm-radio"><input type="radio" name="tm-novelty" value="novel" checked> 참신하게 <span class="tm-sub">(구조·객체 변형)</span></label>
+    </div>
+  </div>
+
+  <!-- 조합 전략 -->
+  <div class="tm-section">
+    <div class="tm-label">조합 전략</div>
+    <div class="tm-radio-group">
+      <label class="tm-radio"><input type="radio" name="tm-combination" value="intersection" checked> 교집합 <span class="tm-sub">(공통 성취기준만)</span></label>
+      <label class="tm-radio"><input type="radio" name="tm-combination" value="union"> 합집합 <span class="tm-sub">(모든 성취기준)</span></label>
+      <label class="tm-radio"><input type="radio" name="tm-combination" value="selective"> 선택 <span class="tm-sub">(주목 성취기준 위주)</span></label>
+    </div>
+  </div>
+
+  <!-- 주문 버튼 -->
+  <button onclick="tmGenerate()" style="width:100%; margin-top:0.8rem;
+    background:linear-gradient(135deg,#06b6d4,#3b82f6); border:none; border-radius:10px;
+    padding:0.75rem; color:#fff; font-weight:700; font-size:0.95rem; cursor:pointer;
+    letter-spacing:-0.2px;">
+    주문서 생성
+  </button>
+
+  <!-- 결과 출력 -->
+  <div id="tm-result" style="display:none; margin-top:1.2rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+      <div style="font-size:0.8rem; color:rgba(255,255,255,0.5);">복사 후 Claude Code에 붙여넣기</div>
+      <button onclick="tmCopy()" id="tm-copy-btn" style="background:rgba(255,255,255,0.07);
+        border:1px solid rgba(255,255,255,0.13); border-radius:7px; padding:0.3rem 0.8rem;
+        color:rgba(255,255,255,0.7); font-size:0.78rem; cursor:pointer;">복사</button>
+    </div>
+    <pre id="tm-result-text" style="background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.08);
+      border-radius:10px; padding:1rem; font-size:0.82rem; color:#94a3b8; white-space:pre-wrap;
+      word-break:break-all; font-family:monospace; margin:0;"></pre>
+  </div>
+</div>
+
+<style>
+.tm-section { margin-bottom: 1.1rem; }
+.tm-label   { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-bottom: 0.4rem; font-weight: 600; letter-spacing: 0.3px; }
+.tm-badge   { background: rgba(6,182,212,0.2); color: #06b6d4; border-radius: 99px; padding: 0.05rem 0.5rem; font-size: 0.72rem; }
+.tm-value-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 8px; padding: 0.55rem 0.8rem; font-size: 0.85rem; color: #e2e8f0; min-height: 2rem; }
+.tm-muted   { color: rgba(255,255,255,0.3) !important; font-style: italic; }
+.tm-radio-group { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tm-radio   { display: flex; align-items: center; gap: 0.35rem; background: rgba(255,255,255,0.04);
+              border: 1px solid rgba(255,255,255,0.09); border-radius: 8px; padding: 0.45rem 0.75rem;
+              cursor: pointer; font-size: 0.84rem; color: #e2e8f0; transition: border-color 0.15s; }
+.tm-radio:has(input:checked) { border-color: #06b6d4; background: rgba(6,182,212,0.08); }
+.tm-radio input { accent-color: #06b6d4; cursor: pointer; }
+.tm-sub     { font-size: 0.72rem; color: rgba(255,255,255,0.35); }
+</style>
+
+<script>
+// ── TroubleMaker 전역 상태 ─────────────────────────────────────────────────
+let _tmConcept = { id: null, name: null };
+
+// searchConceptProblems 를 래핑해서 현재 선택 성취기준 추적
+(function() {
+  const _orig = searchConceptProblems;
+  searchConceptProblems = async function(conceptId, conceptLabel) {
+    _tmConcept = { id: conceptId, name: conceptLabel };
+    return _orig(conceptId, conceptLabel);
+  };
+})();
+
+// ── 단축키 Ctrl+Shift+Alt+M ───────────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.altKey && e.key === 'M') {
+    e.preventDefault();
+    tmOpen();
+  }
+});
+
+// ── 모달 열기 ─────────────────────────────────────────────────────────────
+function tmOpen() {
+  // 장바구니 문항 목록 갱신
+  const ids = Array.from(cartProblemIds);
+  const cartListEl  = document.getElementById('tm-cart-list');
+  const cartCountEl = document.getElementById('tm-cart-count');
+  const cartWarnEl  = document.getElementById('tm-cart-warn');
+
+  if (ids.length === 0) {
+    cartListEl.textContent = '';
+    cartListEl.style.display = 'none';
+    cartWarnEl.style.display = 'block';
+  } else {
+    cartListEl.textContent = ids.join(', ');
+    cartListEl.style.display = 'block';
+    cartWarnEl.style.display = 'none';
+  }
+  cartCountEl.textContent = ids.length + '개';
+
+  // 성취기준 갱신
+  const conceptEl = document.getElementById('tm-concept-display');
+  if (_tmConcept.id) {
+    conceptEl.textContent = _tmConcept.id + '  ' + (_tmConcept.name || '');
+    conceptEl.classList.remove('tm-muted');
+  } else {
+    conceptEl.textContent = '선택된 성취기준 없음';
+    conceptEl.classList.add('tm-muted');
+  }
+
+  // 결과 초기화
+  document.getElementById('tm-result').style.display = 'none';
+
+  document.getElementById('tm-overlay').style.display = 'block';
+  document.getElementById('tm-modal').style.display = 'block';
+}
+
+// ── 모달 닫기 ─────────────────────────────────────────────────────────────
+function tmClose() {
+  document.getElementById('tm-overlay').style.display = 'none';
+  document.getElementById('tm-modal').style.display = 'none';
+}
+
+// ── 주문서 생성 ───────────────────────────────────────────────────────────
+function tmGenerate() {
+  const ids = Array.from(cartProblemIds);
+  if (ids.length === 0) {
+    document.getElementById('tm-cart-warn').style.display = 'block';
+    return;
+  }
+
+  const difficulty  = document.querySelector('input[name="tm-difficulty"]:checked').value;
+  const novelty     = document.querySelector('input[name="tm-novelty"]:checked').value;
+  const combination = document.querySelector('input[name="tm-combination"]:checked').value;
+
+  const diffLabel  = { low: 'low', medium: 'medium', high: 'high' }[difficulty];
+  const novLabel   = { similar: 'similar', novel: 'novel' }[novelty];
+  const combLabel  = { intersection: 'intersection', union: 'union', selective: 'selective' }[combination];
+
+  const conceptLine = _tmConcept.id
+    ? `${_tmConcept.id}  # ${_tmConcept.name || ''}`
+    : '(없음)';
+
+  const text = [
+    '# TroubleMaker 주문서',
+    '',
+    `problem_ids    = [${ids.map(id => `'${id}'`).join(', ')}]`,
+    `focus_concepts = [${_tmConcept.id ? `'${_tmConcept.id}'` : ''}]  # ${_tmConcept.name || '선택 없음'}`,
+    `difficulty     = '${diffLabel}'`,
+    `novelty        = '${novLabel}'`,
+    `combination    = '${combLabel}'`,
+  ].join('\n');
+
+  document.getElementById('tm-result-text').textContent = text;
+  document.getElementById('tm-result').style.display = 'block';
+  document.getElementById('tm-copy-btn').textContent = '복사';
+}
+
+// ── 클립보드 복사 ─────────────────────────────────────────────────────────
+function tmCopy() {
+  const text = document.getElementById('tm-result-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('tm-copy-btn');
+    btn.textContent = '복사됨 ✓';
+    setTimeout(() => { btn.textContent = '복사'; }, 2000);
+  });
+}
+</script>
+
 </body>
 
 </html>
