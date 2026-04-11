@@ -287,10 +287,8 @@ def auth_register():
         return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
     if '@' not in email or '.' not in email:
         return jsonify({'error': '유효한 이메일 형식이 아닙니다.'}), 400
-    if len(pw) < 8:
-        return jsonify({'error': '비밀번호는 최소 8자리 이상이어야 합니다.'}), 400
-    if not any(c.isdigit() for c in pw):
-        return jsonify({'error': '비밀번호에 숫자를 1개 이상 포함해야 합니다.'}), 400
+    if len(pw) < 6:
+        return jsonify({'error': '비밀번호는 최소 6자리 이상이어야 합니다.'}), 400
         
     conn = get_user_db()
     user = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()
