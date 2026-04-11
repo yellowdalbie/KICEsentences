@@ -29,6 +29,8 @@ from routes_landing import landing_bp
 app.register_blueprint(landing_bp)
 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
 USER_DB_FILE = os.path.join(BASE_DIR, 'kice_userdata.sqlite')
@@ -209,6 +211,41 @@ def get_geo(ip):
     except:
         return {}
 
+# 로그인 실패 횟수 추적 (IP별, 인메모리)
+import time as _time
+_login_fail_tracker = {}  # { ip: [timestamp, ...] }
+_LOGIN_FAIL_LIMIT = 10    # 최대 실패 횟수
+_LOGIN_FAIL_WINDOW = 600  # 10분 윈도우 (초)
+
+def _check_login_rate_limit(ip):
+    now = _time.time()
+    timestamps = _login_fail_tracker.get(ip, [])
+    # 윈도우 초과 항목 제거
+    timestamps = [t for t in timestamps if now - t < _LOGIN_FAIL_WINDOW]
+    _login_fail_tracker[ip] = timestamps
+    return len(timestamps) >= _LOGIN_FAIL_LIMIT
+
+def _record_login_fail(ip):
+    _login_fail_tracker.setdefault(ip, []).append(_time.time())
+
+
+@app.before_request
+def csrf_protect():
+    """CSRF 방어: 상태 변경 API 요청(POST/DELETE/PATCH/PUT)의 Origin/Referer 검증"""
+    if request.method not in ('POST', 'DELETE', 'PATCH', 'PUT'):
+        return
+    if not request.path.startswith('/api/'):
+        return
+    origin = request.headers.get('Origin', '')
+    referer = request.headers.get('Referer', '')
+    host = request.host  # e.g. "158.180.90.73:5050" or "localhost:5050"
+    # Origin 또는 Referer 중 하나가 같은 호스트여야 함
+    allowed = origin.endswith(host) or referer.startswith(f'http://{host}') or referer.startswith(f'https://{host}')
+    # 로컬호스트는 항상 허용 (오프라인 패키지 등)
+    if not allowed and host.split(':')[0] not in ('127.0.0.1', 'localhost'):
+        return jsonify({'error': '잘못된 요청입니다.'}), 403
+
+
 @app.before_request
 def log_access():
     if request.path.startswith('/static') or request.path == '/favicon.ico':
@@ -250,8 +287,10 @@ def auth_register():
         return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
     if '@' not in email or '.' not in email:
         return jsonify({'error': '유효한 이메일 형식이 아닙니다.'}), 400
-    if len(pw) < 6:
-        return jsonify({'error': '비밀번호는 최소 6자리 이상이어야 합니다.'}), 400
+    if len(pw) < 8:
+        return jsonify({'error': '비밀번호는 최소 8자리 이상이어야 합니다.'}), 400
+    if not any(c.isdigit() for c in pw):
+        return jsonify({'error': '비밀번호에 숫자를 1개 이상 포함해야 합니다.'}), 400
         
     conn = get_user_db()
     user = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()
@@ -276,17 +315,22 @@ def auth_register():
 
 @app.route('/api/auth/login', methods=['POST'])
 def auth_login():
+    login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+    if _check_login_rate_limit(login_ip):
+        return jsonify({'error': '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.'}), 429
+
     data = request.get_json(silent=True) or {}
     email = data.get('email', '').strip().lower()
     pw = data.get('password', '')
     if not email or not pw:
         return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
-        
+
     conn = get_user_db()
     user = conn.execute('SELECT id, email, password_hash, is_paid FROM users WHERE email=?', (email,)).fetchone()
     conn.close()
-    
+
     if not user or not check_password_hash(user['password_hash'], pw):
+        _record_login_fail(login_ip)
         return jsonify({'error': '이메일 또는 비밀번호가 일치하지 않습니다.'}), 401
         
     session['user_id'] = user['id']
@@ -343,7 +387,8 @@ def auth_delete_account():
         conn.commit()
     except Exception as e:
         conn.rollback()
-        return jsonify({'error': f'삭제 중 오류 발생: {e}'}), 500
+        print(f'[ERROR] 회원 탈퇴 오류: {e}')
+        return jsonify({'error': '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'}), 500
     finally:
         conn.close()
     
@@ -394,7 +439,10 @@ def app_index():
 
 @app.route('/pdf/<path:filename>')
 def serve_pdf(filename):
-    return send_from_directory('PDF_Ref', filename)
+    safe = os.path.normpath(filename)
+    if safe.startswith('..') or safe.startswith('/'):
+        return '', 403
+    return send_from_directory('PDF_Ref', safe)
 
 @app.route('/thumbnail/<problem_id>')
 def serve_thumbnail(problem_id):

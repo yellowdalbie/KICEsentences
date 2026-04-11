@@ -533,6 +533,17 @@
         // 오프라인 패키지 모드 플래그 (Flask에서 주입)
         const KICE_OFFLINE = {{ 'true' if offline_mode else 'false' }};
 
+        // XSS 방어용 HTML 이스케이프 헬퍼
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         // Tab Navigation Logic
         const viewSections = document.querySelectorAll('.view-section');
         const logoBtn = document.querySelector('.logo');
@@ -871,7 +882,7 @@
                 const subjTitle = document.createElement('div');
                 subjTitle.className = 'obs-nav-folder-title';
                 subjTitle.dataset.view = 'concepts';
-                subjTitle.innerHTML = `<div class="obs-nav-toggle collapsed">▼</div><div class="obs-nav-title">${subject}</div>`;
+                subjTitle.innerHTML = `<div class="obs-nav-toggle collapsed">▼</div><div class="obs-nav-title">${escapeHtml(subject)}</div>`;
 
                 const unitsContainer = document.createElement('div');
                 unitsContainer.className = 'obs-nav-folder-children collapsed';
@@ -883,7 +894,7 @@
 
                     const unitItem = document.createElement('div');
                     unitItem.className = 'obs-nav-item concept-unit-item';
-                    unitItem.innerHTML = `<div class="obs-nav-title">${unitName}</div>`;
+                    unitItem.innerHTML = `<div class="obs-nav-title">${escapeHtml(unitName)}</div>`;
 
                     unitItem.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -937,7 +948,7 @@
             concepts.forEach(concept => {
                 const li = document.createElement('li');
                 li.className = 'concept-badge';
-                li.innerHTML = `<span class="badge-ref">${concept.ref_code || ''}</span> ${concept.standard_name}`;
+                li.innerHTML = `<span class="badge-ref">${escapeHtml(concept.ref_code)}</span> ${escapeHtml(concept.standard_name)}`;
 
                 li.addEventListener('click', () => {
                     document.querySelectorAll('.concept-badge').forEach(el => el.classList.remove('selected'));
@@ -1168,7 +1179,7 @@
                                         style="opacity:0.6;cursor:pointer;color:var(--accent-magenta);"
                                         onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">${linkSvg}</span>` : ''}
                                 </span>
-                                <span>${row.step_number ? `[${row.step_number}단계] ` : ''}${safeTrigger}</span>
+                                <span>${row.step_number ? `[${row.step_number}단계] ` : ''}${escapeHtml(safeTrigger)}</span>
                             </div>
                         </td>
                         <td class="col-concept concept-edit-cell tooltip-trigger"
@@ -1184,7 +1195,7 @@
                             title="">
                             <div style="display:flex;align-items:center;gap:6px;cursor:pointer;">
                                 <span class="concept-display" style="display:inline-block;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;">
-                                    ${fullConcept}
+                                    ${escapeHtml(fullConcept)}
                                 </span>
                             </div>
                         </td>`;
@@ -1340,7 +1351,6 @@
                             gap: 12px;
                         `;
 
-                        const snippetHtml = item.snippet.replace(/<mark>/g, '<mark style="background-color: rgba(234, 179, 8, 0.3); color: #fef08a; padding: 0 2px; border-radius: 2px;">');
                         const pid = item.problem_id;
 
                         // 문항번호 태그 (다른 검색결과와 동일한 glass 스타일, 클릭 시 장바구니)
@@ -1354,10 +1364,20 @@
                             if (typeof toggleCartItem === 'function') toggleCartItem(pid);
                         });
 
-                        // 기출 텍스트 (클릭 시 상세보기)
+                        // 기출 텍스트 (클릭 시 상세보기) — <mark> 태그를 DOM으로 안전하게 구성 (XSS 방어)
                         const textSpan = document.createElement('span');
                         textSpan.style.cssText = 'font-size:0.95rem; color:var(--text-muted); line-height:1.6; cursor:pointer; flex:1; min-width:0;';
-                        textSpan.innerHTML = snippetHtml;
+                        item.snippet.split(/(<mark>.*?<\/mark>)/g).forEach(part => {
+                            const m = part.match(/^<mark>(.*)<\/mark>$/);
+                            if (m) {
+                                const mark = document.createElement('mark');
+                                mark.style.cssText = 'background-color: rgba(234, 179, 8, 0.3); color: #fef08a; padding: 0 2px; border-radius: 2px;';
+                                mark.textContent = m[1];
+                                textSpan.appendChild(mark);
+                            } else {
+                                textSpan.appendChild(document.createTextNode(part));
+                            }
+                        });
 
                         card.appendChild(pidSpan);
                         card.appendChild(textSpan);
@@ -1411,7 +1431,11 @@
                 })
                 .catch(err => {
                     expCount.innerText = '오류 발생';
-                    expList.innerHTML = `<p class="placeholder-text" style="color: #ef4444;">${err.message}</p>`;
+                    const errP = document.createElement('p');
+                    errP.className = 'placeholder-text';
+                    errP.style.color = '#ef4444';
+                    errP.textContent = err.message;
+                    expList.appendChild(errP);
                 });
         }
 
@@ -1483,7 +1507,14 @@
                 })
                 .catch(err => {
                     tloader.style.display = 'none';
-                    tbody.innerHTML = `<tr><td colspan="3" class="placeholder-text" style="color: #ef4444;">데이터 로드 실패: ${err.message}</td></tr>`;
+                    const errTr = document.createElement('tr');
+                    const errTd = document.createElement('td');
+                    errTd.colSpan = 3;
+                    errTd.className = 'placeholder-text';
+                    errTd.style.color = '#ef4444';
+                    errTd.textContent = '데이터 로드 실패: ' + err.message;
+                    errTr.appendChild(errTd);
+                    tbody.appendChild(errTr);
                     tableEl.style.display = 'table';
                 });
         }
@@ -1816,7 +1847,7 @@ let _tmConcept = { id: null, name: null };
 
 // ── 단축키 Ctrl+Shift+Alt+M ───────────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
-  if (e.ctrlKey && e.shiftKey && e.altKey && e.key === 'M') {
+  if (e.ctrlKey && e.shiftKey && e.altKey && e.code === 'KeyM') {
     e.preventDefault();
     tmOpen();
   }
