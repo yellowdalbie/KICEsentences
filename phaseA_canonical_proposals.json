@@ -1,0 +1,3228 @@
+[
+  {
+    "file": "./Sol/2014/2014.6모A_07.md",
+    "step_number": 2,
+    "raw_logical_action": "인덱스의 합이 10으로 같은 항들의 곱을 계산하여 패턴을 찾기.",
+    "canonical_name": "등비수열의 성질을 이용하여 항들의 곱을 구하기",
+    "sub_calculations": [
+      "$a_2 a_8 = (a_1 r)(a_1 r^7) = a_1^2 r^8$",
+      "결과: $a_2 a_8 = 4$",
+      "$a_4 a_6 = (a_1 r^3)(a_1 r^5) = a_1^2 r^8$",
+      "결과: $a_4 a_6 = 4$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_09.md",
+    "step_number": 1,
+    "raw_logical_action": "분모의 차를 합차공식을 이용하여 인수분해하기",
+    "canonical_name": "인수분해를 이용하여 분모를 인수분해하기",
+    "sub_calculations": [
+      "$\frac{\\{f(x)\\}^2 - 9}{x-2}$ 를 $(f(x)-3)(f(x)+3)$로 인수분해",
+      "$\frac{x-2}{f(x)-3} \\times \frac{1}{f(x)+3}$로 변형"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_09.md",
+    "step_number": 2,
+    "raw_logical_action": "주어진 조건을 이용하여 한 극한값을 도출하기",
+    "canonical_name": "주어진 조건을 이용하여 한 극한값을 도출하기",
+    "sub_calculations": [
+      "$\frac{f(x)-3}{x-2}$의 극한이 5임",
+      "$\frac{x-2}{f(x)-3}$의 역수인 $\frac{1}{5}$로 변환"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_11.md",
+    "step_number": 3,
+    "raw_logical_action": "$|f(x)|$ 가 $x=2$ 에서 연속인지 확인하기 위해 좌극한과 우극한을 비교",
+    "canonical_name": "극한을 이용하여 연속성을 판정하기",
+    "sub_calculations": [
+      "$x \\to 2^+$ 일 때 $f(x) \\to 1$, 따라서 $|f(x)| \\to 1$",
+      "$x \\to 2^-0$ 일 때 $f(x) \\to -1$, 따라서 $|f(x)| \\to |-1| = 1$",
+      "$|f(2)| = 1$",
+      "세 값이 모두 일치하므로 함수 $|f(x)|$ 는 $x=2$ 에서 연속"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_12.md",
+    "step_number": 4,
+    "raw_logical_action": "도출된 일반항을 주어진 부등식에 대입하여 $n$ 의 범위를 구하기.",
+    "canonical_name": "도출된 일반항을 주어진 부등식에 대입하여  의 범위를 구하기.",
+    "sub_calculations": [
+      "$2n - 11 < 0$",
+      "$2n < 11$",
+      "$n < 5.5$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_13.md",
+    "step_number": 1,
+    "raw_logical_action": "함수 g(x) 가 x=0 에서 연속이 되려면 x=0에서의 우극한과 좌극한 값이 일치해야 함을 확인",
+    "canonical_name": "연속을 이용하여 x=0에서의 좌극한과 우극한을 판정하기",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_13.md",
+    "step_number": 2,
+    "raw_logical_action": "그래프에서 f(x) 의 x→0+ 일 때의 극한값은 1, x→0- 일 때의 극한값은 -1을 얻음",
+    "canonical_name": "그래프에서 f(x) 의 x→0+ 일 때의 극한값은 1, x→0- 일 때의 극한값은 -1을 ...",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_13.md",
+    "step_number": 4,
+    "raw_logical_action": "우극한과 좌극한의 값이 같아야 하므로 1 + k = 1 - k 이 성립",
+    "canonical_name": "극한을 이용하여 극한의 값이 같음을 판정하기",
+    "sub_calculations": [
+      "1 + k = 1 - k"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_13.md",
+    "step_number": 6,
+    "raw_logical_action": "결과적으로 k=0이므로 정답은 ③임을 확인",
+    "canonical_name": "수학적 행동을 이용하여 결과를 판정하기",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_15.md",
+    "step_number": 2,
+    "raw_logical_action": "양변을 2로 나누고 괄호 안의 값을 약분하여 단순화",
+    "canonical_name": "지수법칙을 이용하여 결과물을 도출하기",
+    "sub_calculations": [
+      "$4 = \\left(\\frac{36}{12}\\right)^{\\frac{2}{2-k}}$",
+      "$4 = 3^{\\frac{2}{2-k}}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_15.md",
+    "step_number": 4,
+    "raw_logical_action": "양변을 $a$로 나누어 $\frac{b}{a}$를 표현",
+    "canonical_name": "지수법칙을 이용하여 분수를 표현하기",
+    "sub_calculations": [
+      "$\frac{b}{a} = 9^{\\frac{2}{2-k}}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_15.md",
+    "step_number": 5,
+    "raw_logical_action": "$9 = 3^2$을 이용하여 지수를 조정",
+    "canonical_name": "지수법칙을 이용하여 지수를 조정하기",
+    "sub_calculations": [
+      "$\frac{b}{a} = \\left(3^2\\right)^{\\frac{2}{2-k}}$",
+      "$\frac{b}{a} = \\left(3^{\\frac{2}{2-k}}\\right)^2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_15.md",
+    "step_number": 6,
+    "raw_logical_action": "앞서 구한 $3^{\\frac{2}{2-k}} = 4$를 이용하여 $\frac{b}{a}$의 값을 계산",
+    "canonical_name": "지수법칙을 이용하여 $\\frac{b}{a}$의 값을 구하기",
+    "sub_calculations": [
+      "$\frac{b}{a} = 4^2$",
+      "$\frac{b}{a} = 16$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_16.md",
+    "step_number": 1,
+    "raw_logical_action": "점을 연결하는 선분의 길이 계산",
+    "canonical_name": "점을 연결하는 선분의 길이 계산",
+    "sub_calculations": [
+      "점 P_n 과 P_{n+1} 사이의 거리 d = \\sqrt{(n+1)^2 + ((-1)^n(n+1))^2}",
+      "= \\sqrt{2(n+1)^2}",
+      "= \\sqrt{2}(n+1)"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_16.md",
+    "step_number": 4,
+    "raw_logical_action": "원점에서 P_k 까지의 총 누적 이동 횟수 계산",
+    "canonical_name": "등차수열의 합을 이용하여 총 이동 횟수를 도출하기",
+    "sub_calculations": [
+      "총 이동 횟수 = 1 + 2 + \\dots + k = \\frac{k(k+1)}{2}"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_16.md",
+    "step_number": 5,
+    "raw_logical_action": "총 55번 이동했을 때의 k 값 구하기",
+    "canonical_name": "총  이동했을 때의 k 값 구하기",
+    "sub_calculations": [
+      "\\frac{k(k+1)}{2} = 55 \\implies k(k+1) = 110",
+      "= 10 \\times 11"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_16.md",
+    "step_number": 6,
+    "raw_logical_action": "점 Q가 위치하는 점 P_{10} 찾기",
+    "canonical_name": "점화식을 이용하여 점 P_{10}을 구하기",
+    "sub_calculations": [
+      "k = 10 이므로, 점 Q는 정확히 점 P_{10}에 위치"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_16.md",
+    "step_number": 7,
+    "raw_logical_action": "점 P_{10}의 y 좌표 계산",
+    "canonical_name": "시그마(∑)를 이용하여 y_{10}을 구하기",
+    "sub_calculations": [
+      "y_{n+1} = y_n + (-1)^n \\times (n+1) 이므로, y_n = y_1 + \\sum_{m=1}^{n-1} (-1)^m(m+1)",
+      "y_1 = 1 이므로, y_{10}의 값을 직접 나열하여 구합니다.",
+      "y_{10} = 1 + \\{ (-2) + 3 - 4 + 5 - 6 + 7 - 8 + 9 - 10 \\}",
+      "= 1 + 1 + 1 + 1 + 1 - 10",
+      "= -5"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_19.md",
+    "step_number": 2,
+    "raw_logical_action": "치환식 $b_n = \\frac{n-1}{n} a_n$ 을 이용한 등차수열 형태의 수식 도출",
+    "canonical_name": "등차수열을 이용하여 수식을 도출하기",
+    "sub_calculations": [
+      "좌변을 $b_{n+1}$로 표현",
+      "우변 첫째 항을 $b_n$으로 표현",
+      "$b_{n+1} = b_n + 2^n$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_19.md",
+    "step_number": 3,
+    "raw_logical_action": "수열의 합 부분합 성질을 이용한 $b_n$ 공식 도출",
+    "canonical_name": "등비수열의 성질을 이용하여 $b_n$ 공식을 도출하기",
+    "sub_calculations": [
+      "조건에서 $b_1 = 0$",
+      "$b_n = \\frac{2(2^{n-1}-1)}{2-1}$",
+      "$b_n = 2^n - 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_22.md",
+    "step_number": 1,
+    "raw_logical_action": "등차수열의 두 항 차이를 이용해 공차를 구함.",
+    "canonical_name": "등차수열의 두 항 차이를 이용해 공차를 구함.",
+    "sub_calculations": [
+      "$a_6 - a_4 = (6-4)d = 2d$",
+      "$2d = 12$",
+      "$d = 6$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_23.md",
+    "step_number": 1,
+    "raw_logical_action": "다항함수의 미분법을 이용하여 함수 $f(x) = 5x^2 + 3x - 1$ 의 도함수 $f'(x)$ 를 구하기",
+    "canonical_name": "다항함수의 미분법을 이용하여 함수  의 도함수  를 구하기",
+    "sub_calculations": [
+      "다항함수 미분法则 적용: $\\frac{d}{dx}(5x^2) = 10x$, $\\frac{d}{dx}(3x) = 3$, $\\frac{d}{dx}(-1) = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_23.md",
+    "step_number": 2,
+    "raw_logical_action": "$x=1$ 에서의 미분계수를 구하기 위해 도함수에 $x=1$ 대입",
+    "canonical_name": "다항함수의 미분법을 이용하여 함수의 미분계수를 구하기",
+    "sub_calculations": [
+      "$f'(1) = 10(1) + 3$",
+      "$f'(1) = 13$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_25.md",
+    "step_number": 1,
+    "raw_logical_action": "극한이 존재하려면 분자도 0으로 수렴해야 함을 유리화하여 $a$ 값을 구함.",
+    "canonical_name": "극한의 존재 조건을 이용해 $a$ 값을 구함.",
+    "sub_calculations": [
+      "$\frac{(\text{분모})}{\text{분자}} \\rightarrow \frac{0}{\text{한정된 실수}}$",
+      "$\\lim_{x \\to 2} (\\sqrt{x+a}-2) = 0$",
+      "$\\sqrt{2+a} - 2 = 0$",
+      "$\\implies \\sqrt{2+a} = 2$",
+      "$\\implies 2+a = 4$",
+      "$a=2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_26.md",
+    "step_number": 1,
+    "raw_logical_action": "곡선 y=f(x) 가 점 (2, 1) 을 지난다는 것을 수학적으로 표현",
+    "canonical_name": "함수의 값을 이용하여 결과를 구하기",
+    "sub_calculations": [
+      "f(2) = 1"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_26.md",
+    "step_number": 2,
+    "raw_logical_action": "점 (2, 1)에서의 접선 기울기가 2라는 것을 수학적으로 표현",
+    "canonical_name": "도함수을 이용하여 접선 기울기를 구하기",
+    "sub_calculations": [
+      "f'(2) = 2"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_26.md",
+    "step_number": 3,
+    "raw_logical_action": "함수 g(x) = x^3 f(x) 를 미분하기 위해 곱의 미분법칙 적용",
+    "canonical_name": "도함수를 이용하여 g'(x)를 구하기",
+    "sub_calculations": [
+      "g'(x) = (x^3)' • f(x) + x^3 • f'(x)",
+      "g'(x) = 3x^2 f(x) + x^3 f'(x)"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_27.md",
+    "step_number": 1,
+    "raw_logical_action": "로고에 대한 미지수 제거",
+    "canonical_name": "로그의 성질을 이용하여 미지수를 제거하기",
+    "sub_calculations": [
+      "양변에 밑이 2인 로그를 취",
+      "$\frac{1}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_27.md",
+    "step_number": 3,
+    "raw_logical_action": "이차방정식으로 변환",
+    "canonical_name": "인수분해를 이용하여 근을 구하기",
+    "sub_calculations": [
+      "모두 한쪽으로 이항하면 $(\\log_2 x)^2 - 2\\log_2 x - 3 = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_27.md",
+    "step_number": 4,
+    "raw_logical_action": "이차방정식의 근과 계수 관계를 이용",
+    "canonical_name": "근과 계수의 관계를 이용하여 근의 합을 구하기",
+    "sub_calculations": [
+      "두 근의 합은 $t_1 + t_2 = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_27.md",
+    "step_number": 5,
+    "raw_logical_action": "로그의 성질을 이용하여 결과 도출",
+    "canonical_name": "로그의 성질을 이용하여 미지수를 제거하기",
+    "sub_calculations": [
+      "$\frac{1}{2}$",
+      "$\\log_2 \\alpha + \\log_2 \\beta = \\log_2 (\\alpha \\beta) = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_28.md",
+    "step_number": 1,
+    "raw_logical_action": "주기수열의 주기를 확인",
+    "canonical_name": "주기수열의 주기를 이용하여 주기가 6임을 판정하기",
+    "sub_calculations": [
+      "조건 (나)에 의해 이 수열은 $a_{n+6}=a_n$ 즉 6개의 항이 한 주기로 반복되는 주기수열입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_01.md",
+    "step_number": 1,
+    "raw_logical_action": "지수의 성질을 이용하여 각 숫자를 단순화",
+    "canonical_name": "지수의 성질을 이용하여 각 숫자를 단순화",
+    "sub_calculations": [
+      "$4^{\frac{1}{2}} = (2^2)^{\frac{1}{2}}$",
+      "$(2^2)^{\frac{1}{2}} = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_01.md",
+    "step_number": 2,
+    "raw_logical_action": "동일한 방법으로 다른 숫자를 단순화",
+    "canonical_name": "지수의 성질을 이용하여 각 숫자를 단순화",
+    "sub_calculations": [
+      "$27^{\frac{1}{3}} = (3^3)^{\frac{1}{3}}$",
+      "$(3^3)^{\frac{1}{3}} = 3$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_05.md",
+    "step_number": 1,
+    "raw_logical_action": "로그의 합을 곱으로 변환",
+    "canonical_name": "로그의 합을 곱으로 변환",
+    "sub_calculations": [
+      "$∫_{5}(6-√{11})+∫_{5}(6+√{11})$ $= ∫_{5}((6-√{11})(6+√{11}))$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_05.md",
+    "step_number": 3,
+    "raw_logical_action": "로그의 성질을 이용한 간단화",
+    "canonical_name": "로그의 성질을 이용하여 미지수를 제거하기",
+    "sub_calculations": [
+      "$∫_{5}25 = ∫_{5}(5^2) = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_06.md",
+    "step_number": 1,
+    "raw_logical_action": "극한식을 미분계수의 정의를 이용해 변형하기 위해 식을 조작",
+    "canonical_name": "극한식을 미분계수의 정의를 이용해 변형하기 위해 식을 조작",
+    "sub_calculations": [
+      "$\frac{f(1+3 h)-f(1)}{2 h}$에 $\frac{3}{2}$를 곱하고 나눗셈으로 나눔"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_20.md",
+    "step_number": 1,
+    "raw_logical_action": "B의 좌표를 찾고 A와 B 사이의 거리를 계산하는 공식을 도출한다.",
+    "canonical_name": "로그의 성질을 이용하여 $b$ 값을 도출하기",
+    "sub_calculations": [
+      "A=$(a,2^a)$이고 B의 $y$좌표도 $2^a$이므로 $15\\cdot2^{-b}=2^a$",
+      "$b=\\log_2 15-a$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_20.md",
+    "step_number": 3,
+    "raw_logical_action": "A와 B 사이의 거리가 1에서 100 사이임을 이용하여 $a$의 범위를 구한다.",
+    "canonical_name": "인수분해를 이용하여 $a$의 범위를 구하기.",
+    "sub_calculations": [
+      "$1<2a-\\log_2 15<100$",
+      "$\\dfrac{1+\\log_2 15}{2}<a<\\dfrac{100+\\log_2 15}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_20.md",
+    "step_number": 4,
+    "raw_logical_action": "로그값을 구해 $a$의 정확한 범위를 계산한다.",
+    "canonical_name": "로그의 성질을 이용하여 $a$의 정확한 범위를 계산하기.",
+    "sub_calculations": [
+      "$\\log_2 15=\\log_2(3\\times5)\\approx3.906$",
+      "$2.45<a<51.95$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_20.md",
+    "step_number": 5,
+    "raw_logical_action": "자연수 $a$의 개수를 계산한다.",
+    "canonical_name": "등차수열을 이용하여 $a$의 개수를 구하기.",
+    "sub_calculations": [
+      "자연수 $a$: $3,4,\\ldots,51$",
+      "49개"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_21.md",
+    "step_number": 1,
+    "raw_logical_action": "$x<0$에서 $f'(x)$의 부호를 분석하여 극대점을 찾기.",
+    "canonical_name": "에서 의 부호를 분석하여 극대점을 찾기.",
+    "sub_calculations": [
+      "$x<-1$이면 $f'>0$, $-1<x<0$이면 $f'<0$",
+      "극대점은 $x=-1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_21.md",
+    "step_number": 2,
+    "raw_logical_action": "$a$의 값을 구하기 위해 $f(-1)=5$를 이용하여 $a$에 대한 방정식을 풀기.",
+    "canonical_name": "$f(-1)=5$를 이용해 $a$ 값을 구하기.",
+    "sub_calculations": [
+      "$f(-1)=-2a=5$",
+      "결과: $a=-\frac{5}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.6모A_30.md",
+    "step_number": 2,
+    "raw_logical_action": "$ζ$가수 차이에 따른 $n$의 값을 도출하는 것.",
+    "canonical_name": "가수 차이에 따른 의 값을 도출하는 것.",
+    "sub_calculations": [
+      "경우1 ($\\DeltaζΩ=+ζ2$): $ζ n=ζ m+1+ζ2=ζ(20m)$ → $n=20m$",
+      "경우2 ($\\DeltaζΩ=-ζ2$): $ζ n=ζ m+1-ζ2=ζ(5m)$ → $n=5m$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_01.md",
+    "step_number": 1,
+    "raw_logical_action": "지수법칙을 적용하여 밑을 2로 통일",
+    "canonical_name": "지수법칙을 이용하여 밑을 통일하기",
+    "sub_calculations": [
+      "$4^{\frac{3}{2}} = (2^2)^{\frac{3}{2}}$",
+      "$= 2^{2 \\times \frac{3}{2}}$",
+      "$= 2^3$",
+      "$= 8$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_01.md",
+    "step_number": 2,
+    "raw_logical_action": "지수법칙을 적용하여 밑을 2로 통일",
+    "canonical_name": "지수법칙을 적용하여 밑을 2로 통일",
+    "sub_calculations": [
+      "$8^{\frac{1}{3}} = (2^3)^{\frac{1}{3}}$",
+      "$= 2^{3 \\times \frac{1}{3}}$",
+      "$= 2^1$",
+      "$= 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_03.md",
+    "step_number": 1,
+    "raw_logical_action": "극한식에 $x=2$ 를 대입하여 분수 형태를 확인하고, $0/0$ 꼴임을 파악.",
+    "canonical_name": "극한식에  를 대입하여 분수 형태를 확인하고,  꼴임을 파악.",
+    "sub_calculations": [
+      "극한식에 $x=2$ 를 대입해보면 분모와 분자가 모두 0이 되는 $0/0$ 꼴입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_03.md",
+    "step_number": 2,
+    "raw_logical_action": "분수식의 분자를 인수분해하여 공통인자 확인.",
+    "canonical_name": "인수분해를 이용하여 공통인자를 도출하기",
+    "sub_calculations": [
+      "분수식의 분자를 $x$ 로 묶어 인수분해하면 $x^2 - 2x = x(x-2)$ 입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_03.md",
+    "step_number": 3,
+    "raw_logical_action": "극한 기호 내에서 분모와 분자에 공통으로 있는 $(x-2)$ 를 약분.",
+    "canonical_name": "극한을 이용하여 약분을 도출하기",
+    "sub_calculations": [
+      "극한 기호 내에서 분모와 분자에 공통으로 있는 $(x-2)$ 를 약분할 수 있습니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_03.md",
+    "step_number": 4,
+    "raw_logical_action": "약분 후의 극한식을 구하고, 수렴하는 형태로 확인.",
+    "canonical_name": "극한을 이용하여 수렴성을 판단하기 위해 식을 대입",
+    "sub_calculations": [
+      "정리된 극한식은 $\frac{x}{x+1}$ 가 됩니다. 이제 수렴하는 형태이므로 $x \rightarrow 2$ 를 식에 바로 대입합니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_03.md",
+    "step_number": 5,
+    "raw_logical_action": "$x \rightarrow 2$ 를 극한식에 대입하여 최종 극한값 계산.",
+    "canonical_name": "극한식에 대입하여 극한값을 구하기",
+    "sub_calculations": [
+      "극한값은 $\frac{2}{2+1} = \frac{2}{3}$ 입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_05.md",
+    "step_number": 1,
+    "raw_logical_action": "피적분함수와 부정적분의 관계를 이용하여 부정적분을 도출.",
+    "canonical_name": "부정적분을 이용하여 부정적분을 도출하기",
+    "sub_calculations": [
+      "피적분함수 $4x^3+a$의 부정적분은 $x^4+ax$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_05.md",
+    "step_number": 2,
+    "raw_logical_action": "정적분을 계산하기 위해 정적분의 기본 정리를 적용.",
+    "canonical_name": "미적분학의 기본 정리를 이용하여 정적분을 구하기",
+    "sub_calculations": [
+      "$\nint_{0}^{1}\\left(4 x^{3}+a\\right) d x$ $= \\left[ x^4+ax \\right]_0^1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_05.md",
+    "step_number": 4,
+    "raw_logical_action": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "조건에서 이 값이 8이라고 하였으므로 $1+a = 8$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_06.md",
+    "step_number": 2,
+    "raw_logical_action": "이항분포의 기댓값을 이용한 $n$ 값 계산",
+    "canonical_name": "이항분포의 기댓값을 이용하여 n 값을 구하기",
+    "sub_calculations": [
+      "이항분포 $\\mathrm{B}(n, p)$ 에서 기댓값(평균)은 $np$",
+      "$p = \\frac{1}{3}$ 이므로, $\\mathrm{E}(X) = n \\times \\frac{1}{3}$",
+      "$\\mathrm{E}(X)=4$ 를 대입하면 $\\frac{n}{3} = 4$",
+      "양변에 3을 곱하면 $n = 12$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_07.md",
+    "step_number": 1,
+    "raw_logical_action": "함수 $f(x)$가 실수 전체에서 연속이 되려면 다항함수들이 갈라지는 지점인 $x=1$에서도 연속이어야 한다는 조건을 이해하고 이를 적용한다.",
+    "canonical_name": "연속의 정의를 이용하여 함수가 연속임을 판정하기",
+    "sub_calculations": [
+      "함수 $f(x)$의 좌극한과 우극한이 같아야 함"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_07.md",
+    "step_number": 4,
+    "raw_logical_action": "좌극한과 우극한이 같아야 하므로 두 극한값을 비교하고 $a$의 값을 구한다.",
+    "canonical_name": "좌극한과 우극한이 같아야 하므로 두 극한값을 비교하고 의 값을 구한다.",
+    "sub_calculations": [
+      "$3 = -1 + a$",
+      "$a = 4$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_08.md",
+    "step_number": 1,
+    "raw_logical_action": "로그의 성질을 이용하여 주어진 식을 정리",
+    "canonical_name": "로그의 성질을 이용하여 식을 정리하기",
+    "sub_calculations": [
+      "우변의 1은 $\\\\log_2 2$ 와 같으므로, 식은 $\\\\log_2 a_{n+1} = \\\\log_2 2 + \\\\log_2 a_n = \\\\log_2 (2a_n)$ 이 됩니다.",
+      "밑이 같으므로 진수끼리 같아야 합니다. 즉, $a_{n+1} = 2a_n$ 이 도출됩니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_08.md",
+    "step_number": 5,
+    "raw_logical_action": "최종 결과 도출",
+    "canonical_name": "지수법칙을 이용하여 최종 결과를 도출하기",
+    "sub_calculations": [
+      "즉 $2^{36} = 2^k$ 이고, 상수 $k$ 의 값은 $36$ 입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_09.md",
+    "step_number": 3,
+    "raw_logical_action": "$p_2$를 $p_1$으로 나누어 최종 값을 계산",
+    "canonical_name": "분수의 나눗셈을 이용하여 값 도출하기",
+    "sub_calculations": [
+      "$\\frac{p_2}{p_1} = \\frac{8/15}{2/3}$",
+      "$= \\frac{8}{15} \\times \\frac{3}{2}$",
+      "$= \\frac{24}{30}$",
+      "$= \\frac{4}{5}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_10.md",
+    "step_number": 1,
+    "raw_logical_action": "주어진 조건을 중복조합으로 해석하여 경우의 수를 계산하려는 시도.",
+    "canonical_name": "주어진 조건을 이용하여 경우의 수를 구하기",
+    "sub_calculations": [
+      "3 ≤ a ≤ b ≤ c ≤ d ≤ 10",
+      "중복조합 계산식: _8H_4"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_10.md",
+    "step_number": 2,
+    "raw_logical_action": "중복조합을 조합으로 변환하여 계산식 작성.",
+    "canonical_name": "중복조합을 조합으로 변환하여 경우의 수를 구하기",
+    "sub_calculations": [
+      "_8H_4 = _{8+4-1}C_{4} = _{11}C_{4}"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_11.md",
+    "step_number": 3,
+    "raw_logical_action": "구하고자 하는 확률을 표준화 변수 Z로 바꾸기.",
+    "canonical_name": "정규분포를 이용하여 Z 값을 구하기",
+    "sub_calculations": [
+      "Z = (Ω - m)/(σ/√n) = (Ω - 20)/1.25"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_15.md",
+    "step_number": 1,
+    "raw_logical_action": "함수의 대칭성 성질 이해",
+    "canonical_name": "함수의 대칭성 성질을 이용하여 기함수를 판정하기",
+    "sub_calculations": [
+      "조건 $f(-x)=-f(x)$는 함수가 원점에 대한 기함수임을 의미"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_15.md",
+    "step_number": 2,
+    "raw_logical_action": "극한 표현 변환",
+    "canonical_name": "극한의 성질을 이용하여 극한 표현을 변환하기",
+    "sub_calculations": [
+      "$\nlim_{x \to -1^+} f(x)$를 $-\nlim_{x \to 1^-} f(x)$로 치환"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_15.md",
+    "step_number": 5,
+    "raw_logical_action": "최종 결과 도출",
+    "canonical_name": "극한을 이용하여 최종 정답을 도출하기",
+    "sub_calculations": [
+      "전체 극한 값을 합산하여 최종 정답 도출"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_17.md",
+    "step_number": 2,
+    "raw_logical_action": "수식을 정리하여 $\frac{b}{a}=\frac{c}{10}$ 형태로 변형",
+    "canonical_name": "인수분해를 이용하여 수식을 변형하기",
+    "sub_calculations": [
+      "$\frac{4}{10} = \frac{8}{10}$",
+      "$\frac{4}{10} = \frac{2}{3}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_17.md",
+    "step_number": 3,
+    "raw_logical_action": "상수 $k$를 찾아내기 위해 두 번째 조건을 활용",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "$\frac{4}{10} = -\frac{10}{10} + \frac{2}{3}$",
+      "$\frac{4}{10} = \frac{-3+2}{3} = \frac{-1}{3}$",
+      "$k=\frac{2}{3}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_17.md",
+    "step_number": 5,
+    "raw_logical_action": "수식을 정리하여 $\frac{b}{a}=\frac{c}{10}$ 형태로 변형",
+    "canonical_name": "인수분해를 이용하여 수식을 변형하기",
+    "sub_calculations": [
+      "$\frac{b}{20} = \frac{9}{10}$",
+      "$\frac{b}{20} = \frac{9}{10}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_17.md",
+    "step_number": 6,
+    "raw_logical_action": "비교하여 $b$의 값을 찾아냄",
+    "canonical_name": "인수분해를 이용하여 $b$ 값을 도출하기",
+    "sub_calculations": [
+      "$\frac{b}{20} = \frac{9}{10}$",
+      "$b=18$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 1,
+    "raw_logical_action": "주어진 확률 함수 $H(t)$를 정의하고, $H(0)$을 구하기 위해 특정 범위 내 확률을 계산하기.",
+    "canonical_name": "주어진 확률 함수 를 정의하고, 을 구하기 위해 특정 범위 내 확률을 계산하기.",
+    "sub_calculations": [
+      "$H(0) = \\mathrm{P}(0 \\leq X \\leq 1)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 2,
+    "raw_logical_action": "정규분포를 표준 정규분포로 변환하기 위해 $Z$ 값을 계산하기.",
+    "canonical_name": "정규분포를 이용하여 Z 값을 구하기",
+    "sub_calculations": [
+      "$Z = \\frac{X - 1.5}{2}$",
+      "$H(0) = \\mathrm{P}(-0.75 \\leq Z \\leq -0.25)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 3,
+    "raw_logical_action": "표준정규분포의 대칭성을 이용하여 $\\mathrm{P}(-0.75 \\leq Z \\leq -0.25)$를 $\\mathrm{P}(0.25 \\leq Z \\leq 0.75)$로 변환하기.",
+    "canonical_name": "표준정규분포의 대칭성을 이용하여 를 로 변환하기.",
+    "sub_calculations": [
+      "$\\mathrm{P}(-0.75 \\leq Z \\leq -0.25) = \\mathrm{P}(0.25 \\leq Z \\leq 0.75)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 4,
+    "raw_logical_action": "$\\mathrm{P}(0.25 \\leq Z \\leq 0.75)$를 구하기 위해 표준정규분포 표의 값을 사용하기.",
+    "canonical_name": "를 구하기 위해 표준정규분포 표의 값을 사용하기.",
+    "sub_calculations": [
+      "$\\mathrm{P}(0 \\leq Z \\leq 0.75) - \\mathrm{P}(0 \\leq Z \\leq 0.25)$",
+      "$0.2734 - 0.0987 = 0.1747$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 5,
+    "raw_logical_action": "주어진 확률 함수 $H(t)$를 정의하고, $H(2)$을 구하기 위해 특정 범위 내 확률을 계산하기.",
+    "canonical_name": "주어진 확률 함수 를 정의하고, 을 구하기 위해 특정 범위 내 확률을 계산하기.",
+    "sub_calculations": [
+      "$H(2) = \\mathrm{P}(2 \\leq X \\leq 3)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 6,
+    "raw_logical_action": "정규분포를 표준 정규분포로 변환하기 위해 $Z$ 값을 계산하기.",
+    "canonical_name": "정규분포를 이용하여 Z 값을 구하기",
+    "sub_calculations": [
+      "$H(2) = \\mathrm{P}(0.25 \\leq Z \\leq 0.75)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 7,
+    "raw_logical_action": "이전에 구한 $\\mathrm{P}(0.25 \\leq Z \\leq 0.75)$ 값을 사용하여 $H(2)$를 계산하기.",
+    "canonical_name": "주어진 확률 함수를 정의하고, $H(2)$를 구하기 위해 특정 범위 내 확률을 계산하기.",
+    "sub_calculations": [
+      "$H(2) = 0.1747$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_19.md",
+    "step_number": 8,
+    "raw_logical_action": "$H(0)$와 $H(2)$의 합을 구하기.",
+    "canonical_name": "인수분해를 이용하여 $H(0) + H(2)$을 구하기.",
+    "sub_calculations": [
+      "$H(0) + H(2) = 0.1747 + 0.1747 = 0.3494$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_23.md",
+    "step_number": 2,
+    "raw_logical_action": "주어진 미분계수를 이용하여 $a$ 값을 구하기",
+    "canonical_name": "주어진 미분계수를 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "$f'(1) = 2$",
+      "$21(1)^2 - a = 21 - a = 2$",
+      "$a = 19$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_25.md",
+    "step_number": 2,
+    "raw_logical_action": "중간 항의 로그를 제거하여 새로운 이차방정식을 형성",
+    "canonical_name": "중간 항의 로그를 제거하여 새로운 이차방정식을 형성",
+    "sub_calculations": [
+      "$(\frac{1}{2}) \\log_3 x$",
+      "$= \\\\",
+      "$\\log_3 x^{\frac{1}{2}}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_27.md",
+    "step_number": 1,
+    "raw_logical_action": "도함수를 이용한 접선의 기울기 구하기",
+    "canonical_name": "도함수를 이용한 접선의 기울기 구하기",
+    "sub_calculations": [
+      "$f'(x) = 3x^2 + 2$",
+      "$f'(-1) = 3(-1)^2 + 2 = 5$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_27.md",
+    "step_number": 3,
+    "raw_logical_action": "곡선과 접선의 교점 찾기 위한 방정식 구성",
+    "canonical_name": "곡선과 접선의 교점 찾기 위한 방정식 구성",
+    "sub_calculations": [
+      "$x^3 + 2x + 7 = 5x + 9$",
+      "$x^3 - 3x - 2 = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_27.md",
+    "step_number": 4,
+    "raw_logical_action": "중근을 이용한 인수분해",
+    "canonical_name": "인수분해를 이용하여 중근을 구하기",
+    "sub_calculations": [
+      "$(x + 1)^2(x - 2) = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_28.md",
+    "step_number": 1,
+    "raw_logical_action": "변수 없는 정적분을 상수 $k$로 대체하여 등식을 간단하게 만든다.",
+    "canonical_name": "변수 없는 정적분을 상수 로 대체하여 등식을 간단하게 만든다.",
+    "sub_calculations": [
+      "$∫_0^1 f(t) dt = k$",
+      "$∫_0^x f(t) dt = x^3 - 2x^2 - 2kx$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_28.md",
+    "step_number": 2,
+    "raw_logical_action": "양변을 $x$에 대해 미분하여 $f(x)$를 구한다.",
+    "canonical_name": "양변을 에 대해 미분하여 를 구한다.",
+    "sub_calculations": [
+      "$\frac{d}{dx} (∫_0^x f(t) dt) = \frac{d}{dx}(x^3 - 2x^2 - 2kx)$",
+      "$f(x) = 3x^2 - 4x - 2k$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_28.md",
+    "step_number": 3,
+    "raw_logical_action": "구한 $f(x)$를 상수 $k$의 정의 영역 식에 대입하여 $k$ 값을 구한다.",
+    "canonical_name": "정적분을 이용하여 상수 값을 구하기.",
+    "sub_calculations": [
+      "$∫_0^1 f(t) dt = ∫_0^1 (3t^2 - 4t - 2k) dt$",
+      "$= [t^3 - 2t^2 - 2kt]_0^1$",
+      "$= (1 - 2 - 2k) - 0$",
+      "$= -2k - 1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_28.md",
+    "step_number": 4,
+    "raw_logical_action": "$k$ 값을 구하여 정수로 만든다.",
+    "canonical_name": "방정식을 이용하여 근과 계수의 관계를 구하기",
+    "sub_calculations": [
+      "$k = -2k - 1$",
+      "$3k = -1$",
+      "$k = -\frac{1}{3}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_28.md",
+    "step_number": 6,
+    "raw_logical_action": "$x=0$을 대입하여 상수 $a$를 구한다.",
+    "canonical_name": "$f(0)=\frac{2}{3}$을 이용해 $a$ 값을 구하기.",
+    "sub_calculations": [
+      "$f(0) = \frac{2}{3}$",
+      "$a = \frac{2}{3}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_20.md",
+    "step_number": 2,
+    "raw_logical_action": "가수 $f_1$를 정의하고, 이를 이용하여 $n$의 가능한 값을 찾음.",
+    "canonical_name": "주어진 함수를 정의하고, $n$의 가능한 값을 찾기 위해 부등식을 이용하여 판정하기.",
+    "sub_calculations": [
+      "$f_1 = \\dfrac{n^2 + 8}{n + 1} - n$",
+      "$f_1 = \\dfrac{8 - n}{n + 1}$",
+      "0 < f_1 < 1",
+      "8 - n > 0 → n < 8",
+      "8 - n < n + 1 → n > 3.5"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_20.md",
+    "step_number": 6,
+    "raw_logical_action": "$n = 4$일 때 $f_2$를 계산하고, $f_1 + f_2$가 1인지 확인.",
+    "canonical_name": "인수분해를 이용하여 $f_2$을 구하기",
+    "sub_calculations": [
+      "$n = 4$",
+      "$\\dfrac{24}{20} = \\dfrac{6}{5}$",
+      "$f_2 = 0.2 = \\dfrac{1}{5}$",
+      "$f_1 + f_2 = \\dfrac{4}{5} + \\dfrac{1}{5} = 1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_21.md",
+    "step_number": 1,
+    "raw_logical_action": "주어진 조건에 따라 $g(x)$의 형태를 파악하고, 이중근 또는 근 중 하나가 $-1$임을 확인.",
+    "canonical_name": "주어진 조건을 이용하여 근과 계수의 관계를 판정하기.",
+    "sub_calculations": [
+      "$f'(x)=(x+1)(x^2+ax+b)$",
+      "$x<0$에서 $f'(x)\\leq0$이 성립하려면 $g(x)=x^2+ax+b$가 $x=-1$에서 부호가 바뀌지 않아야 함"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_21.md",
+    "step_number": 4,
+    "raw_logical_action": "$r_2$의 범위를 정리하고, 이를 바탕으로 $a^2+b^2$의 최대와 최소 값을 계산.",
+    "canonical_name": "의 범위를 정리하고, 이를 바탕으로 의 최대와 최소 값을 계산.",
+    "sub_calculations": [
+      "$r_2\\in[0,2]$",
+      "$a=1-r_2$",
+      "$b=-r_2$",
+      "$a^2+b^2=(1-r_2)^2+r_2^2=2r_2^2-2r_2+1$",
+      "$r_2=\\frac{1}{2}$에서 최소$=\\frac{1}{2}$",
+      "$r_2=2$에서 최대$=5$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_29.md",
+    "step_number": 2,
+    "raw_logical_action": "최단경로가 오른쪽 또는 아래 방향으로만 이동함을 결정.",
+    "canonical_name": "경로의 방향성을 결정하기 위해 최단거리의 특성 이용",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_29.md",
+    "step_number": 3,
+    "raw_logical_action": "[그림 1]에서 $A_1 \\to B_1$ 최단경로를 분석하고 경로 수($a_1$)를 계산.",
+    "canonical_name": "[그림 1]에서  최단경로를 분석하고 경로 수()를 계산.",
+    "sub_calculations": [
+      "$a_1 = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_29.md",
+    "step_number": 4,
+    "raw_logical_action": "[그림 $n-1$]의 경로가 [그림 $n$]으로 이어지는 방식을 분석.",
+    "canonical_name": "그림 $n-1$에서 경로를 분석하고 그림 $n$으로 이어지는 방식을 판정하기",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_29.md",
+    "step_number": 6,
+    "raw_logical_action": "[그림 $n-1$]의 내부 경로가 여러 절점을 통해 $B_{n-1}$에 도달할 수 있도록 접합 방식을 분석.",
+    "canonical_name": "[그림 ]의 내부 경로가 여러 절점을 통해 에 도달할 수 있도록 접합 방식을 분석.",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_29.md",
+    "step_number": 7,
+    "raw_logical_action": "$a_2$부터 $a_7$까지 경로 수를 계산하고 피보나치 유사 수열($a_n = 3a_{n-1} - a_{n-2}$)을 확인.",
+    "canonical_name": "부터 까지 경로 수를 계산하고 피보나치 유사 수열()을 확인.",
+    "sub_calculations": [
+      "$a_2 = 5$",
+      "$a_3 = 3 \times 5 - 2 = 13$",
+      "$a_4 = 3 \times 13 - 5 = 34$",
+      "$a_5 = 3 \times 34 - 13 = 89$",
+      "$a_6 = 3 \times 89 - 34 = 233$",
+      "$a_7 = 3 \times 233 - 89 = 610$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_30.md",
+    "step_number": 1,
+    "raw_logical_action": "부등식을 치환하여 새로운 형태로 표현하기",
+    "canonical_name": "지수법칙을 이용하여 새로운 형태의 부등식을 표현하기",
+    "sub_calculations": [
+      "$t=2^k$으로 치환하면 부등식은 $(t-2^n)(t-4^n)\\leq1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_30.md",
+    "step_number": 5,
+    "raw_logical_action": "$k$의 범위를 결정하여 해 구하기",
+    "canonical_name": "인수분해를 이용하여 $k$의 범위를 구하기.",
+    "sub_calculations": [
+      "해는 $k\\in\\{n,n+1,\\ldots,2n\\}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_30.md",
+    "step_number": 6,
+    "raw_logical_action": "$a_n$을 계산하여 구하기",
+    "canonical_name": "시그마(∑)을 이용하여 등차수열의 합을 구하기",
+    "sub_calculations": [
+      "$a_n=\\sum_{k=n}^{2n}k=\\dfrac{(n+2n)(n+1)}{2}=\\dfrac{3n(n+1)}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_30.md",
+    "step_number": 7,
+    "raw_logical_action": "$a_n$을 이용하여 새로운 부등식을 도출하기",
+    "canonical_name": "지수법칙을 이용하여 새로운 부등식을 도출하기",
+    "sub_calculations": [
+      "$(2^k-2^n)(2^k-4^n)\\leq1$: $4^k-(2^n+4^n)2^k+8^n\\leq1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014.9모A_30.md",
+    "step_number": 10,
+    "raw_logical_action": "$a_n$의 역수를 구한 후 합산하기",
+    "canonical_name": "시그마를 이용하여 합산하기",
+    "sub_calculations": [
+      "$$\\sum_{n=1}^{20}\\frac{1}{a_n}=\\frac{2}{3}\\left(1-\\frac{1}{21}\\right)=\\frac{40}{63}=\\frac{q}{p}$$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_01.md",
+    "step_number": 1,
+    "raw_logical_action": "거듭제곱근의 형태를 지수법칙을 적용하여 계산.",
+    "canonical_name": "지수법칙을 이용하여 결과물을 도출하기",
+    "sub_calculations": [
+      "8 = 2^3",
+      "9 = 3^2"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_05.md",
+    "step_number": 1,
+    "raw_logical_action": "주어진 식이 미분계수의 기본 정의식임을 인식하고, 함수 f(x)의 x=1에서의 미분계수 f'(1)가 주어진 값과 동일함을 파악.",
+    "canonical_name": "주어진 조건을 이용하여 미분계수를 도출.",
+    "sub_calculations": [
+      "lim _{h \\rightarrow 0} \\frac{f(1+h)-f(1)}{h} = f'(1)",
+      "문제에서 f'(1)이 6임."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_05.md",
+    "step_number": 2,
+    "raw_logical_action": "함수 f(x)의 도함수를 구하여 미분계수의 일반적인 형태를 얻음.",
+    "canonical_name": "함수 f(x)의 도함수를 구하여 미분계수의 일반적인 형태를 얻음.",
+    "sub_calculations": [
+      "f(x) = 2x^2 + ax",
+      "도함수 f'(x) 계산: f'(x) = 4x + a"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_06.md",
+    "step_number": 2,
+    "raw_logical_action": "정리된 분자와 분모를 등식에 대입하여 관계식을 도출.",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 d를 도출.",
+    "sub_calculations": [
+      "$\frac{2d}{a_7 + a_8} = 2$",
+      "$d = a_7 + a_8$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_06.md",
+    "step_number": 5,
+    "raw_logical_action": "방정식을 풀어 공차를 구함.",
+    "canonical_name": "등차수열의 두 항 차이를 이용해 공차를 구함.",
+    "sub_calculations": [
+      "$12d = -12$",
+      "$d = -1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_07.md",
+    "step_number": 1,
+    "raw_logical_action": "독립 사건의 정의와 교집합 확률을 단순한 개별 곱셈으로 쪼개는 논리적 도약",
+    "canonical_name": "조건부확률을 이용하여 교집합 확률을 구하기 위해 특정 사건의 독립성을 도출하기.",
+    "sub_calculations": [
+      "$\\mathrm{P}\\left(A \\cap B^{C}\\right) = \\mathrm{P}(A) \\times \\mathrm{P}(B^C)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_08.md",
+    "step_number": 1,
+    "raw_logical_action": "두 곡선의 교점을 찾기 위해 $x$ 좌표를 계산",
+    "canonical_name": "인수분해를 이용하여 두 곡선의 교점을 구하기",
+    "sub_calculations": [
+      "$x^2 - 4x + 3 = 3$",
+      "$x^2 - 4x = 0 \\implies x(x-4) = 0$",
+      "교점은 $x=0, 4$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_08.md",
+    "step_number": 2,
+    "raw_logical_action": "구간 $[0, 4]$에서 직선과 이차함수 곡선 사이의 넓이를 정적분으로 계산",
+    "canonical_name": "구간 에서 직선과 이차함수 곡선 사이의 넓이를 정적분으로 계산",
+    "sub_calculations": [
+      "$\nint_{0}^{4} \\{3 - (x^2-4x+3)\\} dx$",
+      "$= \nint_{0}^{4} (-x^2+4x) dx$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_09.md",
+    "step_number": 5,
+    "raw_logical_action": "단서 조항을 고려하여 가능한 해 중에 확률 $0 < p < 1$ 범위 안에 있는 값을 선택함.",
+    "canonical_name": "단서 조항을 고려하여 가능한 해 중에 확률  범위 안에 있는 값을 선택함.",
+    "sub_calculations": [
+      "$p = \\frac{1}{10}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_10.md",
+    "step_number": 1,
+    "raw_logical_action": "첫 번째 조건에서 떨어진 거리 $x = R^{\frac{27}{23}}$ 및 속력의 비 $\frac{v_c}{v} = 2$를 주어진 공식에 대입하여 관계식을 도출",
+    "canonical_name": "첫 번째 조건에서 떨어진 거리  및 속력의 비 를 주어진 공식에 대입하여 관계식을 도출",
+    "sub_calculations": [
+      "$2 = 1 - k \\log \\frac{R^{\frac{27}{23}}}{R}$",
+      "$\\frac{R^{\frac{27}{23}}}{R} = R^{\\frac{4}{23}}$",
+      "$1 = -k \\left(\\frac{4}{23}\\right) \\log R$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_10.md",
+    "step_number": 3,
+    "raw_logical_action": "두 번째 조건에서 거리 $x = R^a$ 및 속력의 비 $\frac{v_c}{v} = 3$를 주어진 공식에 대입하여 새로운 관계식을 도출",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "$3 = 1 - k \\log \\frac{R^a}{R}$",
+      "$\\frac{R^a}{R} = R^{a-1}$",
+      "$2 = -k(a-1) \\log R$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_10.md",
+    "step_number": 4,
+    "raw_logical_action": "이전 단계에서 도출한 $k \\log R = -\\frac{23}{4}$를 두 번째 조건의 관계식에 대입하여 $a$를 구함",
+    "canonical_name": "이전 단계에서 도출한 를 두 번째 조건의 관계식에 대입하여 를 구함",
+    "sub_calculations": [
+      "$2 = \\frac{23}{4}(a-1)$",
+      "$a-1 = \\frac{8}{23}$",
+      "$a = 1 + \\frac{8}{23} = \\frac{31}{23}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_11.md",
+    "step_number": 1,
+    "raw_logical_action": "좌극한을 계산하기 위해 $x$ 가 $-1$ 보다 작은 쪽에서 향해 한없이 가까워지는 경향을 파악하고, 그래프에서 해당 극한값을 읽어냄.",
+    "canonical_name": "좌극한을 계산하기 위해  가  보다 작은 쪽에서 향해 한없이 가까워지는 경향을 파악하고, ...",
+    "sub_calculations": [
+      "$x$ 가 $-1$ 보다 작은 방향으로 갈수록 $y$ 값은 특정 수에 수렴함이 확인됨."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_11.md",
+    "step_number": 2,
+    "raw_logical_action": "우극한을 계산하기 위해 $x$ 가 $0$ 보다 큰 쪽에서 원점을 향해 다가가는 경향을 파악하고, 그래프에서 해당 극한값을 읽어냄.",
+    "canonical_name": "극한을 이용하여 한 극한값을 도출하기",
+    "sub_calculations": [
+      "$x$ 가 $0$ 보다 큰 방향으로 갈수록 $y$ 값은 특정 수에 수렴함이 확인됨."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_12.md",
+    "step_number": 1,
+    "raw_logical_action": "표본평균 $\bar{X}$ 의 새로운 분포 계산",
+    "canonical_name": "표본평균의 분포를 이용하여 새로운 표준편차를 구하기",
+    "sub_calculations": [
+      "표본 평균 $\bar{X}$의 평균은 모평균 $m$ 이며, 표준편차는 $\frac{\text{표준편차}}{\text{표본 크기 제곱근}}$",
+      "$\frac{10}{\text{sqrt}(25)} = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_12.md",
+    "step_number": 2,
+    "raw_logical_action": "정규분포 $\bar{X}$ 정의와 표준화 변수 $Z$ 도출",
+    "canonical_name": "정규분포를 이용하여 표준화 변수 Z을 도출하기",
+    "sub_calculations": [
+      "$\bar{X} \text{ 는 } \\mathrm{N}(m, 2^2) \\text{ 을 따릅니다.}",
+      "$Z = \\frac{\bar{X} - m}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_12.md",
+    "step_number": 3,
+    "raw_logical_action": "$\\mathrm{P}(\\bar{X} ≥ 2000)$ 을 표준화 변수 $Z$를 이용하여 변환",
+    "canonical_name": "을 표준화 변수 를 이용하여 변환",
+    "sub_calculations": [
+      "$\\mathrm{P}\\left(Z ≥ \\frac{2000-m}{2}\right) = 0.9772$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_12.md",
+    "step_number": 4,
+    "raw_logical_action": "확률의 넓이를 이용하여 $Z$ 점수 계산",
+    "canonical_name": "확률의 넓이를 이용하여  점수 계산",
+    "sub_calculations": [
+      "$0.5 + 0.4772 = 0.9772$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_12.md",
+    "step_number": 5,
+    "raw_logical_action": "표준정규분포표에서 $Z$ 값 찾기",
+    "canonical_name": "표준정규분포표에서  값 찾기",
+    "sub_calculations": [
+      "확률이 $0.4772$ 에 대응하는 $Z$ 값은 $2.0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_12.md",
+    "step_number": 6,
+    "raw_logical_action": "$\\frac{2000-m}{2} = -2.0$ 도출",
+    "canonical_name": "등식을 이용하여 m을 도출하기",
+    "sub_calculations": [
+      "$2000 - m = -4 \\implies m = 2004$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_13.md",
+    "step_number": 1,
+    "raw_logical_action": "로그함수의 특성을 이용하여 수열을 단순화합니다.",
+    "canonical_name": "로그함수의 특성을 이용하여 수열을 단순화합니다.",
+    "sub_calculations": [
+      "진수에 지수가 들어가면 지수가 앞으로 나오고, 뺄셈은 진수끼리의 나눗셈으로 합쳐집니다.",
+      "문항의 선택지 값 형태로 역산하면, 수열 $a_n$ 은 등차수열 $a_n = n \\log_a b$ 꼴로 일정하게 도출됩니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_13.md",
+    "step_number": 3,
+    "raw_logical_action": "도출된 상배수를 곱하여 최종 결과를 산출합니다.",
+    "canonical_name": "도출된 상배수를 곱하여 최종 결과를 산출합니다.",
+    "sub_calculations": [
+      "도출된 상배수를 곱하게 되면, 문항의 맥락에 따라 $120 \\log_2 3$ 이 산출됩니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_14.md",
+    "step_number": 1,
+    "raw_logical_action": "함수 $f(x)$ 가 곱셈 연산이 덧셈으로 쪼개지는 덧셈적 함수임을 이해하고, 이를 통해 $20$ 이하의 자연수 집합에서의 조건식을 정립",
+    "canonical_name": "덧셈적 함수의 성질을 이용하여 조건식을 정립하기",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_14.md",
+    "step_number": 3,
+    "raw_logical_action": "$f(mn) = f(m) + f(n)$ 을 만족하지 않는 사례들을 배제하거나, 조건에 부합하는 쌍을 카운트",
+    "canonical_name": "결합법칙을 이용하여 함수의 성질을 판정하기",
+    "sub_calculations": [
+      "조건에 부합하는 모든 $(m, n)$ 쌍을 세어 주어진 조건식을 충족하는 경우의 수를 구함"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_15.md",
+    "step_number": 4,
+    "raw_logical_action": "전체 확률을 계산하기 위해 두 배반사건의 결과를 합침.",
+    "canonical_name": "전체 확률을 계산하기 위해 두 배반사건의 결과를 합치기",
+    "sub_calculations": [
+      "결과 1: \\(\\frac{6}{30}\\)",
+      "결과 2: \\(\\frac{3}{30}\\)",
+      "전체 확률: \\(\\frac{6}{30} + \\frac{3}{30} = \\frac{9}{30} = \\frac{3}{10}\\)"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_16.md",
+    "step_number": 2,
+    "raw_logical_action": "빈칸 (가)에 들어갈 $f(n)$ 찾기",
+    "canonical_name": "빈칸 (가)에 들어갈  찾기",
+    "sub_calculations": [
+      "정리된 식과 제시된 부분분수 전개 구조를 비교하면 빈칸 (가)에 들어갈 $f(n)$ 은 $\\frac{1}{n(n+1)}$ 임을 알 수 있습니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_16.md",
+    "step_number": 5,
+    "raw_logical_action": "빈칸 (나)에 해당하는 식 $g(n)$ 찾기",
+    "canonical_name": "인수분해를 이용하여 식 $g(n)$을 도출하기",
+    "sub_calculations": [
+      "이것이 바로 빈칸 (나)에 해당하는 식 $g(n)$ 입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_18.md",
+    "step_number": 2,
+    "raw_logical_action": "남은 흰색 공을 세 명의 학생에게 중복을 허락하여 자유롭게 나누어 주는 경우의 수를 계산.",
+    "canonical_name": "남은 흰색 공을 세 명의 학생에게 중복을 허락하여 자유롭게 나누어 주는 경우의 수를 계산.",
+    "sub_calculations": [
+      "$_3H_5 = _{3+5-1}C_{5} = _{7}C_{5} = _{7}C_{2} = 21$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_18.md",
+    "step_number": 3,
+    "raw_logical_action": "남은 주황색 공을 세 명의 학생에게 중복을 허락하여 자유롭게 나누어 주는 경우의 수를 계산.",
+    "canonical_name": "남은 주황색 공을 세 명의 학생에게 중복을 허락하여 자유롭게 나누어 주는 경우의 수를 계산...",
+    "sub_calculations": [
+      "$_3H_4 = _{3+4-1}C_{4} = _{6}C_{4} = _{6}C_{2} = 15$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_18.md",
+    "step_number": 4,
+    "raw_logical_action": "투명색 공을 나누어주는 사건과 주황색 공을 나누어주는 사건이 서로 독립적이므로, 두 경우의 수를 곱해줍니다.",
+    "canonical_name": "투명색 공을 나누어주는 사건과 주황색 공을 나누어주는 사건이 서로 독립적이므로, 두 경우의...",
+    "sub_calculations": [
+      "$21 \times 15 = 315$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_22.md",
+    "step_number": 1,
+    "raw_logical_action": "극한 기호 안의 함수가 무리함수임을 파악하고, 근호 안이 양수가 되는 구간에서 함수 연속성을 보장합니다.",
+    "canonical_name": "극한 기호 안의 함수가 무리함수임을 파악하고, 근호 안이 양수가 되는 구간에서 함수 연속성...",
+    "sub_calculations": [
+      "극한 기호 안의 함수 구조는 일차다항식을 포함한 무리함수입니다.",
+      "무리합수의 근호 안이 양수가 되는 구간, 즉 주어진 $x=0$ 근방에서 함수 연속이 보장됩니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_22.md",
+    "step_number": 7,
+    "raw_logical_action": "로피탈의 정리를 적용하여 극한값을 계산합니다.",
+    "canonical_name": "로피탈의 정리를 적용하여 극한값을 계산합니다.",
+    "sub_calculations": [
+      "$\frac{x \tan x}{\tan x - 2x \tan x}$에서 $x=0$를 대입하면 $\frac{0}{0}$이 되므로, 로피탈의 정리가 적용됩니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_23.md",
+    "step_number": 1,
+    "raw_logical_action": "피적분함수의 대칭성에 따른 적분 결과",
+    "canonical_name": "정적분을 이용하여 적분 결과를 구하기",
+    "sub_calculations": [
+      "기함수(원점 대칭, 홀수 차수)에 대한 정적분은 $0$ 이 됨",
+      "우함수(y축 대칭, 짝수 차수 및 상수)에 대한 적분은 구간 절반의 2배"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_23.md",
+    "step_number": 2,
+    "raw_logical_action": "피적분 함수 분리와 간소화",
+    "canonical_name": "피적분 함수 분리와 간소화",
+    "sub_calculations": [
+      "$\frac{1}{4}$",
+      "$2x$ 항이 소거됨",
+      "$2 \times \\int_{0}^{a} 3x^2 dx$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_23.md",
+    "step_number": 4,
+    "raw_logical_action": "결과 대입과 $a$ 값 도출",
+    "canonical_name": "지수법칙을 이용해 $a$ 값을 도출하기.",
+    "sub_calculations": [
+      "$2a^3 = \\frac{1}{4}$",
+      "$a^3 = \\frac{1}{8}$",
+      "$a=\\frac{1}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_24.md",
+    "step_number": 1,
+    "raw_logical_action": "등비수열의 성질을 이용하여 주어진 조건 (나)을 이해",
+    "canonical_name": "등비수열의 성질을 이용하여 등비수열의 규칙을 이해하기",
+    "sub_calculations": [
+      "조건 (나)에 주어진 식 $a_{n+1}=-2 a_{n}$",
+      "$-2$ 를 곱하여 바로 다음 항을 얻는 규칙"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_24.md",
+    "step_number": 3,
+    "raw_logical_action": "주어진 식 $a_{1}=a_{2}+3$ 을 사용하여 $a_1$ 구하기",
+    "canonical_name": "주어진 식을 이용하여 미정계수를 구하기.",
+    "sub_calculations": [
+      "$a_1 = a_2 + 3$",
+      "$a_1 = -2a_1 + 3$",
+      "$3a_1 = 3$",
+      "$a_1 = 1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_24.md",
+    "step_number": 4,
+    "raw_logical_action": "등비수열의 일반항 공식을 사용하여 9번째 항인 $a_9$ 구하기",
+    "canonical_name": "등비수열의 일반항 공식을 사용하여 째 항인  구하기",
+    "sub_calculations": [
+      "등비수열의 일반항 공식",
+      "$a_9 = a_1 \\times r^{8}$",
+      "$a_9 = 1 \\times (-2)^{8}$",
+      "$a_9 = 256$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_25.md",
+    "step_number": 1,
+    "raw_logical_action": "다항함수가 극값을 가지려면 그 점에서의 도함수 값이 0이 되어야 한다는 극값 조건을 이해한다.",
+    "canonical_name": "극값 조건을 이용하여 극값을 판정하기",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_25.md",
+    "step_number": 4,
+    "raw_logical_action": "극값 조건을 만족하는 상수 $a$ 값을 도출한다.",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "$a = 18$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_25.md",
+    "step_number": 7,
+    "raw_logical_action": "극댓값 $M$이 4임을 확인한다.",
+    "canonical_name": "극댓값 이 4임을 확인한다.",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_27.md",
+    "step_number": 7,
+    "raw_logical_action": "확률변수 $X$의 기댓값 $\text{E}(X)$ 계산",
+    "canonical_name": "확률변수의 기댓값을 이용하여 $\\mathrm{E}(X)$를 구하기",
+    "sub_calculations": [
+      "$\text{E}(X) = 1 \times \\frac{4}{10} + 2 \times \\frac{3}{10} + 3 \times \\frac{2}{10} + 4 \times \\frac{1}{10}$",
+      "$= \\frac{4+6+6+4}{10} = \\frac{20}{10} = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_28.md",
+    "step_number": 1,
+    "raw_logical_action": "함수가 연속이 되려면 좌극한과 우극한이 일치해야 함",
+    "canonical_name": "함수가 연속이 되려면 좌극한과 우극한이 일치해야 함",
+    "sub_calculations": [
+      "lim_{x \to a^-} f(x)f(x-a) = (lim_{x \to a^-} f(x)) \times (lim_{t \to 0^-} f(t))",
+      "lim_{x \to a^+} f(x)f(x-a) = (lim_{x \to a^+} f(x)) \times (lim_{t \to 0^+} f(t))"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_28.md",
+    "step_number": 2,
+    "raw_logical_action": "$a=0$일 때 좌우 극한이 일치하지 않으므로 $a \\neq 0$",
+    "canonical_name": "극한을 이용하여 연속성을 판정하기",
+    "sub_calculations": [
+      "lim_{x \to 0^-} f(x) = 1, lim_{x \to 0^+} f(x) = 7",
+      "$1 \times 1 \\neq 7 \times 7$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_28.md",
+    "step_number": 3,
+    "raw_logical_action": "$f(a)$가 모든 극한에 일치해야 하므로 $f(a) = 0$",
+    "canonical_name": "함수가 연속이 되려면 좌극한과 우극한이 일치해야 함",
+    "sub_calculations": [
+      "$f(a) \\times 1 = f(a) \\times 7$",
+      "따라서 $f(a) = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_28.md",
+    "step_number": 6,
+    "raw_logical_action": "모든 $a$를 더하여 정답을 계산",
+    "canonical_name": "모든 를 더하여 정답을 계산",
+    "sub_calculations": [
+      "-1 + 14 = 13"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_21.md",
+    "step_number": 4,
+    "raw_logical_action": "$t=-a/2$에서의 $g$의 미분가능 조건 확인하기",
+    "canonical_name": "극한을 이용하여 미분가능 조건을 판정하기",
+    "sub_calculations": [
+      "$\frac{g(-a/2+h)}{h}$를 양쪽 극한으로 계산",
+      "$\frac{a^2}{2}, -\frac{a^2}{2}$",
+      "결과는 $a=0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_30.md",
+    "step_number": 1,
+    "raw_logical_action": "$y = 4^x$와 $y = 1$의 교점을 찾기",
+    "canonical_name": "와 의 교점을 찾기",
+    "sub_calculations": [
+      "$4^x = 1$",
+      "→ $x = 0$",
+      "점 $(0, 1)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_30.md",
+    "step_number": 2,
+    "raw_logical_action": "$y = a^{-x+4}$와 $y = 1$의 교점을 찾기",
+    "canonical_name": "지수법칙을 이용하여 두 곡선의 교점을 구하기",
+    "sub_calculations": [
+      "$a^{-x+4} = 1$",
+      "→ $-x + 4 = 0$",
+      "→ $x = 4$",
+      "점 $(4, 1)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_30.md",
+    "step_number": 3,
+    "raw_logical_action": "$y = 4^x$와 $y = a^{-x+4}$의 교점을 찾기",
+    "canonical_name": "와 의 교점을 찾기",
+    "sub_calculations": [
+      "$4^x = a^{4-x}$",
+      "양변에 로그: $2x\\log 2 = (4-x)\\log a$",
+      "$x(2\\log 2 + \\log a) = 4\\log a$",
+      "$x = \\frac{4\\log a}{2\\log 2 + \\log a}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_30.md",
+    "step_number": 4,
+    "raw_logical_action": "세 곡선으로 둘러싸인 영역 정의",
+    "canonical_name": "적분을 이용하여 영역의 넓이를 구하기",
+    "sub_calculations": [
+      "영역 내부 또는 경계의 격자점을 $x$ 좌표별로 셈"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_30.md",
+    "step_number": 10,
+    "raw_logical_action": "전체 격자점 수 $N(a)$ 정의 및 각 $a$에 대한 계산",
+    "canonical_name": "전체 격자점 수  정의 및 각 에 대한 계산",
+    "sub_calculations": [
+      "$N(a) = 1 + \\lfloor\\min(4, a^3)\\rfloor + \\lfloor\\min(16, a^2)\\rfloor + a + 1$",
+      "$a = 2$: $N = 1+4+4+2+1 = 12$",
+      "$a = 3$: $N = 1+4+9+3+1 = 18$",
+      "$a = 4$: $N = 1+4+16+4+1 = 26$ ✓",
+      "$a = 5$: $N = 1+4+16+5+1 = 27$ ✓",
+      "...",
+      "$a = 38$: $N = 1+4+16+38+1 = 60$ ✗",
+      "$a = 37$: $N = 1+4+16+37+1 = 59$ ✗"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2014/2014수능A_30.md",
+    "step_number": 11,
+    "raw_logical_action": "$a \\geq 4$일 때의 $N(a)$ 고려",
+    "canonical_name": "일 때의  고려",
+    "sub_calculations": [
+      "$Ω = 22 + a$",
+      "$N(a) ≥ 20$: $22 + a ≥ 20$ → $a ≥ 2$",
+      "$N(a) ≤ 40$: $22 + a ≤ 40$ → $a ≤ 18$",
+      "조건: $N ≤ 40$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_06.md",
+    "step_number": 1,
+    "raw_logical_action": "등차수열의 일반항을 이용하여 세 번째 항 $a_3$ 을 표현.",
+    "canonical_name": "등차수열의 일반항을 이용하여 세 번째 항 $a_3$ 을 표현.",
+    "sub_calculations": [
+      "$a_3 = a_1 + 2d$",
+      "$2 + 2d = 10$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_07.md",
+    "step_number": 1,
+    "raw_logical_action": "함수의 연속 조건을 이해하고, 경계점인 $x=1$에서 함수가 연속이라는 조건을 수리적으로 표현.",
+    "canonical_name": "함수가 연속이 되려면 좌극한과 우극한이 일치해야 함",
+    "sub_calculations": [
+      "함수가 분할되어 있는 경계점인 $x=1$ 에서도 끊어지지 않고 연속이어야 합니다.",
+      "함수의 연속 조건에 따라 $x=1$ 에서의 극한값과 함숫값은 완전히 일치합니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_07.md",
+    "step_number": 2,
+    "raw_logical_action": "$x \neq 1$ 일 때의 함수식을 이용하여 $x=1$에 접근하는 극한값을 구하기.",
+    "canonical_name": "일 때의 함수식을 이용하여 에 접근하는 극한값을 구하기.",
+    "sub_calculations": [
+      "$x \neq 1$ 일 때의 극한값은 다항함수인 $2x+5$ 에 $x=1$ 을 한없이 접근시키는 극한입니다.",
+      "$\frac{d}{dx}(2x+5) = 2$",
+      "극한값은 변숫값의 대입으로 간단히 구해집니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_07.md",
+    "step_number": 3,
+    "raw_logical_action": "함수 $f(x)$가 $x=1$인 순간에 취하는 값을 지정된 상수 $a$로 표현하고, 이와 극한값의 동일성을 나타내는 관계식을 세우기.",
+    "canonical_name": "함수 가 인 순간에 취하는 값을 지정된 상수 로 표현하고, 이와 극한값의 동일성을 나타내는...",
+    "sub_calculations": [
+      "$x=1$ 인 순간의 함숫값은 따로 지정된 상수 지정값인 $a$ 가 됩니다.",
+      "$\frac{d}{dx}(2x+5) = 2$",
+      "$\frac{d}{dx} (2x+5)|_{x=1} = 2 \times 1 + 5 = 7$",
+      "극한값과 함숫값 $a$ 가 같아야 하므로 $a = 7$ 입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_09.md",
+    "step_number": 1,
+    "raw_logical_action": "분수의 성질을 이용하여 상수를 극한 기호 밖으로 빼내기",
+    "canonical_name": "분수의 성질을 이용하여 상수를 극한 기호 밖으로 빼내기",
+    "sub_calculations": [
+      "$\\lim _{h \\rightarrow 0} \\frac{f(1+h)-f(1)}{2 h}$",
+      "$= \\frac{1}{2} \\lim _{h \\rightarrow 0} \\frac{f(1+h)-f(1)}{h}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_09.md",
+    "step_number": 2,
+    "raw_logical_action": "미분계수의 정확한 정의식을 이용하여 극한 식과 연결하기",
+    "canonical_name": "미분계수의 정확한 정의식을 이용하여 극한 식과 연결하기",
+    "sub_calculations": [
+      "여기서 뒤의 극한식은 미분계수의 정확한 정의식인 $f'(1)$ 입니다.",
+      "그러므로 우리가 구하고자 하는 값은 $\\frac{1}{2} f'(1)$ 이 됩니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_09.md",
+    "step_number": 5,
+    "raw_logical_action": "최종적으로 요구된 값을 계산하기",
+    "canonical_name": "도함수를 이용하여 최종값을 구하기",
+    "sub_calculations": [
+      "최종적으로 요구된 값은 $\\frac{1}{2} f'(1)$ 이므로, $\\frac{1}{2} \\times 6 = 3$ 입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_10.md",
+    "step_number": 1,
+    "raw_logical_action": "시그마 안의 식 $\frac{4}{k(k+1)}$ 에서 상수 4를 앞으로 빼내고 부분분수 공식으로 전개",
+    "canonical_name": "시그마 안의 식  에서 상수 4를 앞으로 빼내고 부분분수 공식으로 전개",
+    "sub_calculations": [
+      "$\frac{4}{k(k+1)} = 4 \times \\left( \\frac{1}{k} - \\frac{1}{k+1} \\right)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_10.md",
+    "step_number": 2,
+    "raw_logical_action": "$\boxed{\textbf{k=1}}$ 부터 $\boxed{\textbf{n}}$ 까지 대입하여 모두 더하면, 인접한 항인 $-\frac{1}{k+1}$ 과 다음 항의 $\frac{1}{k+1}$ 이 연속적으로 소거됩니다",
+    "canonical_name": "부터  까지 대입하여 모두 더하면, 인접한 항인  과 다음 항의  이 연속적으로 소거됩니다",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_10.md",
+    "step_number": 3,
+    "raw_logical_action": "마지막으로 남는 것은 첫 번째 항의 앞부분인 $\frac{1}{1}$ 과 마지막 항의 뒷부분인 $-\frac{1}{n+1}$",
+    "canonical_name": "시그마(∑)을 이용하여 결과물을 도출하기",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_10.md",
+    "step_number": 4,
+    "raw_logical_action": "부분합의 전체 결과는 $4 \times \\left( 1 - \\frac{1}{n+1} \\right) = 4\\left(\\frac{n}{n+1}\\right)$",
+    "canonical_name": "부분합의 전체 결과는",
+    "sub_calculations": [],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_13.md",
+    "step_number": 1,
+    "raw_logical_action": "함수의 좌극한을 그래프에서 시각적으로 찾아내기",
+    "canonical_name": "극한을 이용하여 함수의 좌극한을 구하기",
+    "sub_calculations": [
+      "$x$ 의 좌표가 $-1$ 보다 작은 쪽($-1$ 측의 왼쪽)에서 한없이 접근할 때 그래프의 $y$ 좌표 변화를 관찰합니다. 해당하는 함숫값 높이를 읽어냅니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_13.md",
+    "step_number": 2,
+    "raw_logical_action": "함수의 우극한을 그래프에서 시각적으로 찾아내기",
+    "canonical_name": "극한을 이용하여 함수의 우극한을 판정하기",
+    "sub_calculations": [
+      "$x$ 가 $1$ 보다 큰 쪽($1$ 측의 오른쪽)에서 접근할 때 그래프 선분이 다가가는 목적지의 $y$ 좌표 높이를 읽어냅니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_13.md",
+    "step_number": 3,
+    "raw_logical_action": "좌극한과 우극한 값을 더하여 최종 결과 도출하기",
+    "canonical_name": "극한을 이용하여 최종 결과를 도출하기",
+    "sub_calculations": [
+      "도출한 두 상수 값을 더해주면 최종적으로 문제에서 요구한 값이 산출됩니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_14.md",
+    "step_number": 1,
+    "raw_logical_action": "속도를 구하기 위해 위치 함수에 대해 미분하여 속도 함수 도출",
+    "canonical_name": "미분을 이용하여 도함수를 구하기",
+    "sub_calculations": [
+      "x=-t^{2}+4 t",
+      "v = \frac{dx}{dt} = -2t + 4"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_14.md",
+    "step_number": 2,
+    "raw_logical_action": "주어진 조건에 따라 속도 함수에서 특정 시간에 대한 속력이 0인 값을 찾기 위해 방정식 풀기",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "v(a) = -2a + 4 = 0",
+      "2a = 4",
+      "a = 2"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_15.md",
+    "step_number": 3,
+    "raw_logical_action": "$L$ 값 도출",
+    "canonical_name": "부정적분을 이용하여 $L$ 값을 도출하기",
+    "sub_calculations": [
+      "$L>0$이므로 $L=400$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_16.md",
+    "step_number": 3,
+    "raw_logical_action": "도함수의 부호 변화점에서 극대를 찾습니다.",
+    "canonical_name": "도함수의 부호 변화점에서 극대를 찾습니다.",
+    "sub_calculations": [
+      "도함수의 부호가 양수에서 음수로 바뀌는 지점이 극대",
+      "$x=2$ 가 극대"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_16.md",
+    "step_number": 5,
+    "raw_logical_action": "극댓값이 주어진 값과 비교하여 미지수를 구합니다.",
+    "canonical_name": "극값을 이용하여 미지수를 구하기.",
+    "sub_calculations": [
+      "$20 + a = 10$",
+      "$a = -10$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_17.md",
+    "step_number": 1,
+    "raw_logical_action": "분수의 분자를 나눕니다.",
+    "canonical_name": "분수의 분자를 나눕니다.",
+    "sub_calculations": [
+      "$\frac{6(n+1)}{(n+1)!}$ $- \frac{4}{(n+1)!}$ $= \frac{6}{n!}$ $- \frac{4}{(n+1)!}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_17.md",
+    "step_number": 2,
+    "raw_logical_action": "빼기 항을 이항하여 식을 재배치합니다.",
+    "canonical_name": "이항 정리 이용하여 식을 재배치하기",
+    "sub_calculations": [
+      "$2 a_{n+1} + \frac{4}{(n+1)!}$ 이 아니라, $2 a_{n+1} + \frac{-4}{(n+1)!}$ 부분을 분리합니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_17.md",
+    "step_number": 3,
+    "raw_logical_action": "좌변 식인 $2 a_{n+1} - \frac{4}{(n+1)!}$ 에 맞춰 우변을 남기면, $3 a_n - \frac{6}{n!}$ 이 됩니다.",
+    "canonical_name": "좌변 식인  에 맞춰 우변을 남기면,  이 됩니다.",
+    "sub_calculations": [
+      "$3 a_n - \frac{6}{n!}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_17.md",
+    "step_number": 4,
+    "raw_logical_action": "우변을 $3$ 으로 묶으면 $3 \times (a_n - \frac{2}{n!})$ 이 됩니다.",
+    "canonical_name": "좌변 식인  에 맞춰 우변을 남기면,  이 됩니다.",
+    "sub_calculations": [
+      "$3 \times (a_n - \frac{2}{n!}) = 3(a_n - \frac{2}{n!})$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_17.md",
+    "step_number": 5,
+    "raw_logical_action": "빈칸 (가)에 들어갈 $f(n)$ 은 $\frac{2}{n!}$ 임을 역산해냅니다.",
+    "canonical_name": "빈칸 (가)에 들어갈 찾기",
+    "sub_calculations": [
+      "$f(n) = \frac{2}{n!}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_17.md",
+    "step_number": 6,
+    "raw_logical_action": "수열 $\text{\textbraceleft}b_n\text{\textbraceright}$ 은 $b_{n+1} = \frac{3}{2} b_n$ 의 관계를 가지므로 첫째항이 $1$ 이고 공비가 $\frac{3}{2}$ 인 등비수열입니다.",
+    "canonical_name": "점화식을 이용하여 등비수열을 판정하기",
+    "sub_calculations": [
+      "$\text{\textbraceleft}b_n\text{\textbraceright}$ is a geometric sequence with first term $1$ and common ratio $\frac{3}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_17.md",
+    "step_number": 7,
+    "raw_logical_action": "그러므로 일반항 공식에 의해 부분 빈칸 (나)인 $g(n)$ 은 $(\frac{3}{2})^{n-1}$ 가 됩니다.",
+    "canonical_name": "등비수열의 일반항 공식을 사용하여 째 항인  구하기",
+    "sub_calculations": [
+      "$g(n) = (\frac{3}{2})^{n-1}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_23.md",
+    "step_number": 1,
+    "raw_logical_action": "다항함수의 미분법 공식을 이용해 도함수를 도출합니다.",
+    "canonical_name": "다항함수의 미분법 공식을 이용하여 도함수를 구하기",
+    "sub_calculations": [
+      "$f(x) = x^2+x+3$",
+      "$f'(x) = 2x+1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_24.md",
+    "step_number": 1,
+    "raw_logical_action": "함수 f(x)의 단조증가 특성과 최댓값을 이용한 a 값 도출",
+    "canonical_name": "도함수를 이용하여 극값을 도출하기",
+    "sub_calculations": [
+      "f(x)=2^x, x=3에서 a=8"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_24.md",
+    "step_number": 2,
+    "raw_logical_action": "함수 g(x)의 단조감소 특성과 최댓값을 이용한 b 값 도출",
+    "canonical_name": "도함수를 이용한 극값 판정하기",
+    "sub_calculations": [
+      "g(x)=(1/4)^x, x=-1에서 b=4"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_26.md",
+    "step_number": 2,
+    "raw_logical_action": "괄호를 풀면 뒷 항과 앞 항이 꼬리에 꼬리를 물고 지워지는 연쇄 소거(Telescoping) 형태입니다.",
+    "canonical_name": "시그마(∑)를 이용하여 연쇄 소거(Telescoping) 형태를 도출하기",
+    "sub_calculations": [
+      "$(a_2 - a_1) + (a_3 - a_2) + \\dots + (a_{n+1} - a_n)$",
+      "$a_{n+1} - a_1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_26.md",
+    "step_number": 4,
+    "raw_logical_action": "그러므로 이 합은 곧 $a_{n+1} - a_1$ 과 정확히 같습니다.",
+    "canonical_name": "시그마(∑)을 이용하여 합을 구하기",
+    "sub_calculations": [
+      "$(a_2 - a_1) + (a_3 - a_2) + \\dots + (a_{n+1} - a_n) = a_{n+1} - a_1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_26.md",
+    "step_number": 5,
+    "raw_logical_action": "우변의 조건과 결합하면 등식 $a_{n+1} - a_1 = 2n+1$ 가 성립합니다.",
+    "canonical_name": "점화식을 이용하여 등식을 도출하기",
+    "sub_calculations": [
+      "$a_{n+1} - a_1 = 2n + 1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_26.md",
+    "step_number": 7,
+    "raw_logical_action": "도출된 식의 좌변이 $a_{10}$ 이 되려면 항 번호를 맞춰 $n=9$ 를 대입해야 합니다.",
+    "canonical_name": "항 번호를 맞춰 일반항을 구하기",
+    "sub_calculations": [
+      "$a_{10} - a_1 = 2(9) + 1 = 19$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_26.md",
+    "step_number": 8,
+    "raw_logical_action": "문제 조건에 $a_1 = 15$ 라고 주어졌으므로, 이를 식에 대입합니다.",
+    "canonical_name": "등차수열을 이용하여 $a_{10}$을 구하기",
+    "sub_calculations": [
+      "$a_{10} - 15 = 19$",
+      "$a_{10} = 19 + 15 = 34$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_27.md",
+    "step_number": 1,
+    "raw_logical_action": "주어진 함수식을 미분하여 접선의 기울기를 구하기",
+    "canonical_name": "도함수를 이용하여 접선의 기울기를 구하기",
+    "sub_calculations": [
+      "$y = f(x) = -x^3 + 2x$",
+      "$y' = -3x^2 + 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_27.md",
+    "step_number": 2,
+    "raw_logical_action": "함수의 미분값을 지나는 점의 x 좌표에 대입하여 접선의 기울기 구하기",
+    "canonical_name": "함수의 미분값을 지나는 점의 x 좌표에 대입하여 접선의 기울기 구하기",
+    "sub_calculations": [
+      "$f'(1) = -3(1)^2 + 2$",
+      "$= -1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_27.md",
+    "step_number": 3,
+    "raw_logical_action": "접선의 방정식을 구성",
+    "canonical_name": "접선의 방정식을 구성",
+    "sub_calculations": [
+      "기울기가 $-1$ 이고 점 $(1, 1)$ 을 지나므로",
+      "$y - 1 = -1(x - 1)$",
+      "$y = -x + 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_27.md",
+    "step_number": 4,
+    "raw_logical_action": "구한 접선 방정식을 사용하여 특정 점의 y 좌표 구하기",
+    "canonical_name": "접선의 방정식을 이용하여 특정 점의 y 좌표 구하기",
+    "sub_calculations": [
+      "$y = a$, $x = -10$",
+      "$a = -(-10) + 2$",
+      "$= 10 + 2$",
+      "$= 12$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_28.md",
+    "step_number": 1,
+    "raw_logical_action": "수열의 규칙성을 파악하기 위해 $n=1, 2, 3, 4$ 까지의 항들을 차례대로 구함.",
+    "canonical_name": "수열의 규칙성을 파악하기 위해  까지의 항들을 차례대로 구함.",
+    "sub_calculations": [
+      "$n=1$: $(x_2, y_2) = (x_1, (y_1-3)^2) = (1, (1-3)^2) = (1, 4)$",
+      "$n=2$: $(x_3, y_3) = ((x_2-3)^2, y_2) = ((1-3)^2, 4) = (4, 4)$",
+      "$n=3$: $(x_4, y_4) = (x_3, (y_3-3)^2) = (4, (4-3)^2) = (4, 1)$",
+      "$n=4$: $(x_5, y_5) = ((x_4-3)^2, y_4) = ((4-3)^2, 1) = (1, 1)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_28.md",
+    "step_number": 2,
+    "raw_logical_action": "$n=5$ 를 대입하여 수열의 주기성을 확인함.",
+    "canonical_name": "점화식을 이용하여 수열의 주기성을 판정하기.",
+    "sub_calculations": [
+      "$n=5$: $(x_6, y_6) = (x_1, (y_1-3)^2) = (1, (1-3)^2) = (1, 4)$",
+      "주기성을 발견하여 수열이 4개 단위로 반복됨을 확인."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_28.md",
+    "step_number": 3,
+    "raw_logical_action": "구해야 하는 항 번호인 2015를 주기인 4로 나눈 결과와 그 나머지를 통해 해당되는 수열의 항을 결정.",
+    "canonical_name": "구해야 하는 항 번호인 2015를 주기인 4로 나눈 결과와 그 나머지를 통해 해당되는 수열...",
+    "sub_calculations": [
+      "$2015 \\div 4 = 503$ 에 나머지가 $3$",
+      "나머지 3에 해당하는 3번째 좌표 $(x_3, y_3) = (4, 4)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_28.md",
+    "step_number": 4,
+    "raw_logical_action": "2015번째의 순서쌍 좌표의 합을 계산하여 최종 결과를 도출.",
+    "canonical_name": "째의 순서쌍 좌표의 합을 계산하여 최종 결과를 도출.",
+    "sub_calculations": [
+      "$x_{2015} + y_{2015} = 4 + 4 = 8$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_01.md",
+    "step_number": 1,
+    "raw_logical_action": "지수법칙을 이용한 거듭제곱 계산 준비",
+    "canonical_name": "지수법칙을 이용하여 지수를 조정하기",
+    "sub_calculations": [
+      "거듭제곱 형태를 계산하기 위해 지수법칙을 단원 공식에 맞춰 적용합니다.",
+      "밑수인 8을 소인수분해하면 $2^3$ 입니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_01.md",
+    "step_number": 2,
+    "raw_logical_action": "주어진 식의 지수를 단순화",
+    "canonical_name": "주어진 식의 지수를 단순화",
+    "sub_calculations": [
+      "주어진 식에 대입하면 $3 \\times (2^3)^{\\frac{2}{3}}$ 가 됩니다.",
+      "지수끼리 곱해지면 $3 \\times \\frac{2}{3} = 2$ 이므로, 식은 $3 \\times 2^2$ 으로 간단해집니다."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_03.md",
+    "step_number": 1,
+    "raw_logical_action": "분자와 분모에 공통으로 존재하는 식 $(x-2)$ 를 서로 약분하여 극한을 계산할 수 있도록 함.",
+    "canonical_name": "극한을 이용하여 약분을 도출하기",
+    "sub_calculations": [
+      "주어진 식 $\frac{(x-2)(x+1)}{x-2}$",
+      "$x=2$를 바로 대입하면 분모가 $0$이 되어 정의되지 않음"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_05.md",
+    "step_number": 1,
+    "raw_logical_action": "로그의 합 공식을 이용하여 두 로그를 하나로 결합",
+    "canonical_name": "로그의 합 공식을 이용하여 두 로그를 하나로 결합",
+    "sub_calculations": [
+      "$$\\log_8 2 + \\log_8 4 = \\log_8 (2 \times 4)$$",
+      "$$\\log_8 8 = 1$$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_20.md",
+    "step_number": 1,
+    "raw_logical_action": "로그리즘 방정식의 x축과의 교점을 찾기 위해, 로그 안의 식이 1이 되도록 설정",
+    "canonical_name": "로그의 성질을 이용하여 x축과의 교점을 찾기",
+    "sub_calculations": [
+      "$bx - 1 = 1$",
+      "$bx = 2$",
+      "$x = \\frac{2}{b}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_20.md",
+    "step_number": 2,
+    "raw_logical_action": "로그리즘 함수의 정의域을 찾기 위해, 로그 안의 식이 0이 되는 x 값을 구함",
+    "canonical_name": "로그리즘 함수의 정의域을 찾기 위해, 로그 안의 식이 0이 되는 x 값을 구함",
+    "sub_calculations": [
+      "$ax - 1 = 0$",
+      "$x = \\frac{1}{a}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_20.md",
+    "step_number": 3,
+    "raw_logical_action": "교점의 x 좌표와 점근선이 같은 조건을 통해 a와 b 사이의 관계를 파악",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "$\\frac{2}{b} = \\frac{1}{a}$",
+      "$b = 2a$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_21.md",
+    "step_number": 1,
+    "raw_logical_action": "삼차함수 $g(x)$의 형태를 결정한다.",
+    "canonical_name": "삼차함수 의 형태를 결정한다.",
+    "sub_calculations": [
+      "$g(x) = (x-1)(x^2 + px + q)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_21.md",
+    "step_number": 2,
+    "raw_logical_action": "$n=1$일 때의 극한 조건을 이용해 $f(1)=0$를 유도한다.",
+    "canonical_name": "극한의 성질을 이용하여 함수값을 구하기",
+    "sub_calculations": [
+      "$\frac{f(x)}{g(x)}$에서 $x=1$에 극한이 0이므로 $f(1) = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_21.md",
+    "step_number": 3,
+    "raw_logical_action": "$n=2, n=3, n=4$의 극한 조건을 통해 $g(x)$와 $f(x)$의 형태를 추론한다.",
+    "canonical_name": "극한을 이용하여 $g(x)$와 $f(x)$의 형태를 도출하기",
+    "sub_calculations": [
+      "$\frac{f(x)}{g(x)}$에서 $x=2$에 극한이 0이므로 $f(2)=0$",
+      "$\frac{f(x)}{g(x)}$에서 $x=3, x=4$에 극한값이 각각 2와 6이므로 $g(3) = 2$, $g(4) = 3$",
+      "$f(x)$는 $(x-1)^2(x-d)$ 꼴이며 $f(2)=0$이므로 $d=2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_21.md",
+    "step_number": 4,
+    "raw_logical_action": "$g(x) = (x-1)(x-\beta)(x-\beta)$에서 $g(3), g(4)$를 이용해 $\beta, \beta$의 값을 구한다.",
+    "canonical_name": "인수분해를 이용해 $\\beta$ 값을 구하기",
+    "sub_calculations": [
+      "$(3-\beta)(3-\beta) = 1$",
+      "$(4-\beta)(4-\beta) = 1$",
+      "$\beta+\beta = 7$",
+      "$\beta\beta = 13$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_21.md",
+    "step_number": 5,
+    "raw_logical_action": "결과를 바탕으로 $g(x)$의 최종 형태를 구하고, $g(5)$ 값을 계산한다.",
+    "canonical_name": "인수분해를 이용하여 함수의 값을 구하기",
+    "sub_calculations": [
+      "$g(x) = (x-1)(x^2 - 7x + 13)$",
+      "$g(5) = 4 \times 3 = 12$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_29.md",
+    "step_number": 1,
+    "raw_logical_action": "첫 번째 극한 분석을 통해 $f(x)$의 형태를 결정",
+    "canonical_name": "극한을 이용하여 함수의 형태를 결정하기",
+    "sub_calculations": [
+      "$\frac{f(x) - x^3}{x^2} = -11$",
+      "$f(x) - x^3$의 최고차항은 $x^2$항이어야 한다.",
+      "$f(x) = x^3 - 11x^2 + ax + b$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_29.md",
+    "step_number": 2,
+    "raw_logical_action": "두 번째 극한 분석을 통해 $f(1)$의 값을 구하고 이로 인해 $a+b=10$이라는 관계를 파악",
+    "canonical_name": "두 번째 극한 분석을 통해 의 값을 구하고 이로 인해 이라는 관계를 파악",
+    "sub_calculations": [
+      "$\frac{f(x)}{x-1} = -9$",
+      "$f(1) = 0$",
+      "$1 - 11 + a + b = 0$",
+      "$a + b = 10$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_29.md",
+    "step_number": 3,
+    "raw_logical_action": "다시 극한 분석을 통해 $f'(1)=-9$를 도출하고 이를 이용하여 $a=10$이라는 값을 찾음",
+    "canonical_name": "두 번째 극한 분석을 통해 의 값을 구하고 이로 인해 이라는 관계를 파악",
+    "sub_calculations": [
+      "$f(1) = (x-1)Q(x)$",
+      "$\frac{f(x)}{x-1} = Q(1) = f'(1) = -9$",
+      "$f'(x) = 3x^2 - 22x + a$",
+      "$a - 19 = -9$",
+      "$a = 10$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_29.md",
+    "step_number": 4,
+    "raw_logical_action": "$a+b=10$에서 $b=0$을 도출하고 $f(x)$의 형태를 구함",
+    "canonical_name": "에서 을 도출하고 의 형태를 구함",
+    "sub_calculations": [
+      "$a + b = 10$",
+      "$b = 0$",
+      "$f(x) = x^3 - 11x^2 + 10x$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_29.md",
+    "step_number": 5,
+    "raw_logical_action": "$t = \frac{1}{x}$로 치환하여 극한을 계산",
+    "canonical_name": "로 치환하여 극한을 계산",
+    "sub_calculations": [
+      "$\frac{1}{x} \to 0^+$",
+      "$\frac{f(1/x)}{1/x} = x f\frac{1}{x}$",
+      "$f(t) = t^3 - 11t^2 + 10t$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_29.md",
+    "step_number": 6,
+    "raw_logical_action": "$f(0)=0$이라는 점을 이용하여 극한 값을 계산",
+    "canonical_name": "$f(0)=0$을 이용해 극한 값을 구하기",
+    "sub_calculations": [
+      "$f(0) = 0$",
+      "$\frac{t^3 - 11t^2 + 10t}{t} = t^2 - 11t + 10$",
+      "$\text{극한 } t \to 0: 10$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_30.md",
+    "step_number": 2,
+    "raw_logical_action": "조건을 재구성하여 부등식을 도출",
+    "canonical_name": "조건을 재구성하여 부등식을 도출",
+    "sub_calculations": [
+      "$\\text{log} b - \\text{log} a \\leq \\text{log} a - \\text{log} b - \\lfloor \text{log} a \\rfloor + \\lfloor \text{log} b \\rfloor$",
+      "$2(\\text{log} b - \\text{log} a) \\leq \\lfloor \text{log} b \\rfloor - \\lfloor \text{log} a \\rfloor$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_30.md",
+    "step_number": 4,
+    "raw_logical_action": "경우를 분류하여 각각에 대한 해를 구함",
+    "canonical_name": "경우의 수를 이용하여 해를 구하기",
+    "sub_calculations": [
+      "경우 1: $a, b$ 모두 한 자리 (1~9)",
+      "$\\lfloor \text{log} a \\rfloor = 0$, $\\lfloor \text{log} b \\rfloor = 0$. 우변 $= 0$.",
+      "조건: $2(\\text{log} b - \\text{log} a) \\leq 0$, 즉 $\\text{log} b \\leq \\text{log} a$, 즉 $b \\leq a$.",
+      "$a \\leq b$와 결합하면 $a = b$. 해: $(1,1), (2,2), \\\\",
+      "..., (9,9)$ → **9개**"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_30.md",
+    "step_number": 5,
+    "raw_logical_action": "경우를 분류하여 각각에 대한 해를 구함",
+    "canonical_name": "경우를 분류하여 각각에 대한 해를 구함",
+    "sub_calculations": [
+      "경우 2: $a, b$ 모두 두 자리 (10~20)",
+      "$\\lfloor \text{log} a \\rfloor = 1$, $\\lfloor \text{log} b \\rfloor = 1$. 우변 $= 0$.",
+      "조건: $2(\\text{log} b - \\text{log} a) \\leq 0$, 즉 $b \\leq a$.",
+      "$a \\leq b$와 결합하면 $a = b$. 해: $(10,10), (11,11), \\\\",
+      "..., (20,20)$ → **11개**"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_30.md",
+    "step_number": 6,
+    "raw_logical_action": "경우를 분류하여 각각에 대한 해를 구함",
+    "canonical_name": "경우를 분류하여 각각에 대한 해를 구함",
+    "sub_calculations": [
+      "경우 3: $a$는 한 자리, $b$는 두 자리 ($1 \\leq a \\leq 9$, $10 \\leq b \\leq 20$)",
+      "$\\lfloor \text{log} a \\rfloor = 0$, $\\lfloor \text{log} b \\rfloor = 1$. 우변 $= 1$.",
+      "조건: $2(\\text{log} b - \\text{log} a) \\leq 1$.",
+      "$\\text{log} b - \\text{log} a \\leq \\frac{1}{2}$",
+      "$\\text{log} \\frac{b}{a} \\leq \\frac{1}{2}$",
+      "$\\frac{b}{a} \\leq \\sqrt{10} \\approx 3.162$",
+      "$b \\leq a\\sqrt{10}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.6모A_30.md",
+    "step_number": 8,
+    "raw_logical_action": "각 경우의 해를 합산하여 전체 개수 계산",
+    "canonical_name": "주어진 조건을 이용하여 경우의 수를 구하기",
+    "sub_calculations": [
+      "경우 3 합계: $0+0+0+3+6+9+11+11+11 = $ **51개**",
+      "**전체 합계**: $9 + 11 + 51 = \\\\",
+      "$\\boxed{71}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_01.md",
+    "step_number": 1,
+    "raw_logical_action": "지수가 유리수 형태인 식을 연산하기 위해 가장 먼저 밑수를 단일 소인수로 맞춰줍니다.",
+    "canonical_name": "지수법칙을 이용하여 밑수를 단일 소인수로 맞추기",
+    "sub_calculations": [
+      "첫 번째 항의 밑인 $4$ 는 $2^2$ 이므로",
+      "$4^{\frac{3}{2}} = (2^2)^{\frac{3}{2}}"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_01.md",
+    "step_number": 4,
+    "raw_logical_action": "밑이 같은 두 지수를 곱할 때는 지수끼리 합산됩니다.",
+    "canonical_name": "지수법칙을 이용하여 지수를 합산하기",
+    "sub_calculations": [
+      "$2^{3+1} = 2^4$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_05.md",
+    "step_number": 1,
+    "raw_logical_action": "수열이 등비수열임을 인지하고, 공비 $r$를 구합니다.",
+    "canonical_name": "등비수열을 이용하여 공비를 구하기",
+    "sub_calculations": [
+      "주어진 수열은 일정한 값이 곱해지는 등비수열이며 공비 $r = 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_05.md",
+    "step_number": 2,
+    "raw_logical_action": "제5항 $a_5$를 구하기 위해, 제3항 $a_3$와 공비 $r$을 이용한 관계식을 세웁니다.",
+    "canonical_name": "등비수열의 일반항을 이용하여 제5항 $a_5$을 구하기",
+    "sub_calculations": [
+      "일반항 성질에 따라 $a_5 = a_3 \times r^{5-3} = a_3 \times r^2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_06.md",
+    "step_number": 1,
+    "raw_logical_action": "부정적분을 찾기 위해 주어진 함수의 적분법칙을 사용합니다.",
+    "canonical_name": "부정적분을 이용하여 정의할 표현식을 도출.",
+    "sub_calculations": [
+      "다항함수의 적분법칙 적용: $3x^2$에 대한 부정적분은 차수가 하나 올라가고 계수가 나뉘어 $\frac{3}{3}x^{2+1}$",
+      "$\frac{3}{3}x^{2+1} = x^3$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_07.md",
+    "step_number": 1,
+    "raw_logical_action": "배반사건의 확률 공식 이해와 적용.",
+    "canonical_name": "조건부확률을 이용하여 교집합 확률을 구하기 위해 특정 사건의 독립성을 도출하기.",
+    "sub_calculations": [
+      "P(A ∪ B) = P(A) + P(B)",
+      "4P(B) = 1"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_08.md",
+    "step_number": 1,
+    "raw_logical_action": "그래프에서 $x$ 축에서 $0$ 보다 살짝 작은 음수 쪽으로 접근할 때의 극한값을 확인하기 위해 $\text{lim}_{x \to 0^-} f(x)$를 구한다.",
+    "canonical_name": "극한을 이용하여 극한값을 구하기",
+    "sub_calculations": [
+      "$\text{lim}_{x \to 0^-} f(x) = y$ 좌표 값"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_08.md",
+    "step_number": 2,
+    "raw_logical_action": "그래프에서 $x$ 가 $1$ 측으로 다가가는 극한값을 확인하기 위해 $\text{lim}_{x \to 1} f(x)$를 구한다.",
+    "canonical_name": "극한을 이용하여 극한값을 구하기",
+    "sub_calculations": [
+      "$\text{lim}_{x \to 1} f(x) = y$ 좌표 값"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_09.md",
+    "step_number": 1,
+    "raw_logical_action": "문제의 조건부 확률을 사용해야 함이 파악됨",
+    "canonical_name": "조건부확률을 이용하여 특정 사건의 확률을 도출하기.",
+    "sub_calculations": [
+      "조건: 선택한 1명이 무조건 여학생"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_10.md",
+    "step_number": 4,
+    "raw_logical_action": "방정식을 k에 대한 식으로 변환",
+    "canonical_name": "로그의 성질을 이용하여 식을 변환",
+    "sub_calculations": [
+      "$k = \\log \\left(\\frac{5}{2}\\right) - 4\\log 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_10.md",
+    "step_number": 5,
+    "raw_logical_action": "로그의 나눗셈 성질 적용",
+    "canonical_name": "로그의 성질을 이용하여 미지수를 제거하기",
+    "sub_calculations": [
+      "$\\log \\left(\\frac{5}{2}\\right) = \\log 5 - \\log 2$",
+      "$\\log 5 = \\log\\left(\\frac{10}{2}\\right)$ $= \\log 10$ $- \\log 2$ $= 1$ $- \\log 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_11.md",
+    "step_number": 3,
+    "raw_logical_action": "점 C의 x 좌표를 구하기 위해 y=1이 y=λ_{2}(x+1)-1과 만나는 점 찾기",
+    "canonical_name": "방정식을 이용하여 점의 x 좌표를 구하기",
+    "sub_calculations": [
+      "1 = λ_{2}(x+1)-1",
+      "λ_{2}(x+1) = 2",
+      "x+1 = 4",
+      "x = 3"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_11.md",
+    "step_number": 4,
+    "raw_logical_action": "점 D의 x 좌표를 구하기 위해 y=-1이 y=3^{x+1}-2과 만나는 점 찾기",
+    "canonical_name": "방정식을 이용하여 점의 x 좌표를 구하기",
+    "sub_calculations": [
+      "-1 = 3^{x+1}-2",
+      "3^{x+1} = 1",
+      "x+1 = 0",
+      "x = -1"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_11.md",
+    "step_number": 6,
+    "raw_logical_action": "사다리꼴 넓이 계산",
+    "canonical_name": "등차수열의 합을 이용하여 넓이를 구하기",
+    "sub_calculations": [
+      "넓이 = Ω((α + β)/2) ψ",
+      "넓이 = (3+1)/2 ψ 2",
+      "넓이 = 4"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_13.md",
+    "step_number": 1,
+    "raw_logical_action": "주사위를 15번 던지는 실험에서 사건 $A$ 가 발생하는 총 횟수를 이항분포로 모델링",
+    "canonical_name": "이항분포를 이용하여 사건의 발생 횟수를 구하기",
+    "sub_calculations": [
+      "이항분포의 시행 횟수 $n=15$",
+      "확률변수의 분포 $B(15, p)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_13.md",
+    "step_number": 2,
+    "raw_logical_action": "이항분포에서 기댓값 $\text{E}(X) = np$ 계산",
+    "canonical_name": "이항분포의 기대값을 구하기",
+    "sub_calculations": [
+      "$\text{E}(X) = 15p$",
+      "$\text{E}(X) = 15 \times \\frac{k}{6} = \\frac{5k}{2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_13.md",
+    "step_number": 3,
+    "raw_logical_action": "$k$ 의 값으로 기댓값을 정수로 만들기 위해 $k$ 가 짝수여야 함을 확인",
+    "canonical_name": "확률변수의 기댓값을 이용하여 $\text{E}(X)$를 구하기",
+    "sub_calculations": [
+      "$\\frac{5k}{2}$",
+      "분자인 $k$ 가 짝수"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_15.md",
+    "step_number": 1,
+    "raw_logical_action": "중복 조합을 사용해 4개 숫자 중에서 3개 선택하는 방법 수를 계산합니다.",
+    "canonical_name": "경우의 수를 이용하여 방법 수를 구하기",
+    "sub_calculations": [
+      "$_4H_3 = _{4+3-1}C_{3} = _{6}C_{3}$",
+      "$= \\frac{6 \\times 5 \\times 4}{3 \\times 2 \\times 1} = 20$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_15.md",
+    "step_number": 2,
+    "raw_logical_action": "세 수의 곱이 100 이하가 되어야 하는 조건을 설정합니다.",
+    "canonical_name": "지수법칙을 이용하여 조건을 판정하기",
+    "sub_calculations": [
+      "$2^{a+b+c} \\le 100$",
+      "$2^6 = 64 \\le 100$, $2^7 = 128 > 100$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_15.md",
+    "step_number": 3,
+    "raw_logical_action": "지수 합이 6보다 큰 경우의 수를 계산하고, 전체에서 빼어 지수 합이 6 이하인 경우의 수를 구합니다.",
+    "canonical_name": "주어진 조건을 이용하여 경우의 수를 구하기",
+    "sub_calculations": [
+      "지수 합이 9: $(3, 3, 3)$ 가지 조합 $\rightarrow$ 1가지",
+      "지수 합이 8: $(2, 3, 3)$ 가지 조합 $\rightarrow$ 1가지",
+      "지수 합이 7: $(1, 3, 3)$ 및 $(2, 2, 3)$ 조합 $\rightarrow$ 2가지",
+      "총 $1 + 1 + 2 = 4$ 가지"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_16.md",
+    "step_number": 1,
+    "raw_logical_action": "첫 번째 관계식과 귀납적 정의를 준비하고 차이를 계산하여 시그마 기호가 있는 우변을 단순화.",
+    "canonical_name": "시그마 기호를 이용해 우변을 단순화",
+    "sub_calculations": [
+      "$(*)$ 과 $(n-1)$ 대입한 식 준비",
+      "$\\frac{S_{n+1}}{n+1} - \\frac{S_n}{n} = S_n$",
+      "시그마 기호 우변 단순화"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_16.md",
+    "step_number": 3,
+    "raw_logical_action": "$\\frac{S_{n+1}}{S_n}$를 구해 빈칸 (가) 에 들어갈 $f(n)$을 유도.",
+    "canonical_name": "빈칸 (가)에 들어갈 찾기",
+    "sub_calculations": [
+      "$\\frac{S_{n+1}}{S_n} = \\frac{(n+1)^2}{n}$",
+      "$f(n) = (n+1)^2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_17.md",
+    "step_number": 1,
+    "raw_logical_action": "다항함수를 미분하여 극점 위치를 찾기 위한 도함수 구하기",
+    "canonical_name": "다항함수의 미분법을 이용하여 함수의 도함수를 구하기",
+    "sub_calculations": [
+      "$f'(x) = 3x^2 - 6x$",
+      "$3x(x - 2)$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_17.md",
+    "step_number": 4,
+    "raw_logical_action": "극값의 곱이 주어진 값인 조건을 수식으로 세우기",
+    "canonical_name": "극값의 곱을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "$a \times (a - 4) = -4$",
+      "$a^2 - 4a + 4 = 0$",
+      "$(a-2)^2 = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_22.md",
+    "step_number": 1,
+    "raw_logical_action": "연속함수의 성질을 이용한 극한값 계산",
+    "canonical_name": "연속함수의 성질을 이용하여 극한값 구하기",
+    "sub_calculations": [
+      "분모에 대입하여 0이 되지 않는지 확인: $3 - 2 = 1$",
+      "극한값은 함수 값 자체가 됨"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_24.md",
+    "step_number": 1,
+    "raw_logical_action": "등차수열의 대칭적 성질을 이용하여 첫 항과 끝 항의 합이 두 번째 항과 끝에서 두 번째 항의 합과 동일한 것을 증명.",
+    "canonical_name": "등차수열의 대칭적 성질을 이용하여 첫 항과 끝 항의 합을 구하기",
+    "sub_calculations": [
+      "$a_1 + a_{10} = a_2 + a_9 = a_3 + a_8 = a_4 + a_7 = a_5 + a_6$",
+      "$= 22$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_25.md",
+    "step_number": 1,
+    "raw_logical_action": "함수의 연속성을 적용하여 극한값과 함수값이 같아야 함을 설정",
+    "canonical_name": "극한을 이용하여 연속성을 판정하기",
+    "sub_calculations": [
+      "$\n\\lim_{x \\to 3} f(x) = f(3)$\n"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_25.md",
+    "step_number": 3,
+    "raw_logical_action": "$x$ 가 한없이 $3$ 에 가까워질 때의 약분 적용",
+    "canonical_name": "극한을 이용하여 약분 적용하기",
+    "sub_calculations": [
+      "$\n\\frac{(x-3)}{(x-3)}$ 부분은 $0$ 이 아닌 수로 약분 가능\n"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_25.md",
+    "step_number": 6,
+    "raw_logical_action": "극한값이 함수값 $a$ 와 같아야 함으로써 $a$ 의 값을 도출",
+    "canonical_name": "극한의 존재 조건을 이용해 $a$ 값을 구함.",
+    "sub_calculations": [
+      "$\na = 11$\n"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_26.md",
+    "step_number": 1,
+    "raw_logical_action": "양변을 $x$ 에 관해 미분하여 적분 기호를 벗겨내고, 함수식을 도출",
+    "canonical_name": "미적분학의 기본 정리를 이용하여 함수식을 도출하기",
+    "sub_calculations": [
+      "좌변: $\frac{d}{dx} \nabla_0^x f(t) dt = f(x)$",
+      "우변: $x^3 + 4x$ 를 미분하여 $3x^2 + 4$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_27.md",
+    "step_number": 3,
+    "raw_logical_action": "접선의 기울기가 직선의 기울기와 같아지도록 하는 $x$ 값을 찾기",
+    "canonical_name": "도함수를 이용한 접선의 기울기 구하기",
+    "sub_calculations": [
+      "방정식 $x^2 = 1$ 풀기",
+      "$x = \boxed{1}$ (제1사분면에서의 해)"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_20.md",
+    "step_number": 1,
+    "raw_logical_action": "신뢰도 95% 신뢰구간의 반폭 계산",
+    "canonical_name": "정규분포를 이용하여 신뢰구간의 반폭을 구하기",
+    "sub_calculations": [
+      "$c = 1.96 \\cdot \\frac{\\sigma}{\\sqrt{n}}$",
+      "$c = 1.96 \\cdot \\frac{\\sigma}{4}$",
+      "$c = 0.49\\sigma$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_21.md",
+    "step_number": 1,
+    "raw_logical_action": "$x=1$에서의 $f(1)$ 값을 결정하기 위해 부등식을 검토하고, 해당 값이 가능한 범위 내에 있도록 함.",
+    "canonical_name": "부등식을 이용하여 $x=1$에서의 $f(1)$ 값을 판정하기.",
+    "sub_calculations": [
+      "$6(1)-6 = 0$",
+      "f(1) = 0"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_21.md",
+    "step_number": 3,
+    "raw_logical_action": "$h(x) = f(x) - (6x-6)$와 $k(x) = 2x^3 - 2 - f(x)$를 정의하여, 이들 함수가 $x=1$에서 최솟값을 가짐을 증명.",
+    "canonical_name": "극값을 이용하여 최솟값을 판정하기",
+    "sub_calculations": [
+      "$h(x) = f(x) - (6x-6)$는 $x=1$에서 최솟값 0",
+      "$k(x) = 2x^3 - 2 - f(x)$도 $x=1$에서 최솟값 0"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_21.md",
+    "step_number": 4,
+    "raw_logical_action": "$h'(x) = f'(x) - 6$를 통해 $f'(1) = 6$을 도출.",
+    "canonical_name": "주어진 미분계수를 이용하여 미분계수를 도출.",
+    "sub_calculations": [
+      "$h'(x) = f'(x) - 6$",
+      "h'(1) = 0",
+      "따라서 $f'(1) = 6$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_21.md",
+    "step_number": 5,
+    "raw_logical_action": "$f(x)$의 형태를 정하고, 주어진 조건들을 이용하여 미지수 $a$, $b$, $c$의 값을 결정.",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "$f(x) = x^3 + ax^2 + bx + c$",
+      "c = -3",
+      "$1 + a + b - 3 = 0 \\Rightarrow a + b = 2$",
+      "$3 + 2a + b = 6 \\Rightarrow 2a + b = 3$",
+      "$a = 1$, $b = 1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_21.md",
+    "step_number": 6,
+    "raw_logical_action": "$f(x)$의 정확한 형태를 구하고, 검증을 통해 올바른 함수임을 확인.",
+    "canonical_name": "인수분해를 이용하여 함수의 정확한 형태를 구하고, 인수정리를 통해 올바른 함수임을 판정하기.",
+    "sub_calculations": [
+      "$f(x) = x^3 + x^2 + x - 3$",
+      "검증: $f(1) = 0$, $f(0) = -3$",
+      "$f(3) = 36$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_29.md",
+    "step_number": 1,
+    "raw_logical_action": "X가 구간 [0, 3]의 모든 실수 값을 가지는 연속확률변수임을 이용하여 전체 확률이 1인 것을 증명",
+    "canonical_name": "연속확률변수의 확률을 이용하여 전체 확률이 1인 것을 판정하기",
+    "sub_calculations": [
+      "P(0 ≤ X ≤ 3) = a(3-0) = 3a",
+      "3a = 1"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_29.md",
+    "step_number": 3,
+    "raw_logical_action": "확률 밀도 함수 f_X(x)를 미분하여 구하기",
+    "canonical_name": "미적분학의 기본 정리에 의하여 확률 밀도 함수 f_X(x)을 도출한다.",
+    "sub_calculations": [
+      "d/dx P(x ≤ X ≤ 3) = d/dx ∫_x^3 f_X(t)dt = -f_X(x)",
+      "-f_X(x) = -1/3",
+      "f_X(x) = 1/3"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 1,
+    "raw_logical_action": "최소 거리를 정의하고, 최소화 문제를 설정.",
+    "canonical_name": "주어진 함수를 정의하고, 최소 거리를 구하기 위해 최소화 문제를 설정.",
+    "sub_calculations": [
+      "$d(a, b) = \\min_{t \\in \\mathbb{R}} \\sqrt{(t-a)^2 + (2^t - b)^2}$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 2,
+    "raw_logical_action": "거리의 제곱을 최소화하는 문제로 변환.",
+    "canonical_name": "주어진 함수를 정의하고, 최소 거리를 구하기 위해 최소화 문제를 설정.",
+    "sub_calculations": [
+      "$D(t) = (t-a)^2 + (2^t - b)^2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 3,
+    "raw_logical_action": "$b \\approx 2^a$인 경우의 최근접점과 거리 계산.",
+    "canonical_name": "지수법칙을 이용하여 최근접점과 거리 계산하기",
+    "sub_calculations": [
+      "$(t=a, y=2^a)$이 최근접점",
+      "|$b - 2^a|$ (수직 방향)"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 4,
+    "raw_logical_action": "$1 \\leq |b - 2^a| \\leq 2$인 경우의 $b$ 범위 계산.",
+    "canonical_name": "지수법칙을 이용하여 $b$ 범위를 구하기",
+    "sub_calculations": [
+      "$2^a - 2 \\leq b \\leq 2^a - 1$ 또는 $2^a + 1 \\leq b \\leq 2^a + 2$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 5,
+    "raw_logical_action": "$b$가 $2^a$와 멀어지면 수평 방향 이동도 포함되므로 정확한 계산이 필요.",
+    "canonical_name": "도함수를 이용하여 거리의 최소값을 구하기",
+    "sub_calculations": [
+      "곡선 위의 점 $(t, 2^t)$에서 $(a, b)$까지 거리를 최소화하는 $t$는 $\\frac{d}{dt}D(t) = 0$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 6,
+    "raw_logical_action": "각 $a$에 대해 유효한 $b$의 개수를 산출.",
+    "canonical_name": "경계값을 이용해 $b$의 개수를 구하기.",
+    "sub_calculations": [
+      "$a=1$: $2^1 = 2$. 거리 $[1,2]$에 해당하는 $b$: $b = 4$ ($d \\approx 2$), $b=3$ ($d=1$), 수직: $|b-2|\\in[1,2]$이면 $b \\in \\{4\\}$이거나 (아래는 $b < 1$ 불가)."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 7,
+    "raw_logical_action": "$a=1$일 때 유효한 $b$의 개수를 구함.",
+    "canonical_name": "조건부확률을 이용해 유효한 $b$의 개수를 구함.",
+    "sub_calculations": [
+      "유효 $b$: $\\{4, 3\\} \\cap [1,100]$. $b=3$: $d = \\sqrt{0+1}=1$ ✓, $b=4$: $d = \\sqrt{0+4}=2$ ✓, $b=2$: $d=0$ (곡선 위 점 자체). 조건 (나) $d\\geq 1$이므로 $b=2$ 제외. $b=1$: $d=1$ ✓, $b=5$: $d=3$ ✗. 유효 $b\\in\\{1, 3, 4\\}$. 그러나 $b=1$에서 최근접 $t$ 검토 필요: $t$가 $1$이 아닐 수도 있음."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 8,
+    "raw_logical_action": "$a=2$일 때 유효한 $b$의 개수를 구함.",
+    "canonical_name": "등차수열의 두 항 차이를 이용해 공차를 구함.",
+    "sub_calculations": [
+      "$2^2=4$. $b=3$: $d=1$ ✓, $b=5$: $d=1$ ✓, $b=2$: 최근접거리 > 1 확인 필요, $b=6$: $d=2$ ✓."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 9,
+    "raw_logical_action": "각 격자점 $(a,b)$에 대해 최근접 거리를 정확히 계산해야 하므로 수치 계산을 기반으로 답을 도출.",
+    "canonical_name": "주어진 조건을 이용하여 미정계수 a를 도출.",
+    "sub_calculations": [
+      "정확한 수치 계산 결과, 조건을 만족하는 순서쌍 $(a,b)$의 개수는 $\\boxed{27}$."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015.9모A_30.md",
+    "step_number": 10,
+    "raw_logical_action": "최종적으로 조건을 만족하는 모든 정수 쌍 $(a,b)$를 찾아 합계 계산.",
+    "canonical_name": "조건부확률을 이용하여 경우의 수를 구하기",
+    "sub_calculations": [
+      "각 $a=1, 2, \\ldots, 10$에 대해 조건 (나), (다)를 동시에 만족하는 정수 $b \\in [1, 100]$의 개수를 구함."
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015수능A_01.md",
+    "step_number": 2,
+    "raw_logical_action": "지수의 성질을 이용하여 지수를 계산",
+    "canonical_name": "지수법칙을 이용하여 지수를 조정하기",
+    "sub_calculations": [
+      "$(2^3)^{\\frac{1}{3}}$",
+      "$3 \\times \\frac{1}{3} = 1$"
+    ],
+    "assigned_id": null,
+    "justification": null
+  },
+  {
+    "file": "./Sol/2015/2015수능A_05.md",
+    "step_number": 1,
+    "raw_logical_action": "등비중항을 이용한 두 항의 곱과 중간 항의 제곱 사이의 관계 식 도출.",
+    "canonical_name": "등비수열을 이용하여 두 항의 곱과 중간 항의 제곱 사이의 관계식 도출하기"

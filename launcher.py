@@ -197,16 +197,40 @@ def start_flask(port):
     return proc
 
 
-def wait_for_flask(port, proc=None, timeout=30):
-    """Flask가 응답할 때까지 대기. 성공 여부 반환."""
-    deadline = time.time() + timeout
+def wait_for_flask(port, proc=None, timeout=60):
+    """Flask가 응답할 때까지 대기. 진행 바 출력. 성공 여부 반환."""
+    BAR_WIDTH = 28
+    ESTIMATED = 20   # 예상 시작 시간(초) — 진행 바 기준
+    spinners = ['|', '/', '-', '\\']
+
+    start = time.time()
+    deadline = start + timeout
+    i = 0
+
+    print('KICE Lynx 시작 중...', flush=True)
+
     while time.time() < deadline:
         if proc and proc.poll() is not None:
+            print('', flush=True)
             log_msg(f"wait_for_flask: flask_proc died early (returncode={proc.returncode})")
             return False
         if is_server_running(port):
+            elapsed = time.time() - start
+            bar = '#' * BAR_WIDTH
+            print(f'\r[{bar}] 완료! ({elapsed:.0f}초)          ', flush=True)
+            print('브라우저가 열립니다...', flush=True)
             return True
+
+        elapsed = time.time() - start
+        progress = min(0.9, elapsed / ESTIMATED)
+        filled = int(BAR_WIDTH * progress)
+        bar = '#' * filled + '-' * (BAR_WIDTH - filled)
+        spinner = spinners[i % len(spinners)]
+        print(f'\r{spinner} [{bar}] {elapsed:.0f}초 경과...', end='', flush=True)
+        i += 1
         time.sleep(0.5)
+
+    print('', flush=True)
     log_msg("wait_for_flask: timed out.")
     return False
 

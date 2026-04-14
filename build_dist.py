@@ -55,6 +55,7 @@ CACHE = SRC / '.build_cache'   # 다운로드 캐시 (재빌드 속도 향상)
 APP_FILES = [
     'dashboard.py',
     'search_engine.py',
+    'routes_landing.py',
     'launcher.py',
     'loading.html',
     'requirements_dist.txt',
@@ -212,6 +213,10 @@ def setup_windows_python(python_dir: Path):
             # .dist-info 포함 전체 내용을 site-packages에 압축 해제
             zf.extractall(site_packages)
 
+    # whl 파일이 site-packages에 복사된 경우 제거 (unzip 부산물)
+    for stray in site_packages.glob('*.whl'):
+        stray.unlink()
+
     # 5. pythonw.exe 확인
     pythonw = python_dir / 'pythonw.exe'
     print(f'    pythonw.exe: {"✅" if pythonw.exists() else "⚠️ 없음"}')
@@ -220,6 +225,8 @@ def setup_windows_python(python_dir: Path):
 # ── app/ 파일 구성 ───────────────────────────────────────────
 def copy_app_files(app_dst: Path):
     app_dst.mkdir(parents=True, exist_ok=True)
+    # landing/ 디렉토리 생성 (routes_landing.py가 DB를 이 경로에 생성)
+    (app_dst / 'landing').mkdir(exist_ok=True)
 
     for fname in APP_FILES:
         src = SRC / fname
