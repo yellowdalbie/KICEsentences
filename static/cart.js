@@ -1384,10 +1384,18 @@ const AUTH_MODAL_HTML = `
 
     <!-- Submit Button -->
     <button id="auth-submit-btn" onclick="submitAuth()"
-      style="width: 100%; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.95rem; font-weight: 700; color: #030712; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(6,182,212,0.3); margin-bottom: 1.2rem;"
+      style="width: 100%; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.95rem; font-weight: 700; color: #030712; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(6,182,212,0.3); margin-bottom: 0.7rem;"
       onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(6,182,212,0.45)'"
       onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(6,182,212,0.3)'"
     >\ub85c\uadf8\uc778</button>
+
+    <!-- Forgot Password Link (로그인 모드에서만 표시) -->
+    <div id="auth-forgot-wrap" style="text-align:right; margin-bottom:0.8rem;">
+      <a href="javascript:void(0)" onclick="openForgotPasswordModal()"
+        style="font-size:0.76rem;color:#64748b;text-decoration:none;transition:color 0.2s;"
+        onmouseover="this.style.color='#06b6d4'" onmouseout="this.style.color='#64748b'"
+      >비밀번호를 잊으셨나요?</a>
+    </div>
 
     <!-- Toggle Mode -->
     <div style="text-align: center; font-size: 0.85rem; color: #64748b;">
@@ -1421,17 +1429,21 @@ window.openAuthModal = function(mode = 'login') {
     document.getElementById('auth-error-msg').style.display = 'none';
     document.getElementById('auth-email').value = '';
     document.getElementById('auth-password').value = '';
-    
+
+    const forgotWrap = document.getElementById('auth-forgot-wrap');
+
     if (mode === 'login') {
         document.getElementById('auth-modal-title').innerText = '로그인';
         document.getElementById('auth-submit-btn').innerText = '로그인';
         document.getElementById('auth-toggle-text').innerText = '계정이 없으신가요?';
         document.getElementById('auth-toggle-link').innerText = '회원가입';
+        if (forgotWrap) forgotWrap.style.display = 'block';
     } else {
         document.getElementById('auth-modal-title').innerText = '회원가입';
         document.getElementById('auth-submit-btn').innerText = '가입하기';
         document.getElementById('auth-toggle-text').innerText = '이미 계정이 있으신가요?';
         document.getElementById('auth-toggle-link').innerText = '로그인';
+        if (forgotWrap) forgotWrap.style.display = 'none';
     }
     
     const modal = document.getElementById('auth-modal');
@@ -1476,12 +1488,50 @@ async function submitAuth() {
         const data = await res.json();
         
         if (!res.ok) {
-            errorMsg.innerText = data.error || '오류가 발생했습니다.';
-            errorMsg.style.display = 'block';
+            if (data.code === 'unverified') {
+                errorMsg.textContent = '이메일 인증이 필요합니다.  ';
+                const resendLink = document.createElement('a');
+                resendLink.href = 'javascript:void(0)';
+                resendLink.textContent = '인증 메일 재발송';
+                resendLink.style.cssText = 'color:#06b6d4;font-weight:600;text-decoration:underline;';
+                resendLink.onclick = () => resendVerifyEmail(data.email);
+                errorMsg.appendChild(resendLink);
+                errorMsg.style.display = 'block';
+            } else {
+                errorMsg.innerText = data.error || '오류가 발생했습니다.';
+                errorMsg.style.display = 'block';
+            }
+        } else if (authMode === 'register' && data.status === 'verify_required') {
+            // 가입 완료 — 인증 메일 안내 화면으로 전환
+            const content = document.querySelector('#auth-modal .modal-content');
+            if (content) {
+                content.innerHTML = `
+                  <div style="text-align:center;padding:1rem 0;">
+                    <div style="width:52px;height:52px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    </div>
+                    <h3 style="margin:0 0 0.8rem;color:#f1f5f9;font-size:1.1rem;">메일함을 확인해주세요</h3>
+                    <p style="color:#94a3b8;font-size:0.88rem;line-height:1.6;margin:0 0 0.5rem;">
+                      <strong style="color:#e2e8f0;">${data.email}</strong>으로<br>인증 메일을 발송했습니다.
+                    </p>
+                    <p style="color:#64748b;font-size:0.8rem;margin:0 0 1.5rem;">
+                      메일 내 링크를 클릭하면 인증이 완료되고<br>서비스를 이용할 수 있습니다.
+                    </p>
+                    <button onclick="closeAuthModal()"
+                      style="width:100%;background:linear-gradient(135deg,#06b6d4,#0891b2);border:none;border-radius:10px;padding:0.8rem;font-size:0.95rem;font-weight:700;color:#030712;cursor:pointer;">
+                      확인
+                    </button>
+                    <div style="margin-top:1rem;">
+                      <span style="font-size:0.78rem;color:#64748b;">메일을 못 받으셨나요?</span>
+                      <a href="javascript:void(0)" onclick="resendVerifyEmail('${data.email}')"
+                        style="font-size:0.78rem;color:#06b6d4;margin-left:6px;font-weight:600;text-decoration:none;">재발송</a>
+                    </div>
+                  </div>`;
+            }
         } else {
             closeAuthModal();
-            await initAuth(); // Refresh session state
-            showCustomAlert(authMode === 'login' ? '로그인되었습니다.' : '가입이 완료되었습니다.');
+            await initAuth();
+            showCustomAlert('로그인되었습니다.');
         }
     } catch (e) {
         errorMsg.innerText = '서버 통신 실패';
@@ -1508,6 +1558,8 @@ async function initAuth() {
             isLoggedIn: data.isLoggedIn || false,
             email: data.email || '',
             isPaid: data.isPaid || false,
+            isVerified: data.isVerified || false,
+            isAdmin: data.isAdmin || false,
             displayName: data.displayName || ''
         };
         if (data.isLoggedIn) {
@@ -1540,13 +1592,24 @@ function updateAuthNavUI() {
         nameSpan.addEventListener('mouseleave', () => nameSpan.style.color = '');
         nameSpan.addEventListener('click', () => openMyPage());
 
-        const logoutBtn = document.createElement('button');
-        logoutBtn.textContent = '\ub85c\uadf8\uc544\uc6c3';
-        logoutBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.4rem 0.7rem; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(4px);';
-        logoutBtn.addEventListener('click', () => window.logout());
-
-        appSection.appendChild(nameSpan);
-        appSection.appendChild(logoutBtn);
+        if (window.AUTH_STATE.isAdmin) {
+            const adminBtn = document.createElement('button');
+            adminBtn.textContent = '관리자';
+            adminBtn.title = '관리자 대시보드';
+            adminBtn.style.cssText = 'background: rgba(217,70,239,0.15); border: 1px solid rgba(217,70,239,0.35); color: #e879f9; padding: 0.4rem 0.9rem; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 700; backdrop-filter: blur(4px); transition: all 0.2s;';
+            adminBtn.addEventListener('mouseenter', () => { adminBtn.style.background = 'rgba(217,70,239,0.28)'; });
+            adminBtn.addEventListener('mouseleave', () => { adminBtn.style.background = 'rgba(217,70,239,0.15)'; });
+            adminBtn.addEventListener('click', () => { window.location.href = '/admin'; });
+            appSection.appendChild(nameSpan);
+            appSection.appendChild(adminBtn);
+        } else {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.textContent = '\ub85c\uadf8\uc544\uc6c3';
+            logoutBtn.style.cssText = 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.4rem 0.7rem; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; backdrop-filter: blur(4px);';
+            logoutBtn.addEventListener('click', () => window.logout());
+            appSection.appendChild(nameSpan);
+            appSection.appendChild(logoutBtn);
+        }
     } else {
         const loginBtn = document.createElement('button');
         loginBtn.textContent = '\ub85c\uadf8\uc778';
@@ -1563,10 +1626,136 @@ function updateAuthNavUI() {
     }
 }
 
+// ── 이메일 인증 재발송 ────────────────────────────────────────
+window.resendVerifyEmail = async function(email) {
+    try {
+        const res = await fetch('/api/auth/resend_verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        showCustomAlert(res.ok ? '인증 메일을 재발송했습니다. 메일함을 확인해주세요.' : (data.error || '재발송 실패'));
+    } catch(e) {
+        showCustomAlert('서버 통신 실패');
+    }
+};
+
+// ── 비밀번호 찾기 모달 ────────────────────────────────────────
+const FORGOT_PW_MODAL_HTML = `
+<div id="forgot-pw-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-content" style="max-width:360px;padding:2.2rem 2.2rem 1.8rem;">
+    <button class="modal-close" onclick="closeForgotPasswordModal()" style="font-size:1.4rem;">&times;</button>
+    <div style="text-align:center;margin-bottom:1.6rem;">
+      <div style="width:44px;height:44px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 0.9rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <h3 style="margin:0;font-size:1.1rem;font-weight:700;color:#f1f5f9;">\ube44\ubc00\ubc88\ud638 \uc7ac\uc124\uc815</h3>
+    </div>
+    <div id="forgot-pw-error" style="display:none;color:#f87171;font-size:0.82rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;"></div>
+    <div id="forgot-pw-success" style="display:none;color:#10b981;font-size:0.85rem;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;"></div>
+    <div id="forgot-pw-form">
+      <div style="margin-bottom:1.2rem;">
+        <label style="display:block;margin-bottom:0.4rem;font-size:0.78rem;font-weight:600;color:#94a3b8;letter-spacing:0.06em;text-transform:uppercase;">\uac00\uc785\ud55c \uc774\uba54\uc77c</label>
+        <input type="email" id="forgot-pw-email"
+          style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:0.75rem 1rem;font-size:0.92rem;color:#f1f5f9;outline:none;transition:border-color 0.2s;"
+          placeholder="you@example.com"
+          onfocus="this.style.borderColor='rgba(6,182,212,0.5)'"
+          onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+      </div>
+      <button onclick="submitForgotPassword()"
+        style="width:100%;background:linear-gradient(135deg,#06b6d4,#0891b2);border:none;border-radius:10px;padding:0.85rem;font-size:0.95rem;font-weight:700;color:#030712;cursor:pointer;box-shadow:0 4px 16px rgba(6,182,212,0.3);"
+        onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''"
+      >\uc7ac\uc124\uc815 \ub9c1\ud06c \ubc1c\uc1a1</button>
+    </div>
+  </div>
+</div>`;
+
+window.openForgotPasswordModal = function() {
+    if (!document.getElementById('forgot-pw-modal')) {
+        document.body.insertAdjacentHTML('beforeend', FORGOT_PW_MODAL_HTML);
+        document.getElementById('forgot-pw-email').addEventListener('keyup', e => {
+            if (e.key === 'Enter') submitForgotPassword();
+        });
+    }
+    document.getElementById('forgot-pw-email').value = '';
+    document.getElementById('forgot-pw-error').style.display = 'none';
+    document.getElementById('forgot-pw-success').style.display = 'none';
+    document.getElementById('forgot-pw-form').style.display = 'block';
+    const modal = document.getElementById('forgot-pw-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('show'), 10);
+};
+
+window.closeForgotPasswordModal = function() {
+    const modal = document.getElementById('forgot-pw-modal');
+    if (!modal) return;
+    modal.classList.remove('show');
+    setTimeout(() => modal.style.display = 'none', 300);
+};
+
+window.submitForgotPassword = async function() {
+    const email = document.getElementById('forgot-pw-email').value.trim();
+    const errorEl = document.getElementById('forgot-pw-error');
+    const successEl = document.getElementById('forgot-pw-success');
+    errorEl.style.display = 'none';
+    successEl.style.display = 'none';
+    if (!email) {
+        errorEl.textContent = '\uc774\uba54\uc77c\uc744 \uc785\ub825\ud574\uc8fc\uc138\uc694.';
+        errorEl.style.display = 'block';
+        return;
+    }
+    try {
+        const res = await fetch('/api/auth/forgot_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            if (data.code === 'unverified') {
+                errorEl.textContent = '\uc774\uba54\uc77c \uc778\uc99d\uc744 \uba3c\uc800 \uc644\ub8cc\ud574\uc8fc\uc138\uc694.  ';
+                const resendLink = document.createElement('a');
+                resendLink.href = 'javascript:void(0)';
+                resendLink.textContent = '\uc778\uc99d \uba54\uc77c \uc7ac\ubc1c\uc1a1';
+                resendLink.style.cssText = 'color:#06b6d4;font-weight:600;text-decoration:underline;';
+                resendLink.onclick = () => { closeForgotPasswordModal(); resendVerifyEmail(data.email); };
+                errorEl.appendChild(resendLink);
+            } else {
+                errorEl.textContent = data.error || '\uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.';
+            }
+            errorEl.style.display = 'block';
+        } else {
+            document.getElementById('forgot-pw-form').style.display = 'none';
+            successEl.textContent = `${email}\ub85c \uc7ac\uc124\uc815 \ub9c1\ud06c\ub97c \ubc1c\uc1a1\ud588\uc2b5\ub2c8\ub2e4. \uba54\uc77c\ud568\uc744 \ud655\uc778\ud574\uc8fc\uc138\uc694. (1\uc2dc\uac04 \uc774\ub0b4 \uc720\ud6a8)`;
+            successEl.style.display = 'block';
+        }
+    } catch(e) {
+        errorEl.textContent = '\uc11c\ubc84 \ud1b5\uc2e0 \uc2e4\ud328';
+        errorEl.style.display = 'block';
+    }
+};
+
+// ── URL 파라미터 처리 (이메일 인증 결과) ────────────────────
+function handleVerifyParams() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === '1') {
+        history.replaceState(null, '', '/');
+        initAuth().then(() => showCustomAlert('\uc774\uba54\uc77c \uc778\uc99d\uc774 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \ub85c\uadf8\uc778 \uc0c1\ud0dc\uac00 \uc720\uc9c0\ub429\ub2c8\ub2e4.'));
+    } else if (params.get('verify_error') === 'invalid') {
+        history.replaceState(null, '', '/');
+        showCustomAlert('\uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 \uc778\uc99d \ub9c1\ud06c\uc785\ub2c8\ub2e4.');
+    } else if (params.get('verify_error') === 'expired') {
+        history.replaceState(null, '', '/');
+        showCustomAlert('\uc778\uc99d \ub9c1\ud06c\uac00 \ub9cc\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \ub9c8\uc774\ud398\uc774\uc9c0\uc5d0\uc11c \uc7ac\ubc1c\uc1a1\ud574\uc8fc\uc138\uc694.');
+    }
+}
+
 function runAuthInit() {
     if (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE) return;
     injectAuthModal();
     initAuth();
+    handleVerifyParams();
 }
 
 if (document.readyState === 'loading') {
@@ -1585,6 +1774,20 @@ const CHANGE_PW_MODAL_HTML = `
       <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #f1f5f9;">\ube44\ubc00\ubc88\ud638 \ubcc0\uacbd</h3>
     </div>
     <div id="change-pw-error" style="display: none; color: #f87171; font-size: 0.82rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem;"></div>
+    <div style="margin-bottom: 1rem;">
+      <label style="display: block; margin-bottom: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase;">\ud604\uc7ac \ube44\ubc00\ubc88\ud638</label>
+      <input type="password" id="change-pw-current"
+        style="width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem 1rem; font-size: 0.92rem; color: #f1f5f9; outline: none; transition: border-color 0.2s, box-shadow 0.2s;"
+        placeholder="\ud604\uc7ac \ube44\ubc00\ubc88\ud638 \uc785\ub825"
+        onfocus="this.style.borderColor='rgba(6,182,212,0.5)';this.style.boxShadow='0 0 0 3px rgba(6,182,212,0.08)'"
+        onblur="this.style.borderColor='rgba(255,255,255,0.1)';this.style.boxShadow='none'">
+    </div>
+    <div style="text-align:right;margin:-0.5rem 0 1rem;">
+      <a href="javascript:void(0)" onclick="closeChangePasswordModal();openForgotPasswordModal();"
+        style="font-size:0.76rem;color:#64748b;text-decoration:none;transition:color 0.2s;"
+        onmouseover="this.style.color='#06b6d4'" onmouseout="this.style.color='#64748b'"
+      >\ube44\ubc00\ubc88\ud638\ub97c \uc78a\uc73c\uc168\ub098\uc694?</a>
+    </div>
     <div style="margin-bottom: 1rem;">
       <label style="display: block; margin-bottom: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase;">\uc0c8 \ube44\ubc00\ubc88\ud638</label>
       <input type="password" id="change-pw-new"
@@ -1624,6 +1827,7 @@ window.openChangePasswordModal = function() {
             if (e.key === 'Enter') submitChangePassword();
         });
     }
+    document.getElementById('change-pw-current').value = '';
     document.getElementById('change-pw-new').value = '';
     document.getElementById('change-pw-confirm').value = '';
     document.getElementById('change-pw-error').style.display = 'none';
@@ -1640,11 +1844,17 @@ window.closeChangePasswordModal = function() {
 };
 
 window.submitChangePassword = async function() {
+    const currentPw = document.getElementById('change-pw-current').value;
     const newPw = document.getElementById('change-pw-new').value;
     const confirmPw = document.getElementById('change-pw-confirm').value;
     const errorEl = document.getElementById('change-pw-error');
     errorEl.style.display = 'none';
 
+    if (!currentPw) {
+        errorEl.textContent = '\ud604\uc7ac \ube44\ubc00\ubc88\ud638\ub97c \uc785\ub825\ud574\uc8fc\uc138\uc694.';
+        errorEl.style.display = 'block';
+        return;
+    }
     if (!newPw || newPw.length < 6) {
         errorEl.textContent = '\ube44\ubc00\ubc88\ud638\ub294 6\uc790\ub9ac \uc774\uc0c1\uc774\uc5b4\uc57c \ud569\ub2c8\ub2e4.';
         errorEl.style.display = 'block';
@@ -1660,7 +1870,7 @@ window.submitChangePassword = async function() {
         const res = await fetch('/api/auth/change_password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ new_password: newPw })
+            body: JSON.stringify({ current_password: currentPw, new_password: newPw })
         });
         const data = await res.json();
         if (!res.ok) {
@@ -2228,6 +2438,17 @@ function openMyPage() {
     if (usernameEl) usernameEl.textContent = displayName || email.split('@')[0];
     const emailEl = document.getElementById('mypage-email');
     if (emailEl) emailEl.textContent = email;
+    // 이메일 인증 상태 표시
+    const verifyStatusEl = document.getElementById('mypage-verify-status');
+    if (verifyStatusEl) {
+        if (window.AUTH_STATE?.isVerified) {
+            verifyStatusEl.innerHTML = '<span style="color:#10b981;font-size:0.75rem;font-weight:600;">✓ 인증됨</span>';
+        } else {
+            verifyStatusEl.innerHTML = `<span style="color:#f59e0b;font-size:0.75rem;font-weight:600;">⚠ 미인증</span>
+              <a href="javascript:void(0)" onclick="resendVerifyEmail('${email.replace(/'/g, "\\'")}')"
+                style="font-size:0.73rem;color:#06b6d4;margin-left:6px;text-decoration:underline;">인증 메일 재발송</a>`;
+        }
+    }
     const nameInput = document.getElementById('display-name-input');
     if (nameInput) nameInput.value = displayName !== email.split('@')[0] ? displayName : '';
     const hintEl = document.getElementById('display-name-hint');
