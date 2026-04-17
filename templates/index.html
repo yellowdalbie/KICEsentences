@@ -29,7 +29,7 @@
                     활용 팁
                 </button>
                 <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3;">
-                    기하와 미적분 문항은 해설과 정답이 서비스되지 않습니다.<br>'기출표현'검색에서 문항 검색은 가능합니다.
+                    기하(2022)와 미적분II(2022)는 해설과 정답이 서비스되지 않습니다.<br>'기출표현'검색과 '문항번호'검색에서 문항 검색은 가능합니다.
                 </div>
             </div>
 
@@ -1172,7 +1172,7 @@
 
                     html += `
                         <td class="col-step latex-font">
-                            <div class="tooltip-trigger" data-tooltip="${encodeURIComponent(rawExplanation)}" data-tooltip-wide="true"
+                            <div class="${row.step_id ? 'tooltip-trigger' : ''}" data-tooltip="${encodeURIComponent(rawExplanation)}" data-tooltip-wide="true"
                                  style="display:grid; grid-template-columns: 20px 1fr; gap: 4px; align-items: start; width:100%;">
                                 <span style="display:flex; align-items:center; justify-content:center; padding-top:2px;">
                                     ${row.step_id ? `<span class="step-title-clickable" title="유사 스텝 검색"
@@ -1185,7 +1185,7 @@
                                 <span>${row.step_number ? `[${row.step_number}단계] ` : ''}${escapeHtml(safeTrigger)}</span>
                             </div>
                         </td>
-                        <td class="col-concept concept-edit-cell tooltip-trigger"
+                        <td class="col-concept concept-edit-cell ${row.step_id ? 'tooltip-trigger' : ''}"
                             data-tooltip="${encodeURIComponent(fullConcept)}"
                             data-step-id="${row.step_id}"
                             data-problem-id="${pid}"

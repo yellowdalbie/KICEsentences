@@ -942,55 +942,23 @@ import ast
 import operator
 import shlex
 
-def parse_and_evaluate_query(query, text, file_path):
-    # This is a robust but simplified boolean evaluator.
-    # To fully support arbitrary AND/OR/NOT/Grouping robustly without writing a full compiler frontend,
-    # we can use a tokenizing approach and recursively evaluate.
-    # For now, let's implement a capable subset:
-    # 1. path: filter
-    # 2. /regex/ filter
-    # 3. "exact match"
-    # 4. -NOT
-    # 5. OR (|)
-    # 6. implicit AND
-    
-    # Extract path filter
+def compile_query(query):
     path_filter = None
     path_match = re.search(r'path:(\S+)', query)
     if path_match:
         path_filter = path_match.group(1)
         query = query.replace(path_match.group(0), '')
-        if path_filter.lower() not in file_path.lower():
-            return False, []
 
-    # Tokenize the remaining query
     try:
-        # User might use quotes for exact match
         tokens = shlex.split(query)
     except ValueError:
-        # Fallback if quotes are unbalanced
         tokens = query.split()
-        
+
     if not tokens:
-        return (True, []) if path_filter else (False, [])
+        return {'path_filter': path_filter, 'groups': [], 'has_tokens': False}
 
-    # We will collect 'highlights' (words/patterns that matched)
-    highlights = set()
-
-    # Simple evaluation:
-    # If a token starts with '-', it must NOT be in text.
-    # If tokens are joined by OR (or |), at least one must be in text.
-    # Otherwise, all other (AND) tokens must be in text.
-    
-    # Group by ORs.
-    # Actually, a proper boolean evaluator is complex. Let's do a simplified one:
-    # Split by 'OR' or '|' into AND-groups.
-    # "A B OR C -D" -> Group 1: ["A", "B"], Group 2: ["C", "-D"]
-    # At least one AND-group must fully match.
-    
     raw_groups = query.replace(' | ', ' OR ').split(' OR ')
-    
-    matched_any_group = False
+    parsed_groups = []
     
     for r_group in raw_groups:
         try:
@@ -998,37 +966,60 @@ def parse_and_evaluate_query(query, text, file_path):
         except ValueError:
             g_tokens = r_group.split()
             
-        group_match = True
-        group_highlights = set()
-        
+        group_terms = []
         for token in g_tokens:
             is_not = token.startswith('-')
             term = token[1:] if is_not else token
-            
-            # Check for regex /.../
             is_regex = False
+            regex_obj = None
             if term.startswith('/') and term.endswith('/') and len(term) > 2:
                 is_regex = True
                 pattern = term[1:-1]
-            
-            term_found = False
-            
-            if is_regex:
                 try:
-                    matches = list(re.finditer(pattern, text))
+                    regex_obj = re.compile(pattern)
+                except re.error:
+                    pass
+            group_terms.append({
+                'is_not': is_not,
+                'term': term,
+                'is_regex': is_regex,
+                'regex_obj': regex_obj
+            })
+        if group_terms:
+            parsed_groups.append(group_terms)
+
+    return {'path_filter': path_filter, 'groups': parsed_groups, 'has_tokens': True}
+
+def evaluate_compiled_query(compiled, text, file_path):
+    path_filter = compiled['path_filter']
+    if path_filter and path_filter.lower() not in file_path.lower():
+        return False, []
+        
+    if not compiled['has_tokens']:
+        return (True, []) if path_filter else (False, [])
+
+    highlights = set()
+    matched_any_group = False
+
+    for group_terms in compiled['groups']:
+        group_match = True
+        group_highlights = set()
+        
+        for term_info in group_terms:
+            term_found = False
+            if term_info['is_regex']:
+                if term_info['regex_obj']:
+                    matches = list(term_info['regex_obj'].finditer(text))
                     if matches:
                         term_found = True
                         for m in matches:
                             group_highlights.add(m.group(0))
-                except re.error:
-                    pass # Invalid regex, ignore or treat as not found
             else:
-                # Exact match or normal word
-                if term in text:
+                if term_info['term'] in text:
                     term_found = True
-                    group_highlights.add(term)
+                    group_highlights.add(term_info['term'])
                     
-            if is_not:
+            if term_info['is_not']:
                 if term_found:
                     group_match = False
                     break
@@ -1037,14 +1028,17 @@ def parse_and_evaluate_query(query, text, file_path):
                     group_match = False
                     break
                     
-        if group_match and g_tokens:
+        if group_match and group_terms:
             matched_any_group = True
             highlights.update(group_highlights)
-            # We don't break early because we want to collect all possible highlights from OR groups if they also match
-            
-    if matched_any_group or (not tokens and path_filter):
+
+    if matched_any_group or (not compiled['has_tokens'] and path_filter):
         return True, list(highlights)
     return False, []
+
+def parse_and_evaluate_query(query, text, file_path):
+    compiled = compile_query(query)
+    return evaluate_compiled_query(compiled, text, file_path)
 
 def strip_frontmatter(text):
     """YAML front matter(--- ... ---)와 Obsidian 이미지 링크(![[...]])를 제거하고
@@ -1077,6 +1071,44 @@ def strip_frontmatter(text):
         result_lines.append(line)
 
     return ''.join(result_lines)
+
+_MD_REF_CACHE = None
+
+def load_md_ref_cache():
+    global _MD_REF_CACHE
+    if _MD_REF_CACHE is not None:
+        return
+    _MD_REF_CACHE = {}
+    if not os.path.exists(MD_REF_DIR):
+        print(f"[경고] MD_Ref 디렉토리가 없습니다: {MD_REF_DIR}")
+        return
+    
+    count = 0
+    for root, dirs, files in os.walk(MD_REF_DIR):
+        for file in files:
+            if not file.endswith('.md'):
+                continue
+            problem_id_str = unicodedata.normalize('NFC', file.replace('.md', ''))
+            file_path = os.path.join(root, file)
+            rel_path = os.path.relpath(file_path, MD_REF_DIR)
+            
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    raw_content = f.read()
+            except Exception:
+                continue
+                
+            searchable_content = strip_frontmatter(raw_content)
+            _MD_REF_CACHE[problem_id_str] = {
+                'rel_path': rel_path,
+                'searchable_content': searchable_content
+            }
+            count += 1
+    print(f"[MD_Ref 캐시 로드됨] {count}개 파일")
+
+# 서버 구동 시 1회 로드하여 캐싱
+load_md_ref_cache()
+
 
 def _find_latex_regions(text):
     """원본 텍스트(원시 문자열)에서 LaTeX 블록의 (start, end) 목록을 반환."""
@@ -1184,40 +1216,33 @@ def search_expression():
         log_search('기출표현', query, result_count=0)
         return jsonify({"count": 0, "results": []})
         
-    if not os.path.exists(MD_REF_DIR):
-        return jsonify({"error": f"MD_Ref directory not found at {MD_REF_DIR}"}), 404
+    global _MD_REF_CACHE
+    if _MD_REF_CACHE is None:
+        load_md_ref_cache()
+        
+    if not _MD_REF_CACHE:
+        return jsonify({"error": f"MD_Ref cache is empty or not found"}), 404
 
     matched_files = []
+    
+    # 컴파일된 쿼리를 생성 (루프 외부에서 1회 수행)
+    compiled_q = compile_query(query)
 
-    for root, dirs, files in os.walk(MD_REF_DIR):
-        for file in files:
-            if not file.endswith('.md'):
-                continue
+    for problem_id_str, md_data in _MD_REF_CACHE.items():
+        rel_path = md_data['rel_path']
+        searchable_content = md_data['searchable_content']
 
-            problem_id_str = unicodedata.normalize('NFC', file.replace('.md', ''))
-            file_path = os.path.join(root, file)
-            rel_path = os.path.relpath(file_path, MD_REF_DIR)
+        is_match, highlights = evaluate_compiled_query(compiled_q, searchable_content, rel_path)
 
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    raw_content = f.read()
-            except Exception:
-                continue
-
-            # 메타데이터(front matter, 이미지 링크) 제거 후 실제 문제 본문만 검색
-            searchable_content = strip_frontmatter(raw_content)
-
-            is_match, highlights = parse_and_evaluate_query(query, searchable_content, rel_path)
-
-            if is_match:
-                snippet = extract_snippet(searchable_content, highlights)
-                matched_files.append({
-                    "problem_id": problem_id_str,
-                    "file_path": rel_path,
-                    "snippet": snippet,
-                    "title": problem_id_str,
-                    "highlights": highlights
-                })
+        if is_match:
+            snippet = extract_snippet(searchable_content, highlights)
+            matched_files.append({
+                "problem_id": problem_id_str,
+                "file_path": rel_path,
+                "snippet": snippet,
+                "title": problem_id_str,
+                "highlights": highlights
+            })
 
     log_search('기출표현', query, result_count=len(matched_files))
     return jsonify({
@@ -1288,7 +1313,48 @@ def search_probid():
             if is_subsequence(norm_query, norm_pid):
                 matched_results.append(row)
 
-    prob_count = len(set(r['problem_id'] for r in matched_results))
+    # Data from DB
+    db_matched_pids = set(r['problem_id'] for r in matched_results)
+
+    # Search in MD_Ref cache for problems that match the logic but are missing from DB
+    global _MD_REF_CACHE
+    if _MD_REF_CACHE is None:
+        load_md_ref_cache()
+        
+    if _MD_REF_CACHE:
+        for pid in _MD_REF_CACHE.keys():
+            if pid in db_matched_pids:
+                continue
+            
+            norm_pid = normalize_string(pid)
+            is_match = False
+            
+            if norm_query.isdigit() and len(norm_query) <= 2:
+                last_part = norm_pid.rsplit('_', 1)[-1]
+                trailing_num = re.search(r'(\d+)$', last_part)
+                if trailing_num and trailing_num.group(1) == norm_query:
+                    is_match = True
+            else:
+                if is_subsequence(norm_query, norm_pid):
+                    is_match = True
+                    
+            if is_match:
+                db_matched_pids.add(pid)
+                matched_results.append({
+                    'step_id': None,
+                    'problem_id': pid,
+                    'step_number': '',
+                    'explanation_text': "",
+                    'explanation_html': "",
+                    'total_steps': 1,
+                    'trigger_text': "2028 수능 수학의 출제범위가 아닌 문항에 대해서는 해설과 정답을 제공하지 않습니다.",
+                    'step_title': "",
+                    'action_concept_id': '',
+                    'standard_name': '',
+                    'ref_code': ''
+                })
+
+    prob_count = len(db_matched_pids)
     log_search('문항번호', query, result_count=prob_count)
     return jsonify({"results": matched_results})
 
