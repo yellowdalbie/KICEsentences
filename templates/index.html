@@ -1528,7 +1528,7 @@
 
 
     <!-- Include Cart Logic -->
-    <script src="{{ url_for('static', filename='cart.js') }}"></script>
+    <script src="{{ url_for('static', filename='cart.js') }}?v=1.1"></script>
     <!-- Custom Alert Modal -->
     <div id="custom-alert-modal" class="no-print">
         <div class="custom-alert-content">
@@ -1725,7 +1725,10 @@
           </div>
           <div style="margin-bottom:0.8rem;">
             <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.3rem;">이메일</div>
-            <div id="mypage-email" style="font-size:0.88rem; color:var(--text-color);"></div>
+            <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+              <div id="mypage-email" style="font-size:0.88rem; color:var(--text-color);"></div>
+              <div id="mypage-verify-status"></div>
+            </div>
           </div>
           <hr style="border-color:rgba(255,255,255,0.08); margin:1rem 0;">
           <button onclick="closeMyPage(); openChangePwModal();" style="width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.6rem; color:var(--text-color); cursor:pointer; font-size:0.85rem; margin-bottom:0.5rem;">비밀번호 변경</button>

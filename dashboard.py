@@ -505,7 +505,7 @@ def auth_me():
                 'isPaid': bool(user['is_paid']),
                 'isVerified': bool(user['is_verified']),
                 'isAdmin': email.strip().lower() == ADMIN_EMAIL.strip().lower(),
-                'displayName': display_name + '-TEST'
+                'displayName': display_name
             }), 200
 
     return jsonify({'isLoggedIn': False, 'isPaid': False, 'isVerified': False}), 200
