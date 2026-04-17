@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KICE Lynx — 접속 대기 중</title>
+<style>
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2') format('woff2');
+  font-weight: 600; font-display: swap;
+}
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+  font-weight: 700; font-display: swap;
+}
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
+  font-weight: 900; font-display: swap;
+}
+
+:root {
+  --bg:        #070b14;
+  --bg-card:   rgba(255,255,255,0.05);
+  --bg-card2:  rgba(255,255,255,0.08);
+  --cyan:      #06b6d4;
+  --magenta:   #d946ef;
+  --indigo:    #6366f1;
+  --text:      #f8fafc;
+  --muted:     #94a3b8;
+  --border:    rgba(255,255,255,0.10);
+  --border2:   rgba(255,255,255,0.18);
+  --font:      'Paperlogy', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background:
+    radial-gradient(ellipse 70% 55% at 8% 30%,  rgba(6,182,212,0.13)   0%, transparent 68%),
+    radial-gradient(ellipse 55% 65% at 92% 12%, rgba(217,70,239,0.11)  0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 55% 90%, rgba(99,102,241,0.09)  0%, transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── NAV ────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(7,11,20,0.80);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 1100px; margin: 0 auto; padding: 0 2rem;
+  height: 60px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { display: flex; align-items: baseline; gap: 0.35rem; text-decoration: none; }
+.nav-logo .kice { font-size: 0.85rem; font-weight: 600; color: var(--muted); letter-spacing: 0.12em; }
+.nav-logo .lynx { font-size: 1.15rem; font-weight: 900; color: var(--text); letter-spacing: 0.05em; }
+.nav-logo .lynx span { color: var(--cyan); }
+
+/* ── HERO ───────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 100px 2rem 60px;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em;
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.35);
+  background: rgba(239,68,68,0.08);
+  padding: 0.45rem 1.2rem; border-radius: 99px;
+  margin-bottom: 1.5rem;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900; line-height: 1.2; letter-spacing: -0.02em;
+  margin-bottom: 1.4rem;
+}
+
+.hero-tagline {
+  font-size: 1.1rem;
+  font-weight: 400; color: var(--muted);
+  margin-bottom: 0.5rem; line-height: 1.6;
+  max-width: 600px;
+}
+
+.timer-box {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+}
+
+.timer-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--cyan);
+  margin-bottom: 1rem;
+}
+
+#countdown {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.retry-btn {
+  font-size: 1rem; font-weight: 700; font-family: var(--font);
+  color: #030712; background: var(--cyan); border: none;
+  padding: 0.8rem 2rem; border-radius: 8px; cursor: pointer;
+  text-decoration: none; transition: all 0.2s;
+  display: inline-block;
+}
+.retry-btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-2px); }
+.retry-btn:disabled {
+  background: rgba(255,255,255,0.1);
+  color: var(--muted);
+  cursor: not-allowed;
+  transform: none;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="/">
+      <span class="kice">KICE</span>
+      <span class="lynx">LY<span>N</span>X</span>
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">접속 지연 안내</div>
+
+  <h1>
+    죄송합니다.<br>
+    현재 접속자가 폭증하여 대기 중입니다.
+  </h1>
+
+  <p class="hero-tagline">
+    개인이 운영하는 서비스라 서버 사용에 제약이 있습니다.<br>
+    잠시 뒤에 재접속해 보시길 바랍니다.<br>
+    차차 개선하여 원활한 서비스가 되도록 노력하겠습니다. 감사합니다.
+  </p>
+
+  <div class="timer-box">
+    <div class="timer-text">재접속을 위한 대기시간</div>
+    <div id="countdown">60초</div>
+    <button id="retryBtn" class="retry-btn" onclick="window.location.href='/app'" disabled>접속 재시도</button>
+  </div>
+</section>
+
+<script>
+  let timeLeft = 60;
+  const countdownEl = document.getElementById('countdown');
+  const retryBtn = document.getElementById('retryBtn');
+
+  const timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft > 0) {
+      countdownEl.innerText = timeLeft + '초';
+    } else {
+      clearInterval(timer);
+      countdownEl.innerText = '0초';
+      retryBtn.disabled = false;
+      retryBtn.innerText = '지금 접속 재시도';
+    }
+  }, 1000);
+</script>
+
+</body>
+</html>

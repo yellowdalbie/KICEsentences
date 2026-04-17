@@ -20,10 +20,10 @@ import bleach as bleach_module
 import markdown as markdown_module
 import html as html_module
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request, send_from_directory, send_file, session
+from flask import Flask, render_template, jsonify, request, send_from_directory, send_file, session, redirect
 from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import psutil
 app = Flask(__name__)
 from routes_landing import landing_bp
 app.register_blueprint(landing_bp)
@@ -431,9 +431,27 @@ def shutdown():
     threading.Thread(target=_stop, daemon=True).start()
     return jsonify({'status': 'shutting down'})
 
+def is_server_overloaded():
+    if OFFLINE_MODE:
+        return False
+    try:
+        if psutil.cpu_percent(interval=0.1) > 90.0:
+            return True
+        if psutil.virtual_memory().percent > 90.0:
+            return True
+    except Exception as e:
+        print(f"[Overload Check Error] {e}")
+    return False
+
 @app.route('/app')
 def app_index():
+    if is_server_overloaded():
+        return redirect('/busy')
     return render_template('index.html', offline_mode=OFFLINE_MODE)
+
+@app.route('/busy')
+def busy_page():
+    return render_template('busy.html')
 
 @app.route('/pdf/<path:filename>')
 def serve_pdf(filename):

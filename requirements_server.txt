@@ -12,6 +12,7 @@ numpy
 pandas
 rank_bm25
 scipy
+psutil
 
 # Landing Page
 # (Already covered by flask above)
