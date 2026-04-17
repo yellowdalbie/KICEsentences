@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 
 from flask import (Blueprint, g, jsonify, make_response, redirect,
-                   render_template, request)
+                   render_template, request, session)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 유저 데이터 DB 파일 경로 (dashboard.py와 동기화)
@@ -35,6 +35,10 @@ DB_PATH = Path(__file__).parent / 'landing' / 'data.sqlite'
 ADMIN_KEY = os.environ.get('ADMIN_KEY', 'change-me')
 
 DOWNLOAD_TOKEN = 'XO0VLTwE_XYV6vehodDmzvgVj'
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'yellowsouls@naver.com').strip().lower()
+
+def _check_admin_session():
+    return session.get('email', '').strip().lower() == ADMIN_EMAIL
 
 VERSION = 'v2025.11'
 DOWNLOAD_URLS = {
@@ -242,8 +246,7 @@ def handle_errors():
 @landing_bp.route('/api/errors/delete', methods=['POST'])
 def delete_error():
     data = request.get_json(silent=True) or {}
-    key = data.get('key')
-    if key != ADMIN_KEY:
+    if not _check_admin_session():
         return jsonify({'error': 'Unauthorized'}), 401
         
     problem_id = data.get('problem_id', '').strip()
@@ -259,8 +262,7 @@ def delete_error():
 @landing_bp.route('/api/errors/delete_all', methods=['POST'])
 def delete_all_errors():
     data = request.get_json(silent=True) or {}
-    key = data.get('key')
-    if key != ADMIN_KEY:
+    if not _check_admin_session():
         return jsonify({'error': 'Unauthorized'}), 401
         
     db = get_db()
@@ -273,8 +275,8 @@ def delete_all_errors():
 # ── 관리자 대시보드 ──────────────────────────────────────────
 @landing_bp.route('/admin')
 def admin():
-    if request.args.get('key') != ADMIN_KEY:
-        return '401 Unauthorized', 401
+    if not _check_admin_session():
+        return redirect('/')
 
     db = get_db()
 

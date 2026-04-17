@@ -19,11 +19,16 @@ import numpy as np
 import bleach as bleach_module
 import markdown as markdown_module
 import html as html_module
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify, request, send_from_directory, send_file, session, redirect
 from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.security import generate_password_hash, check_password_hash
 import psutil
+import smtplib
+import secrets
+import threading
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 app = Flask(__name__)
 from routes_landing import landing_bp
 app.register_blueprint(landing_bp)
@@ -43,6 +48,9 @@ os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
 # 오프라인 패키지 모드: 관리자 패널 및 오류 제보 기능 비활성화
 OFFLINE_MODE = os.environ.get('OFFLINE_MODE', '0') == '1'
+
+# 관리자 이메일 (이 이메일로 로그인 시 관리자 권한 부여)
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'yellowsouls@naver.com').strip().lower()
 
 # ── 벡터 인덱스 및 오프라인 쿼리 엔진 로드 ──────────────────────
 _vec_data = None
@@ -196,8 +204,102 @@ def get_user_db():
     )''')
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sets_user ON problem_sets(user_id)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_sets_status ON problem_sets(user_id, status)")
+    # 이메일 인증/비밀번호 재설정 컬럼 추가 (이미 있으면 무시)
+    for _col, _defn in [
+        ('is_verified',     'INTEGER DEFAULT 0'),
+        ('verify_token',    'TEXT'),
+        ('verify_token_exp','DATETIME'),
+        ('reset_token',     'TEXT'),
+        ('reset_token_exp', 'DATETIME'),
+    ]:
+        try:
+            conn.execute(f'ALTER TABLE users ADD COLUMN {_col} {_defn}')
+        except Exception:
+            pass
     conn.commit()
     return conn
+
+# ── 이메일 발송 헬퍼 ──────────────────────────────────────────
+def _send_email(to_email: str, subject: str, html_body: str) -> bool:
+    smtp_email = os.environ.get('SMTP_EMAIL', '').strip()
+    smtp_password = os.environ.get('SMTP_PASSWORD', '').replace(' ', '')
+    if not smtp_email or not smtp_password:
+        print(f'[Email] SMTP 설정 없음 — 발송 건너뜀 ({to_email})')
+        return False
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = f'KICE Lynx <{smtp_email}>'
+    msg['To'] = to_email
+    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
+            server.login(smtp_email, smtp_password)
+            server.sendmail(smtp_email, to_email, msg.as_string())
+        print(f'[Email] 발송 완료: {to_email}')
+        return True
+    except Exception as e:
+        print(f'[Email] 발송 실패 ({to_email}): {e}')
+        return False
+
+
+def send_verify_email(to_email: str, verify_url: str):
+    subject = '[KICE Lynx] 이메일 인증을 완료해주세요'
+    html = f'''
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:2rem;
+                background:#0f172a;color:#e2e8f0;border-radius:12px;">
+      <h2 style="color:#06b6d4;margin-top:0;">KICE Lynx 이메일 인증</h2>
+      <p>아래 버튼을 눌러 이메일 인증을 완료해주세요.<br>링크는 <strong>24시간</strong> 후 만료됩니다.</p>
+      <a href="{verify_url}"
+         style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;
+                background:#06b6d4;color:#030712;border-radius:8px;
+                font-weight:700;text-decoration:none;font-size:1rem;">이메일 인증하기</a>
+      <p style="font-size:0.8rem;color:#64748b;">
+        버튼이 작동하지 않으면 아래 링크를 복사해 브라우저에 붙여넣으세요:<br>
+        <a href="{verify_url}" style="color:#06b6d4;">{verify_url}</a>
+      </p>
+      <p style="font-size:0.75rem;color:#475569;border-top:1px solid #1e293b;
+                padding-top:1rem;margin-top:1.5rem;">
+        이 메일은 KICE Lynx 가입 시 자동 발송됩니다. 가입한 적이 없다면 무시하세요.
+      </p>
+    </div>'''
+    _send_email(to_email, subject, html)
+
+
+def send_reset_email(to_email: str, reset_url: str):
+    subject = '[KICE Lynx] 비밀번호 재설정 안내'
+    html = f'''
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:2rem;
+                background:#0f172a;color:#e2e8f0;border-radius:12px;">
+      <h2 style="color:#06b6d4;margin-top:0;">KICE Lynx 비밀번호 재설정</h2>
+      <p>아래 버튼을 눌러 새 비밀번호를 설정해주세요.<br>링크는 <strong>1시간</strong> 후 만료됩니다.</p>
+      <a href="{reset_url}"
+         style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;
+                background:#06b6d4;color:#030712;border-radius:8px;
+                font-weight:700;text-decoration:none;font-size:1rem;">비밀번호 재설정하기</a>
+      <p style="font-size:0.8rem;color:#64748b;">
+        버튼이 작동하지 않으면 아래 링크를 복사해 브라우저에 붙여넣으세요:<br>
+        <a href="{reset_url}" style="color:#06b6d4;">{reset_url}</a>
+      </p>
+      <p style="font-size:0.75rem;color:#475569;border-top:1px solid #1e293b;
+                padding-top:1rem;margin-top:1.5rem;">
+        비밀번호 재설정을 요청하지 않았다면 이 메일을 무시하세요.
+      </p>
+    </div>'''
+    _send_email(to_email, subject, html)
+
+
+# ── 시작 마이그레이션: 기존 사용자 is_verified=1 처리 ────────────
+def _run_startup_migration():
+    try:
+        conn = get_user_db()  # 테이블 + 신규 컬럼 생성 보장
+        conn.execute('UPDATE users SET is_verified=1 WHERE is_verified=0 AND verify_token IS NULL')
+        conn.commit()
+        conn.close()
+        print('[Migration] 기존 사용자 이메일 인증 마이그레이션 완료')
+    except Exception as e:
+        print(f'[Migration] 오류: {e}')
+
+_run_startup_migration()
 
 # (get_geo 기능이 제외되었습니다: 서버 부하 방지 및 접속 로그 간소화)
 
@@ -271,19 +373,22 @@ def auth_register():
         return jsonify({'error': '이미 가입된 이메일 계정입니다.'}), 400
         
     hashed_pw = generate_password_hash(pw)
-    conn.execute('INSERT INTO users (email, password_hash, is_paid, created_at) VALUES (?, ?, ?, datetime("now", "+9 hours"))', (email, hashed_pw, 0))
+    verify_token = secrets.token_urlsafe(32)
+    verify_exp = (datetime.now() + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
+    conn.execute(
+        'INSERT INTO users (email, password_hash, is_paid, is_verified, verify_token, verify_token_exp, created_at) '
+        'VALUES (?, ?, 0, 0, ?, ?, datetime("now", "+9 hours"))',
+        (email, hashed_pw, verify_token, verify_exp)
+    )
     conn.commit()
-    
-    # 바로 로그인 처리
-    user_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
     conn.close()
-    
-    session['user_id'] = user_id
-    session['email'] = email
-    session['is_paid'] = 0
-    session.permanent = True
-    
-    return jsonify({'status': 'ok'}), 200
+
+    # 인증 메일 비동기 발송
+    base_url = request.host_url.rstrip('/')
+    verify_url = f'{base_url}/verify-email?token={verify_token}'
+    threading.Thread(target=send_verify_email, args=(email, verify_url), daemon=True).start()
+
+    return jsonify({'status': 'verify_required', 'email': email}), 200
 
 @app.route('/api/auth/login', methods=['POST'])
 def auth_login():
@@ -298,13 +403,16 @@ def auth_login():
         return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
 
     conn = get_user_db()
-    user = conn.execute('SELECT id, email, password_hash, is_paid FROM users WHERE email=?', (email,)).fetchone()
+    user = conn.execute('SELECT id, email, password_hash, is_paid, is_verified FROM users WHERE email=?', (email,)).fetchone()
     conn.close()
 
     if not user or not check_password_hash(user['password_hash'], pw):
         _record_login_fail(login_ip)
         return jsonify({'error': '이메일 또는 비밀번호가 일치하지 않습니다.'}), 401
-        
+
+    if not user['is_verified'] and user['email'] != ADMIN_EMAIL:
+        return jsonify({'error': '이메일 인증이 필요합니다.', 'code': 'unverified', 'email': user['email']}), 403
+
     session['user_id'] = user['id']
     session['email'] = user['email']
     session['is_paid'] = user['is_paid']
@@ -336,11 +444,18 @@ def auth_change_password():
     if 'user_id' not in session:
         return jsonify({'error': '로그인이 필요합니다.'}), 401
     data = request.get_json() or {}
+    current_password = data.get('current_password', '').strip()
     new_password = data.get('new_password', '').strip()
+    if not current_password:
+        return jsonify({'error': '현재 비밀번호를 입력해주세요.'}), 400
     if len(new_password) < 6:
         return jsonify({'error': '비밀번호는 6자리 이상이어야 합니다.'}), 400
-    hashed = generate_password_hash(new_password)
     conn = get_user_db()
+    user = conn.execute('SELECT password_hash FROM users WHERE id=?', (session['user_id'],)).fetchone()
+    if not user or not check_password_hash(user['password_hash'], current_password):
+        conn.close()
+        return jsonify({'error': '현재 비밀번호가 올바르지 않습니다.'}), 400
+    hashed = generate_password_hash(new_password)
     conn.execute('UPDATE users SET password_hash=? WHERE id=?', (hashed, session['user_id']))
     conn.commit()
     conn.close()
@@ -354,8 +469,14 @@ def auth_delete_account():
     user_id = session['user_id']
     conn = get_user_db()
     try:
+        user_email = session.get('email', '')
+        # 식별 정보 삭제
         conn.execute('DELETE FROM users WHERE id=?', (user_id,))
         conn.execute('DELETE FROM login_logs WHERE user_id=?', (user_id,))
+        conn.execute('DELETE FROM problem_sets WHERE user_id=?', (user_id,))
+        # 행동 이력은 익명화 (집계 통계 보존, 개인 식별 제거)
+        conn.execute('UPDATE search_stats SET user_email=NULL WHERE user_email=?', (user_email,))
+        conn.execute('UPDATE cart_logs SET user_email=NULL WHERE user_email=?', (user_email,))
         conn.commit()
     except Exception as e:
         conn.rollback()
@@ -372,7 +493,7 @@ def auth_me():
     if 'user_id' in session:
         # DB에서 최신 is_paid 상태 조회
         conn = get_user_db()
-        user = conn.execute('SELECT is_paid, display_name FROM users WHERE id=?', (session['user_id'],)).fetchone()
+        user = conn.execute('SELECT is_paid, is_verified, display_name FROM users WHERE id=?', (session['user_id'],)).fetchone()
         conn.close()
         if user:
             session['is_paid'] = user['is_paid']  # 세션 캐시 갱신
@@ -382,10 +503,125 @@ def auth_me():
                 'isLoggedIn': True,
                 'email': email,
                 'isPaid': bool(user['is_paid']),
+                'isVerified': bool(user['is_verified']),
+                'isAdmin': email.strip().lower() == ADMIN_EMAIL,
                 'displayName': display_name
             }), 200
 
-    return jsonify({'isLoggedIn': False, 'isPaid': False}), 200
+    return jsonify({'isLoggedIn': False, 'isPaid': False, 'isVerified': False}), 200
+
+
+@app.route('/verify-email')
+def verify_email_route():
+    token = request.args.get('token', '').strip()
+    if not token:
+        return redirect('/?verify_error=invalid')
+    conn = get_user_db()
+    user = conn.execute(
+        'SELECT id, email, verify_token_exp FROM users WHERE verify_token=? AND is_verified=0', (token,)
+    ).fetchone()
+    if not user:
+        conn.close()
+        return redirect('/?verify_error=invalid')
+    try:
+        exp = datetime.strptime(user['verify_token_exp'], '%Y-%m-%d %H:%M:%S')
+        if exp < datetime.now():
+            conn.close()
+            return redirect('/?verify_error=expired')
+    except Exception:
+        pass
+    conn.execute('UPDATE users SET is_verified=1, verify_token=NULL, verify_token_exp=NULL WHERE id=?', (user['id'],))
+    conn.commit()
+    # 자동 로그인
+    paid_row = conn.execute('SELECT is_paid FROM users WHERE id=?', (user['id'],)).fetchone()
+    conn.close()
+    session['user_id'] = user['id']
+    session['email'] = user['email']
+    session['is_paid'] = paid_row['is_paid'] if paid_row else 0
+    session.permanent = True
+    return redirect('/?verified=1')
+
+
+@app.route('/api/auth/resend_verify', methods=['POST'])
+def auth_resend_verify():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email', '').strip().lower()
+    if not email:
+        return jsonify({'error': '이메일을 입력해주세요.'}), 400
+    conn = get_user_db()
+    user = conn.execute('SELECT id FROM users WHERE email=? AND is_verified=0', (email,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({'error': '해당 이메일의 미인증 계정이 없습니다.'}), 400
+    token = secrets.token_urlsafe(32)
+    exp = (datetime.now() + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
+    conn.execute('UPDATE users SET verify_token=?, verify_token_exp=? WHERE id=?', (token, exp, user['id']))
+    conn.commit()
+    conn.close()
+    base_url = request.host_url.rstrip('/')
+    verify_url = f'{base_url}/verify-email?token={token}'
+    threading.Thread(target=send_verify_email, args=(email, verify_url), daemon=True).start()
+    return jsonify({'status': 'ok'}), 200
+
+
+@app.route('/api/auth/forgot_password', methods=['POST'])
+def auth_forgot_password():
+    data = request.get_json(silent=True) or {}
+    email = data.get('email', '').strip().lower()
+    if not email:
+        return jsonify({'error': '이메일을 입력해주세요.'}), 400
+    conn = get_user_db()
+    user = conn.execute('SELECT id, is_verified FROM users WHERE email=?', (email,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({'status': 'ok'}), 200  # 이메일 존재 여부 노출 방지
+    if not user['is_verified']:
+        conn.close()
+        return jsonify({'error': '이메일 인증을 먼저 완료해주세요.', 'code': 'unverified', 'email': email}), 403
+    token = secrets.token_urlsafe(32)
+    exp = (datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+    conn.execute('UPDATE users SET reset_token=?, reset_token_exp=? WHERE id=?', (token, exp, user['id']))
+    conn.commit()
+    conn.close()
+    base_url = request.host_url.rstrip('/')
+    reset_url = f'{base_url}/reset-password?token={token}'
+    threading.Thread(target=send_reset_email, args=(email, reset_url), daemon=True).start()
+    return jsonify({'status': 'ok'}), 200
+
+
+@app.route('/reset-password')
+def reset_password_page():
+    token = request.args.get('token', '')
+    return render_template('reset_password.html', token=token)
+
+
+@app.route('/api/auth/reset_password', methods=['POST'])
+def auth_reset_password():
+    data = request.get_json(silent=True) or {}
+    token = data.get('token', '').strip()
+    new_password = data.get('new_password', '').strip()
+    if not token:
+        return jsonify({'error': '유효하지 않은 요청입니다.'}), 400
+    if len(new_password) < 6:
+        return jsonify({'error': '비밀번호는 6자리 이상이어야 합니다.'}), 400
+    conn = get_user_db()
+    user = conn.execute('SELECT id, reset_token_exp FROM users WHERE reset_token=?', (token,)).fetchone()
+    if not user:
+        conn.close()
+        return jsonify({'error': '유효하지 않은 재설정 링크입니다.'}), 400
+    try:
+        exp = datetime.strptime(user['reset_token_exp'], '%Y-%m-%d %H:%M:%S')
+        if exp < datetime.now():
+            conn.close()
+            return jsonify({'error': '재설정 링크가 만료되었습니다. 다시 요청해주세요.'}), 400
+    except Exception:
+        pass
+    hashed = generate_password_hash(new_password)
+    conn.execute('UPDATE users SET password_hash=?, reset_token=NULL, reset_token_exp=NULL WHERE id=?',
+                 (hashed, user['id']))
+    conn.commit()
+    conn.close()
+    return jsonify({'status': 'ok'}), 200
 
 # ─────────────────────────────────────────────────────────────
 
@@ -1458,23 +1694,9 @@ def problem_steps_bulk():
 
 # ── 공통 유틸 ────────────────────────────────────────────────────
 
-ADMIN_KEY_FILE = 'admin.key'
-
-
-def _load_admin_key():
-    if os.path.exists(ADMIN_KEY_FILE):
-        with open(ADMIN_KEY_FILE, 'r', encoding='utf-8') as f:
-            return f.read().strip()
-    return None
-
-
-def _check_admin_key():
-    import hmac
-    key = request.args.get('key') or request.headers.get('X-Admin-Key')
-    expected = _load_admin_key()
-    if not expected or not key:
-        return False
-    return hmac.compare_digest(key, expected)
+def _check_admin_session():
+    """세션에 로그인된 이메일이 관리자 이메일인지 확인"""
+    return session.get('email', '').strip().lower() == ADMIN_EMAIL
 
 
 
@@ -1567,15 +1789,15 @@ def _parse_step_block(block):
 def admin_page():
     if OFFLINE_MODE:
         return '', 404
-    if not _check_admin_key():
-        return '접근 거부: 유효하지 않은 관리자 키입니다.', 403
+    if not _check_admin_session():
+        return redirect('/')
     return render_template('admin.html')
 
 @app.route('/api/admin/step_detail/<int:step_id>')
 def admin_step_detail(step_id):
     if OFFLINE_MODE:
         return '', 404
-    if not _check_admin_key():
+    if not _check_admin_session():
         return jsonify({'error': '접근 거부'}), 403
 
     conn = get_db_connection()
