@@ -1895,6 +1895,9 @@ body.preview-open #global-actions-left {
     height: auto;
     display: block;
     mix-blend-mode: multiply;
+    /* 인쇄 선명도 최적화 (B 방식) */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
     /* ★ 미세조정 포인트: 확대 비율 (1.00 = 원본, 1.05 = 5% 확대) */
     transform: scale(1.08);
     /* top-left 고정 → 우측·하단으로 overflow → clip-path로 클립 */
@@ -2036,6 +2039,11 @@ body.preview-open #global-actions-left {
         padding: 0 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+
+    img {
+        image-rendering: -webkit-optimize-contrast !important;
+        image-rendering: crisp-edges !important;
     }
 
     /* Hide everything in the main app */
