@@ -199,17 +199,7 @@ def get_user_db():
     conn.commit()
     return conn
 
-# GeoIP (ip-api.com)
-def get_geo(ip):
-    import urllib.request, json
-    if ip in ('127.0.0.1', 'localhost'): return {}
-    try:
-        url = f'http://ip-api.com/json/{ip}?fields=country,city'
-        req = urllib.request.Request(url, headers={'User-Agent': 'KICE-Lynx/1.0'})
-        with urllib.request.urlopen(req, timeout=1) as r:
-            return json.loads(r.read())
-    except:
-        return {}
+# (get_geo 기능이 제외되었습니다: 서버 부하 방지 및 접속 로그 간소화)
 
 # 로그인 실패 횟수 추적 (IP별, 인메모리)
 import time as _time
@@ -246,23 +236,7 @@ def csrf_protect():
         return jsonify({'error': '잘못된 요청입니다.'}), 403
 
 
-@app.before_request
-def log_access():
-    if request.path.startswith('/static') or request.path == '/favicon.ico':
-        return
-        
-    try:
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
-        geo = get_geo(ip)
-        email = session.get('user_email')
-        conn = get_user_db()
-        conn.execute('INSERT INTO access_logs (ip, country, city, user_agent, path, user_email, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
-                     (ip, geo.get('country', ''), geo.get('city', ''), request.user_agent.string, request.path, email))
-        conn.commit()
-        conn.close()
-    except Exception as e:
-        print(f"Error logging access: {e}")
-
+# (log_access 기능이 제외되었습니다: 서버 부하 발생 요인 제거)
 def log_search(search_type, query_text=None, result_count=None):
     email = session.get('user_email') or session.get('email')
     try:
@@ -586,8 +560,15 @@ def similar_problems(problem_id):
     })
 
 
+_STATS_CACHE = {'timestamp': 0, 'data': None}
+
 @app.route('/api/stats')
 def stats():
+    global _STATS_CACHE
+    import time
+    if time.time() - _STATS_CACHE['timestamp'] < 3600 and _STATS_CACHE['data']:
+        return jsonify(_STATS_CACHE['data'])
+        
     conn = get_db_connection()
     stats_data = {}
     
@@ -672,6 +653,9 @@ def stats():
     ''').fetchall()]
     
     conn.close()
+    
+    _STATS_CACHE['timestamp'] = time.time()
+    _STATS_CACHE['data'] = stats_data
     return jsonify(stats_data)
 
 @app.route('/api/search')

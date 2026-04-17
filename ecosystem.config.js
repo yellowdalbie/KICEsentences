@@ -2,7 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'kice-dashboard',
-      script: 'dashboard.py',
+      script: '-m',
+      args: 'gunicorn --workers 1 --threads 4 --bind 0.0.0.0:8181 dashboard:app',
       interpreter: 'python3',
       env: {
         OFFLINE_MODE: '0',
