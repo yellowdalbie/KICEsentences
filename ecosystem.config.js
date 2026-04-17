@@ -2,12 +2,11 @@ module.exports = {
   apps: [
     {
       name: 'kice-dashboard',
-      script: '/home/ubuntu/.local/bin/gunicorn',
-      args: '--workers 1 --threads 4 --bind 0.0.0.0:8181 dashboard:app',
-      interpreter: 'none',
+      script: 'dashboard.py',
+      interpreter: 'python3',
       env: {
         OFFLINE_MODE: '0',
-        KICE_PORT: '5050',
+        KICE_PORT: '8181',
         KICE_HOST: '0.0.0.0'
       },
       instances: 1,

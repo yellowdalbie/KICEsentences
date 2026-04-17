@@ -2029,5 +2029,5 @@ def update_display_name():
 
 if __name__ == '__main__':
     host = os.environ.get('KICE_HOST', '127.0.0.1')
-    port = int(os.environ.get('KICE_PORT', '5050'))
-    app.run(host=host, port=port, debug=False)
+    port = int(os.environ.get('KICE_PORT', '8181'))
+    app.run(host=host, port=port, debug=False, threaded=True)
