@@ -504,7 +504,7 @@ def auth_me():
                 'email': email,
                 'isPaid': bool(user['is_paid']),
                 'isVerified': bool(user['is_verified']),
-                'isAdmin': email.strip().lower() == ADMIN_EMAIL,
+                'isAdmin': email.strip().lower() == ADMIN_EMAIL.strip().lower(),
                 'displayName': display_name
             }), 200
 
@@ -1785,13 +1785,6 @@ def _parse_step_block(block):
 
 # ── 관리자 API ───────────────────────────────────────────────────
 
-@app.route('/admin')
-def admin_page():
-    if OFFLINE_MODE:
-        return '', 404
-    if not _check_admin_session():
-        return redirect('/')
-    return render_template('admin.html')
 
 @app.route('/api/admin/step_detail/<int:step_id>')
 def admin_step_detail(step_id):

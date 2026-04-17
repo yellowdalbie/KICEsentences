@@ -22,6 +22,7 @@ from pathlib import Path
 
 from flask import (Blueprint, g, jsonify, make_response, redirect,
                    render_template, request, session)
+import psutil
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 유저 데이터 DB 파일 경로 (dashboard.py와 동기화)
@@ -51,6 +52,15 @@ FILE_SIZES = {
     'mac-x86': '363.3 MB',
     'windows': '344.0 MB',
 }
+OFFLINE_MODE = os.environ.get('OFFLINE_MODE', '0') == '1'
+
+def is_server_overloaded():
+    if OFFLINE_MODE: return False
+    try:
+        if psutil.cpu_percent(interval=0.1) > 90.0: return True
+        if psutil.virtual_memory().percent > 90.0: return True
+    except Exception: pass
+    return False
 
 
 # ── DB ──────────────────────────────────────────────────────
@@ -275,6 +285,10 @@ def delete_all_errors():
 # ── 관리자 대시보드 ──────────────────────────────────────────
 @landing_bp.route('/admin')
 def admin():
+    if OFFLINE_MODE:
+        return '', 404
+    if is_server_overloaded():
+        return redirect('/busy')
     if not _check_admin_session():
         return redirect('/')
 
