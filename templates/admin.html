@@ -338,34 +338,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   </div>
 </div>
 
-<!-- ⑥ 최근 접속 기록 -->
-<div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
-  <h2 style="margin:0;">
-    최근 접속 기록
-    {% if email_filter %}<span style="color:var(--cyan); font-size:0.9rem; margin-left:10px;">[{{ email_filter }}]</span>{% else %}(최근 100건){% endif %}
-  </h2>
-  {% if email_filter %}
-  <button onclick="clearFilter()" class="copy-btn" style="margin-top:0; font-size:0.75rem; padding:0.3rem 0.6rem;">전체 보기</button>
-  {% endif %}
-</div>
-<div class="section-box" style="margin-top:0.8rem;">
-  <table>
-    <thead><tr><th>IP</th><th>위치</th><th>사용자</th><th>경로</th><th>시각</th></tr></thead>
-    <tbody>
-    {% for row in access_logs %}
-    <tr>
-      <td style="color:var(--cyan); font-size:0.82rem;">{{ row.ip }}</td>
-      <td style="font-size:0.82rem;">{% if row.country %}{{ row.country }}{% if row.city %} / {{ row.city }}{% endif %}{% else %}-{% endif %}</td>
-      <td style="font-size:0.82rem;">{{ row.user_email or '-' }}</td>
-      <td style="color:var(--muted); font-size:0.8rem;">{{ row.path }}</td>
-      <td style="color:var(--muted); font-size:0.78rem; white-space:nowrap;">{{ row.created_at[:16] if row.created_at else '-' }}</td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5" style="text-align:center; color:var(--muted); padding:20px;">접속 기록이 없습니다.</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
+
 
 <!-- ⑦ 가입 사용자 -->
 <h2>가입된 사용자 ({{ stats.subscribers }}명)</h2>
@@ -373,7 +346,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   <div class="email-list" id="email-list">
   {% for row in emails %}
     <div class="email-row">
-      <span class="email-addr" style="cursor:pointer; text-decoration:underline;" onclick="filterByUser('{{ row.email }}')" title="접속 기록 보기">{{ row.email }}</span>
+      <span class="email-addr">{{ row.email }}</span>
       {% if row.is_paid %}<span class="badge badge-paid">PAID</span>{% endif %}
       <span class="email-meta">{{ row.created_at[:16] if row.created_at else '' }}</span>
     </div>

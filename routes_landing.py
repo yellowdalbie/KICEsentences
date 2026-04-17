@@ -297,12 +297,10 @@ def admin():
         'recent_cart_logs': [],
     }
 
-    # 메인 DB에서 가입된 사용자, 로그인 기록, 접속 기록 가져오기
+    # 메인 DB에서 가입된 사용자, 로그인 기록 가져오기
     users = []
     login_logs = []
-    access_logs = []
     total_users = 0
-    email_filter = request.args.get('email')
     stats['search_totals'] = {}
 
     if os.path.exists(MAIN_DB_FILE):
@@ -317,16 +315,6 @@ def admin():
             login_logs = main_conn.execute(
                 'SELECT email, ip, country, city, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
             ).fetchall()
-            
-            if email_filter:
-                access_logs = main_conn.execute(
-                    'SELECT ip, country, city, path, user_email, created_at FROM access_logs WHERE user_email = ? ORDER BY id DESC LIMIT 200',
-                    (email_filter,)
-                ).fetchall()
-            else:
-                access_logs = main_conn.execute(
-                    'SELECT ip, country, city, path, user_email, created_at FROM access_logs ORDER BY id DESC LIMIT 100'
-                ).fetchall()
             
             # 검색 통계
             search_rows = main_conn.execute('SELECT search_type, COUNT(*) as cnt FROM search_stats GROUP BY search_type').fetchall()
@@ -466,7 +454,7 @@ def admin():
     db.close()
 
     return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats,
-                           emails=users, login_logs=login_logs, access_logs=access_logs, errors=errors, email_filter=email_filter)
+                           emails=users, login_logs=login_logs, errors=errors)
 
 
 # ── 다운로드 전용 페이지 ─────────────────────────────────────
