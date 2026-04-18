@@ -288,14 +288,10 @@ def send_reset_email(to_email: str, reset_url: str):
     _send_email(to_email, subject, html)
 
 
-# ── 시작 마이그레이션: 기존 사용자 is_verified=1 처리 ────────────
+# ── 시작 마이그레이션: DB 테이블/컬럼 보장 (자동 인증 제거) ────────────
 def _run_startup_migration():
     try:
-        conn = get_user_db()  # 테이블 + 신규 컬럼 생성 보장
-        conn.execute('UPDATE users SET is_verified=1 WHERE is_verified=0 AND verify_token IS NULL')
-        conn.commit()
-        conn.close()
-        print('[Migration] 기존 사용자 이메일 인증 마이그레이션 완료')
+        get_user_db().close()  # 테이블 + 신규 컬럼 생성 보장
     except Exception as e:
         print(f'[Migration] 오류: {e}')
 
