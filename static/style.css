@@ -2816,6 +2816,14 @@ body.preview-open #global-actions-left {
         color: var(--text-main);
     }
 
+    /* Inspector 안의 이미지 너비 제한 */
+    #inspector-panel-body img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 6px;
+    }
+
     /* ── Step E: 성취기준 split-pane → 탭 전환 ── */
     .split-pane-layout.active {
         display: flex !important;
