@@ -1212,55 +1212,32 @@ document.querySelectorAll('.feat-item').forEach(item => {
 });
 
 
-// ── Chrome 브라우저 감지 및 경고 배너 ──────────────────────────────
+// ── 모바일 기기 경고 배너 ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const isChromium = window.chrome;
-  const winNav = window.navigator;
-  const vendorName = winNav.vendor;
-  const isOpera = typeof window.opr !== "undefined";
-  const isIEedge = winNav.userAgent.indexOf("Edge") > -1;
-  const isIOSChrome = winNav.userAgent.match("CriOS");
-  const isEdgeChromium = winNav.userAgent.indexOf("Edg/") > -1;
+  const isMobile = window.matchMedia('(pointer: coarse)').matches;
 
-  let isChrome = false;
-  if (isIOSChrome) {
-    isChrome = true;
-  } else if (
-    isChromium !== null &&
-    typeof isChromium !== "undefined" &&
-    vendorName === "Google Inc." &&
-    isOpera === false &&
-    isIEedge === false &&
-    isEdgeChromium === false
-  ) {
-    isChrome = true;
-  }
-
-  // 데스크톱 환경이면서 크롬이 아닐 경우 경고
-  // 모바일 기기는 보통 인쇄를 사용하지 않으므로 화면이 좁아지는 것을 피하기 위해 제외할 수도 있지만,
-  // 범용적으로 데스크톱/모바일 구분 없이 띄웁니다.
-  if (!isChrome) {
+  if (isMobile) {
     const banner = document.createElement('div');
-    banner.style.background = 'rgba(239, 68, 68, 0.15)';
-    banner.style.borderBottom = '1px solid rgba(239, 68, 68, 0.3)';
-    banner.style.color = '#fca5a5';
+    banner.style.background = 'rgba(234, 179, 8, 0.15)';
+    banner.style.borderBottom = '1px solid rgba(234, 179, 8, 0.35)';
+    banner.style.color = '#fde68a';
     banner.style.padding = '12px 20px';
     banner.style.textAlign = 'center';
-    banner.style.fontSize = '0.9rem';
+    banner.style.fontSize = '0.88rem';
     banner.style.fontWeight = '600';
     banner.style.position = 'fixed';
-    banner.style.top = '60px'; // nav 아래
+    banner.style.top = '60px';
     banner.style.left = '0';
     banner.style.width = '100%';
     banner.style.zIndex = '99';
     banner.style.backdropFilter = 'blur(12px)';
     banner.style.WebkitBackdropFilter = 'blur(12px)';
-    banner.innerHTML = '⚠️ KICE Lynx의 오프라인 인쇄 기능은 <strong>구글 크롬(Google Chrome)</strong> 브라우저 환경에 최적화되어 있습니다.';
-    
-    // 닫기 버튼 추가
+    banner.style.boxSizing = 'border-box';
+    banner.innerHTML = '⚠️ KICE Lynx는 <strong>PC 환경에 최적화</strong>되어 있습니다. 모바일에서는 일부 기능이 제한될 수 있으니 <strong>컴퓨터</strong>로 접속을 권장합니다.';
+
     const closeBtn = document.createElement('span');
-    closeBtn.innerHTML = '×';
-    closeBtn.style.marginLeft = '15px';
+    closeBtn.innerHTML = '&nbsp;×';
+    closeBtn.style.marginLeft = '10px';
     closeBtn.style.cursor = 'pointer';
     closeBtn.style.fontSize = '1.2rem';
     closeBtn.style.opacity = '0.7';
