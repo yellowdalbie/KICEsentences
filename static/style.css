@@ -2593,6 +2593,9 @@ body.preview-open #global-actions-left {
     }
 }
 
+/* Inspector 패널은 터치 기기 전용 — PC에서 노출 방지 */
+#inspector-panel { display: none; }
+
 @media (pointer: coarse) {
     /* ── Step A: 기존 fixed 요소 숨김 ── */
     #global-actions-left,
@@ -2605,26 +2608,23 @@ body.preview-open #global-actions-left {
         display: none;
     }
 
-    /* 헤더 상단 여백 (앱바 48px + gap) */
+    /* 헤더 상단 여백 — 앱바가 일반 흐름에 포함되므로 별도 여백 불필요 */
     .top-nav-container {
-        padding-top: calc(48px + 1rem);
         gap: 1rem;
     }
 
-    /* ── Step A: 앱바 ── */
+    /* ── Step A: 앱바 (일반 흐름, 스크롤 시 밀려남) ── */
     .mobile-appbar {
         display: flex !important;
         align-items: center;
         justify-content: space-between;
-        position: fixed;
-        top: 0; left: 0; right: 0;
+        position: static;
         height: 48px;
         padding: 0 1rem;
         background: var(--bg-surface);
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
         border-bottom: 1px solid var(--border-color);
-        z-index: 10000;
         box-sizing: border-box;
     }
 
@@ -2718,9 +2718,9 @@ body.preview-open #global-actions-left {
         display: flex;
         position: fixed;
         bottom: 1.5rem;
-        right: 1.5rem;
-        width: 52px;
-        height: 52px;
+        right: 1.2rem;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         background: var(--accent-cyan);
         color: #030712;
@@ -2728,14 +2728,14 @@ body.preview-open #global-actions-left {
         cursor: pointer;
         align-items: center;
         justify-content: center;
-        font-size: 1.3rem;
-        box-shadow: 0 4px 16px rgba(6, 182, 212, 0.5);
+        font-size: 1.1rem;
+        box-shadow: 0 3px 12px rgba(6, 182, 212, 0.45);
         z-index: 10000;
         transition: transform 0.18s;
     }
 
     #cart-fab:active {
-        transform: scale(0.92);
+        transform: scale(0.90);
     }
 
     #cart-fab-badge {
@@ -2758,6 +2758,7 @@ body.preview-open #global-actions-left {
 
     /* ── Step C: Inspector 패널 ── */
     #inspector-panel {
+        display: block;
         position: fixed;
         bottom: 0; left: 0; right: 0;
         max-height: 55vh;
@@ -2767,9 +2768,11 @@ body.preview-open #global-actions-left {
         border-radius: 16px 16px 0 0;
         z-index: 9500;
         overflow-y: auto;
-        padding: 1rem 1rem 2rem 1rem;
+        overflow-x: hidden;
+        padding: 0 1rem 2rem 1rem;
         transform: translateY(100%);
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                    max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         -webkit-overflow-scrolling: touch;
     }
 
@@ -2777,16 +2780,41 @@ body.preview-open #global-actions-left {
         transform: translateY(0);
     }
 
+    /* 확장 모드: 최대 높이로 늘리고 내부 스크롤 허용 */
+    #inspector-panel.expanded {
+        max-height: 88vh;
+        max-height: 88dvh;
+        overflow-y: auto;
+    }
+
+    /* 드래그 핸들 */
+    #inspector-drag-handle {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0.6rem 0 0.2rem;
+        cursor: grab;
+        touch-action: none;
+    }
+
+    #inspector-drag-bar {
+        width: 36px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+    }
+
     #inspector-panel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 0.8rem;
-        padding-bottom: 0.6rem;
+        margin-bottom: 0.7rem;
+        padding: 0.3rem 0 0.6rem;
         border-bottom: 1px solid var(--border-color);
         position: sticky;
         top: 0;
         background: var(--bg-surface);
+        z-index: 1;
     }
 
     #inspector-panel-title {
@@ -2799,15 +2827,23 @@ body.preview-open #global-actions-left {
         padding-right: 0.5rem;
     }
 
-    #inspector-close-btn {
+    /* 장바구니 아이콘 버튼 */
+    #inspector-cart-btn {
         background: none;
         border: none;
         color: var(--text-muted);
         cursor: pointer;
-        font-size: 1.2rem;
-        line-height: 1;
-        padding: 0.2rem;
+        padding: 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
         flex-shrink: 0;
+        transition: color 0.15s, background 0.15s;
+    }
+
+    #inspector-cart-btn:active {
+        background: rgba(255, 255, 255, 0.08);
     }
 
     #inspector-panel-body {
@@ -2816,13 +2852,34 @@ body.preview-open #global-actions-left {
         color: var(--text-main);
     }
 
-    /* Inspector 안의 이미지 너비 제한 */
+    /* Inspector 안의 이미지: 좁은 폰 세로 모드에서만 너비 제한 */
     #inspector-panel-body img {
-        max-width: 100%;
         height: auto;
         display: block;
         border-radius: 6px;
     }
+}
+
+/* 좁은 폰 세로 모드: 이미지 화면 너비 안으로 제한 */
+@media (pointer: coarse) and (max-width: 767px) and (orientation: portrait) {
+    #inspector-panel-body img {
+        max-width: 100%;
+    }
+}
+
+/* 아이패드 or 가로 모드: 원본 크기 허용, 패널 내 가로 스크롤 */
+@media (pointer: coarse) and (min-width: 768px),
+       (pointer: coarse) and (orientation: landscape) {
+    #inspector-panel-body img {
+        max-width: none;
+        width: auto;
+    }
+    #inspector-panel {
+        overflow-x: auto;
+    }
+}
+
+@media (pointer: coarse) {
 
     /* ── Step E: 성취기준 split-pane → 탭 전환 ── */
     .split-pane-layout.active {
@@ -3007,5 +3064,30 @@ body.preview-open #global-actions-left {
         top: 0; left: 0; right: 0;
         z-index: 11000;
         overflow-x: auto;
+    }
+
+    /* ── 기출표현 검색결과: 컬럼 헤더 숨김 ── */
+    #expression-col-header {
+        display: none !important;
+    }
+
+    /* ── 기출표현 카드: 세로 레이아웃 ── */
+    .expression-result-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        padding: 12px 14px !important;
+    }
+
+    .expression-result-card .exp-pid-span {
+        width: auto !important;
+        min-width: unset !important;
+        font-size: 0.78rem !important;
+    }
+
+    .expression-result-card .exp-text-span {
+        font-size: 0.88rem !important;
+        min-width: 0 !important;
+        width: 100% !important;
     }
 }

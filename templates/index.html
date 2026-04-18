@@ -36,9 +36,16 @@
 
     <!-- ── 모바일 Inspector 패널 ── -->
     <div id="inspector-panel">
+        <!-- 드래그 핸들 -->
+        <div id="inspector-drag-handle">
+            <div id="inspector-drag-bar"></div>
+        </div>
         <div id="inspector-panel-header">
             <span id="inspector-panel-title"></span>
-            <button id="inspector-close-btn" onclick="closeInspector()" aria-label="닫기">✕</button>
+            <!-- 장바구니 아이콘 버튼 (문항 썸네일 표시 시에만 표시) -->
+            <button id="inspector-cart-btn" onclick="inspectorToggleCart()" aria-label="장바구니에 담기" style="display:none;">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            </button>
         </div>
         <div id="inspector-panel-body" class="latex-font"></div>
     </div>
@@ -184,7 +191,7 @@
                         style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 8px;">
                         검색 결과: 0건</h3>
                     <!-- 열 헤더 (search-table th 동일 스타일) -->
-                    <div style="display: flex; align-items: center; gap: 12px;
+                    <div id="expression-col-header" style="display: flex; align-items: center; gap: 12px;
                                 background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--border-color);
                                 border-radius: 6px 6px 0 0; padding: 0.7rem 12px; margin-bottom: 0;">
                         <div style="width:20%; min-width:160px; flex-shrink:0; text-align:center;
@@ -602,13 +609,36 @@
         })();
 
         // ── Step C: Inspector Mode ──
-        function openInspector(content, title) {
-            const panel = document.getElementById('inspector-panel');
-            const body  = document.getElementById('inspector-panel-body');
+        // 현재 Inspector에 표시 중인 pid (장바구니 버튼용)
+        let _inspectorCurrentPid = null;
+
+        function openInspector(content, pid) {
+            const panel   = document.getElementById('inspector-panel');
+            const body    = document.getElementById('inspector-panel-body');
             const titleEl = document.getElementById('inspector-panel-title');
+            const cartBtn = document.getElementById('inspector-cart-btn');
+
+            _inspectorCurrentPid = pid || null;
+
             panel.style.display = 'block';
+            // 이전 확장 상태 초기화
+            panel.classList.remove('expanded');
+            panel.style.transform = '';
             body.innerHTML = content;
-            if (titleEl) titleEl.textContent = title || '';
+
+            // 타이틀: 문항ID만 표시 (안내 텍스트 제거)
+            if (titleEl) titleEl.textContent = pid ? `문항 ${pid}` : '';
+
+            // 장바구니 버튼: 문항 썸네일일 때만 표시
+            if (cartBtn) {
+                if (pid) {
+                    cartBtn.style.display = 'flex';
+                    _updateInspectorCartBtn(pid);
+                } else {
+                    cartBtn.style.display = 'none';
+                }
+            }
+
             requestAnimationFrame(() => panel.classList.add('open'));
             if (window.renderMathInElement) {
                 renderMathInElement(body, {
@@ -621,26 +651,98 @@
             document.body.style.overflow = 'hidden';
         }
 
+        function _updateInspectorCartBtn(pid) {
+            const cartBtn = document.getElementById('inspector-cart-btn');
+            if (!cartBtn) return;
+            const inCart = typeof cartProblemIds !== 'undefined' && cartProblemIds.has(String(pid));
+            cartBtn.style.color = inCart ? 'var(--accent-cyan)' : 'var(--text-muted)';
+            cartBtn.title = inCart ? '장바구니에서 제거' : '장바구니에 담기';
+        }
+
+        function inspectorToggleCart() {
+            if (!_inspectorCurrentPid) return;
+            if (typeof toggleCartItem === 'function') toggleCartItem(String(_inspectorCurrentPid));
+            _updateInspectorCartBtn(_inspectorCurrentPid);
+        }
+
         function closeInspector() {
             const panel = document.getElementById('inspector-panel');
-            panel.classList.remove('open');
+            panel.classList.remove('open', 'expanded');
+            panel.style.transform = '';
             document.body.style.overflow = '';
+            _inspectorCurrentPid = null;
             setTimeout(() => { panel.style.display = 'none'; }, 300);
         }
+
+        // ── Inspector 스와이프 제스처 ──
+        (function initInspectorSwipe() {
+            const panel  = document.getElementById('inspector-panel');
+            const handle = document.getElementById('inspector-drag-handle');
+            if (!panel || !handle) return;
+
+            let startY = 0, startHeight = 0, isDragging = false, currentDelta = 0;
+            const CLOSE_THRESHOLD  = 80;   // px: 아래로 이만큼 → 닫기
+            const EXPAND_THRESHOLD = 60;   // px: 위로 이만큼 → 확장
+
+            function onTouchStart(e) {
+                if (!panel.classList.contains('open')) return;
+                startY = e.touches[0].clientY;
+                startHeight = panel.getBoundingClientRect().height;
+                isDragging = true;
+                currentDelta = 0;
+                panel.style.transition = 'none';
+            }
+
+            function onTouchMove(e) {
+                if (!isDragging) return;
+                currentDelta = e.touches[0].clientY - startY;
+                // 아래로 드래그: 패널을 따라 내림
+                if (currentDelta > 0) {
+                    panel.style.transform = `translateY(${currentDelta}px)`;
+                } else {
+                    // 위로 드래그: 패널 높이 늘리기 (body 스크롤 없이)
+                    // 최대 90dvh까지
+                    panel.style.transform = '';
+                }
+            }
+
+            function onTouchEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                panel.style.transition = '';
+
+                if (currentDelta > CLOSE_THRESHOLD) {
+                    // 아래로 충분히 → 닫기
+                    closeInspector();
+                } else if (currentDelta < -EXPAND_THRESHOLD) {
+                    // 위로 충분히 → 확장 토글
+                    panel.classList.toggle('expanded');
+                    panel.style.transform = '';
+                } else {
+                    // 원위치
+                    panel.style.transform = '';
+                }
+            }
+
+            // 드래그 핸들에서만 시작
+            handle.addEventListener('touchstart', onTouchStart, { passive: true });
+            document.addEventListener('touchmove', (e) => { if (isDragging) onTouchMove(e); }, { passive: true });
+            document.addEventListener('touchend', onTouchEnd, { passive: true });
+        })();
 
         // 검색결과 탭 이벤트: 터치 기기에서 tooltip-trigger 탭 → Inspector 열기
         document.addEventListener('click', (e) => {
             if (!isTouchDevice()) return;
             const trigger = e.target.closest('.tooltip-trigger');
             if (!trigger) return;
+            // Inspector 내부의 장바구니 버튼 클릭은 제외
+            if (e.target.closest('#inspector-cart-btn')) return;
             const content = decodeURIComponent(trigger.getAttribute('data-tooltip') || '');
             if (!content) return;
             e.preventDefault();
             e.stopPropagation();
-            // 문항ID 셀인 경우 타이틀에 문항 코드 표시
-            const probId = trigger.getAttribute('data-prob-id');
-            const title  = probId ? `문항 ${probId} — 탭하면 장바구니에 담깁니다` : '';
-            openInspector(content, title);
+            const probId = trigger.getAttribute('data-prob-id') || null;
+            openInspector(content, probId);
         }, true);
 
         // ── Step D: 장바구니 FAB ──
@@ -1592,6 +1694,8 @@
                     const tooltipImg = document.getElementById('expr-thumb-img');
                     let thumbCache = {};
 
+                    const touch = isTouchDevice();
+
                     data.results.forEach(item => {
                         const card = document.createElement('div');
                         card.style.cssText = `
@@ -1609,19 +1713,32 @@
 
                         const pid = item.problem_id;
 
-                        // 문항번호 태그 (다른 검색결과와 동일한 glass 스타일, 클릭 시 장바구니)
+                        // 터치 기기: Inspector 연동을 위한 속성 부여
+                        if (touch) {
+                            const thumbHtml = `<img src="/thumbnail/${encodeURIComponent(pid)}" style="width:100%;height:auto;display:block;border-radius:4px;" alt="${pid}">`;
+                            card.className = 'tooltip-trigger expression-result-card';
+                            card.setAttribute('data-tooltip', encodeURIComponent(thumbHtml));
+                            card.setAttribute('data-prob-id', pid);
+                        } else {
+                            card.className = 'expression-result-card';
+                        }
+
+                        // 문항번호 태그
                         const pidSpan = document.createElement('span');
-                        pidSpan.className = 'prob-id-glass-tag prob-id-trigger';
+                        pidSpan.className = 'prob-id-glass-tag prob-id-trigger exp-pid-span';
                         pidSpan.style.cssText = 'display:inline-block; width:20%; min-width:160px; flex-shrink:0; cursor:pointer; user-select:none; padding:0.25rem 0.7rem; text-align:center; box-sizing:border-box;';
                         pidSpan.textContent = pid;
-                        pidSpan.title = '클릭하면 장바구니에 추가';
-                        pidSpan.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            if (typeof toggleCartItem === 'function') toggleCartItem(pid);
-                        });
+                        if (!touch) {
+                            pidSpan.title = '클릭하면 장바구니에 추가';
+                            pidSpan.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                if (typeof toggleCartItem === 'function') toggleCartItem(pid);
+                            });
+                        }
 
-                        // 기출 텍스트 (클릭 시 상세보기) — <mark> 태그를 DOM으로 안전하게 구성 (XSS 방어)
+                        // 기출 텍스트 — <mark> 태그를 DOM으로 안전하게 구성 (XSS 방어)
                         const textSpan = document.createElement('span');
+                        textSpan.className = 'exp-text-span';
                         textSpan.style.cssText = 'font-size:0.95rem; color:var(--text-muted); line-height:1.6; cursor:pointer; flex:1; min-width:0;';
                         item.snippet.split(/(<mark>.*?<\/mark>)/g).forEach(part => {
                             const m = part.match(/^<mark>(.*)<\/mark>$/);
@@ -1638,14 +1755,16 @@
                         card.appendChild(pidSpan);
                         card.appendChild(textSpan);
 
-                        // Hover: 썸네일 툴팁
+                        // Hover: 썸네일 툴팁 (PC 전용)
                         card.addEventListener('mouseenter', (e) => {
+                            if (touch) return;
                             card.style.background = 'rgba(16, 185, 129, 0.06)';
                             tooltipImg.src = thumbCache[pid] || `/thumbnail/${encodeURIComponent(pid)}`;
                             thumbCache[pid] = tooltipImg.src;
                             tooltip.style.display = 'block';
                         });
                         card.addEventListener('mousemove', (e) => {
+                            if (touch) return;
                             const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
                             const vw = window.innerWidth, vh = window.innerHeight;
                             let x = e.clientX + 16, y = e.clientY + 16;
@@ -1655,11 +1774,14 @@
                             tooltip.style.top = y + 'px';
                         });
                         card.addEventListener('mouseleave', () => {
+                            if (touch) return;
                             if (!card.dataset.selected) card.style.background = 'transparent';
                             tooltip.style.display = 'none';
                         });
 
+                        // 클릭: PC는 split-view 상세, 모바일은 전역 핸들러(Inspector)가 처리
                         card.addEventListener('click', () => {
+                            if (touch) return;
                             tooltip.style.display = 'none';
                             Array.from(expList.children).forEach(c => {
                                 c.style.background = 'transparent';
