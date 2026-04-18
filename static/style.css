@@ -2611,6 +2611,13 @@ body.preview-open #global-actions-left {
     /* 헤더 상단 여백 — 앱바가 일반 흐름에 포함되므로 별도 여백 불필요 */
     .top-nav-container {
         gap: 1rem;
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+
+    /* 오류 신고 버튼: 모바일에서 레이아웃 깨짐 방지 */
+    .nav-report-btn {
+        display: none !important;
     }
 
     /* ── Step A: 앱바 (일반 흐름, 스크롤 시 밀려남) ── */

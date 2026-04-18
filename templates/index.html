@@ -1152,6 +1152,13 @@
                         // Ensure we are in concepts view
                         switchView('concepts');
                         showUnitConcepts(unitName, concepts);
+                        // 모바일: 결과 탭으로 자동 전환
+                        if (isTouchDevice()) {
+                            setTimeout(() => {
+                                const resultTab = document.querySelector('.mobile-split-tab[data-pane="1"]');
+                                if (resultTab) resultTab.click();
+                            }, 150);
+                        }
                     });
 
                     unitsContainer.appendChild(unitItem);
