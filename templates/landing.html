@@ -559,6 +559,59 @@ footer {
   .feat-item { flex: 0 0 auto; min-width: 160px; }
   .features-display { position: static; }
 }
+
+/* ── 모바일 터치 기기 (pointer: coarse) ─────────────── */
+@media (pointer: coarse) {
+  /* Hero 여백 축소 */
+  .hero { padding: 80px 1.2rem 40px; min-height: auto; }
+  .hero h1 { font-size: clamp(2.2rem, 10vw, 3.5rem); }
+  .hero-sub { font-size: 0.9rem; margin-bottom: 2rem; }
+
+  /* 다운로드 버튼: 모바일에서 숨기고 웹 링크만 */
+  .dl-buttons { display: none; }
+  .hero-stats { gap: 1.5rem; font-size: 0.8rem; }
+
+  /* Features 레이아웃: 세로 */
+  .features-layout { flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
+  .features { padding: 60px 0; }
+
+  /* features-nav: 가로 스크롤 탭 */
+  .features-nav {
+    flex: none;
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.4rem;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+  }
+  .features-nav::-webkit-scrollbar { display: none; }
+  .feat-item {
+    flex: 0 0 auto;
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  /* Mock UI 컨테이너: 가로 스크롤 허용 */
+  .features-display {
+    position: static;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .features-display::-webkit-scrollbar { display: none; }
+
+  /* Mock wrap: 최소 너비 고정 (내용이 잘리지 않도록) */
+  .mock-wrap {
+    min-width: 420px;
+  }
+
+  /* mock-header 탭이 많아 줄바꿈되지 않도록 */
+  .mock-header { flex-wrap: nowrap; overflow-x: auto; gap: 0.5rem; }
+  .mock-tabs { flex-shrink: 0; }
+  .mock-search-row { min-width: 160px; }
+}
   /* Mac 가이드 모달 */
   #mac-guide-overlay {
     position: fixed;

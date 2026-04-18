@@ -1277,8 +1277,115 @@
 
 
 
+        // ── 모바일 카드 렌더링 함수 (pointer: coarse 전용) ──────────
+        function renderMobileCards(groups, orderedProbIds, scoreMap, targetTableId) {
+            const table = document.getElementById(targetTableId);
+            if (!table) return;
+
+            // 카드 컨테이너: 테이블 앞에 삽입 (1회만 생성)
+            const containerId = targetTableId + '-mobile-cards';
+            let cardContainer = document.getElementById(containerId);
+            if (!cardContainer) {
+                cardContainer = document.createElement('div');
+                cardContainer.id = containerId;
+                cardContainer.className = 'mobile-card-list';
+                table.parentNode.insertBefore(cardContainer, table);
+            }
+            table.style.display = 'none';
+            cardContainer.innerHTML = '';
+            cardContainer.style.display = 'flex';
+
+            const pids = orderedProbIds || Object.keys(groups);
+            const linkSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+
+            pids.forEach(pid => {
+                const rows = groups[pid];
+                if (!rows) return;
+                rows.sort((a, b) => parseInt(a.step_number || 0) - parseInt(b.step_number || 0));
+
+                const scoreVal = scoreMap && scoreMap[pid]
+                    ? (typeof scoreMap[pid] === 'object' ? scoreMap[pid].hybrid_score : scoreMap[pid])
+                    : null;
+                const scoreHtml = scoreVal != null
+                    ? `<span class="result-card-score">유사도 ${parseFloat(scoreVal).toFixed(2)}</span>`
+                    : '';
+
+                const pdfImg = `<img src="/thumbnail/${pid}" style="width:100%;height:auto;display:block;border-radius:4px;" alt="${pid}">`;
+
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.dataset.probGroup = pid;
+
+                // 카드 헤더
+                const header = document.createElement('div');
+                header.className = 'result-card-header';
+                const pidTag = document.createElement('span');
+                pidTag.className = 'result-card-pid prob-id-trigger tooltip-trigger';
+                pidTag.dataset.probId = pid;
+                pidTag.setAttribute('data-tooltip', encodeURIComponent(pdfImg));
+                pidTag.textContent = pid;
+                // 현재 카트 여부 표시
+                if (typeof cartProblemIds !== 'undefined' && cartProblemIds.has(pid)) {
+                    pidTag.classList.add('in-cart');
+                }
+                pidTag.addEventListener('click', () => {
+                    if (typeof toggleCartItem === 'function') toggleCartItem(pid);
+                    pidTag.classList.toggle('in-cart', typeof cartProblemIds !== 'undefined' && cartProblemIds.has(pid));
+                });
+                header.appendChild(pidTag);
+                header.insertAdjacentHTML('beforeend', scoreHtml);
+                card.appendChild(header);
+
+                // 단계 목록
+                const stepsDiv = document.createElement('div');
+                stepsDiv.className = 'result-card-steps';
+                rows.forEach(row => {
+                    const rawExplanation = row.explanation_html || row.explanation_text || '해설 내용이 없습니다.';
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'result-card-step' + (row.step_id ? ' tooltip-trigger' : '');
+                    if (row.step_id) {
+                        stepDiv.setAttribute('data-tooltip', encodeURIComponent(rawExplanation));
+                        stepDiv.setAttribute('data-tooltip-wide', 'true');
+                    }
+                    const numSpan = document.createElement('span');
+                    numSpan.className = 'result-card-step-num';
+                    numSpan.textContent = row.step_number ? row.step_number : '';
+                    stepDiv.appendChild(numSpan);
+                    // 링크 아이콘 (유사도 검색)
+                    if (row.step_id) {
+                        const linkSpan = document.createElement('span');
+                        linkSpan.className = 'result-card-step-link step-title-clickable';
+                        linkSpan.dataset.stepId = row.step_id;
+                        linkSpan.dataset.stepTitle = encodeURIComponent(row.step_title || row.trigger_text || '');
+                        linkSpan.dataset.conceptId = row.action_concept_id || '';
+                        linkSpan.innerHTML = linkSvg;
+                        linkSpan.title = '유사 스텝 검색';
+                        stepDiv.appendChild(linkSpan);
+                    }
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = row.trigger_text || '';
+                    stepDiv.appendChild(textSpan);
+                    stepsDiv.appendChild(stepDiv);
+                });
+                card.appendChild(stepsDiv);
+                cardContainer.appendChild(card);
+            });
+
+            if (window.renderMathInElement) {
+                renderMathInElement(cardContainer, {
+                    delimiters: [{ left: '$', right: '$', display: false }, { left: '$$', right: '$$', display: true }]
+                });
+            }
+        }
+
         // ── 공통 메인 렌더링 함수 ────────────────────────────────────
         function renderMainTable(groups, orderedProbIds, scoreMap, targetTableId = 'main-search-table', targetTbodyId = 'search-tbody') {
+            // 모바일에서는 카드 렌더링으로 분기
+            if (isTouchDevice()) {
+                renderMobileCards(groups, orderedProbIds, scoreMap, targetTableId);
+                return;
+            }
+
             const searchTable = document.getElementById(targetTableId);
             const searchTbody = document.getElementById(targetTbodyId);
             searchTbody.innerHTML = '';

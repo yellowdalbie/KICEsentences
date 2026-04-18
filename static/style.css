@@ -2880,6 +2880,119 @@ body.preview-open #global-actions-left {
         -webkit-backdrop-filter: none !important;
     }
 
+    /* ── 3번: 바텀시트 불투명도 ── */
+    #inspector-panel {
+        background: rgba(10, 14, 26, 0.97) !important;
+        border-top: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    #problem-cart {
+        background: rgba(10, 14, 26, 0.97) !important;
+        border-top: 1px solid rgba(6, 182, 212, 0.2) !important;
+    }
+
+    /* ── 2번: 검색결과 카드 뷰 ── */
+    .mobile-card-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .result-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        padding: 0.8rem 0.9rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .result-card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.55rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        flex-wrap: wrap;
+    }
+
+    .result-card-pid {
+        font-family: 'Courier New', monospace;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        padding: 0.25rem 0.65rem;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s, border-color 0.15s;
+    }
+
+    .result-card-pid:active {
+        background: rgba(6, 182, 212, 0.15);
+        border-color: var(--accent-cyan);
+    }
+
+    .result-card-pid.in-cart {
+        background: rgba(6, 182, 212, 0.12);
+        border-color: rgba(6, 182, 212, 0.4);
+        color: var(--accent-cyan);
+    }
+
+    .result-card-score {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-left: auto;
+    }
+
+    .result-card-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .result-card-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.45rem 0.3rem;
+        font-size: 0.84rem;
+        border-radius: 6px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        line-height: 1.45;
+        transition: background 0.12s;
+    }
+
+    .result-card-step:last-child {
+        border-bottom: none;
+    }
+
+    .result-card-step:active {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .result-card-step-num {
+        font-size: 0.72rem;
+        color: var(--accent-magenta);
+        min-width: 22px;
+        text-align: right;
+        flex-shrink: 0;
+        padding-top: 1px;
+        font-weight: 600;
+    }
+
+    .result-card-step-link {
+        color: var(--accent-magenta);
+        opacity: 0.6;
+        cursor: pointer;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+
     /* ── 인쇄 미리보기: 모바일에서 full-screen ── */
     #print-preview-header {
         position: fixed;
