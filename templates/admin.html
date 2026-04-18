@@ -520,7 +520,7 @@ async function openCartLogModal(email, eventType, title) {
     body.innerHTML = '';
     data.logs.forEach(log => {
       const pids = (log.problem_ids || '').split(',').map(s => s.trim()).filter(Boolean);
-      const previewUrl = '/?pids=' + encodeURIComponent(pids.join(','));
+      const previewUrl = '/app?pids=' + encodeURIComponent(pids.join(','));
 
       const row = document.createElement('div');
       row.className = 'modal-log-row';
