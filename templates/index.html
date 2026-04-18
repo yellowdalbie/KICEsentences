@@ -2327,6 +2327,28 @@ function tmCopy() {
     setTimeout(() => { btn.textContent = '복사'; }, 2000);
   });
 }
+
+// ── ?pids= URL 파라미터: 관리자 미리보기 링크용 ──────────────────────────
+(function() {
+  const pidsParam = new URLSearchParams(window.location.search).get('pids');
+  if (!pidsParam) return;
+  const pids = pidsParam.split(',').map(s => s.trim()).filter(Boolean);
+  if (pids.length === 0) return;
+  // cart.js 로드 후 실행 (DOMContentLoaded 이후)
+  window.addEventListener('load', () => {
+    // 장바구니에 문항 추가 (중복 없이)
+    pids.forEach(pid => {
+      if (typeof cartProblemIds !== 'undefined' && !cartProblemIds.has(pid)) {
+        cartProblemIds.add(pid);
+      }
+    });
+    if (typeof updateCartUI === 'function') updateCartUI();
+    // 인쇄 미리보기 자동 실행
+    setTimeout(() => {
+      if (typeof openPrintPreview === 'function') openPrintPreview();
+    }, 800);
+  });
+})();
 </script>
 
 </body>

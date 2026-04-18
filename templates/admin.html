@@ -349,17 +349,57 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 
 <!-- ⑦ 가입 사용자 -->
 <h2>가입된 사용자 ({{ stats.subscribers }}명)</h2>
-<div class="section-box">
-  <div class="email-list" id="email-list">
-  {% for row in emails %}
-    <div class="email-row">
-      <span class="email-addr">{{ row.email }}</span>
-      {% if row.is_paid %}<span class="badge badge-paid">PAID</span>{% endif %}
-      <span class="email-meta">{{ row.created_at[:16] if row.created_at else '' }}</span>
-    </div>
-  {% endfor %}
+<div class="section-box" style="overflow-x:auto;">
+  <table id="user-table" style="min-width:900px;">
+    <thead>
+      <tr>
+        <th>이메일</th>
+        <th>인증</th>
+        <th>가입일</th>
+        <th>최근 접속</th>
+        <th title="개념유사도">개념</th>
+        <th title="기출표현">표현</th>
+        <th title="문항번호">번호</th>
+        <th title="성취기준">성취</th>
+        <th>미리보기</th>
+        <th>PDF저장</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in emails %}
+    <tr>
+      <td style="color:var(--cyan); white-space:nowrap;">
+        {{ row.email }}
+        {% if row.is_paid %}<span class="badge badge-paid" style="margin-left:4px;">PAID</span>{% endif %}
+      </td>
+      <td style="text-align:center;">
+        {% if row.is_verified %}<span style="color:var(--green);">✓</span>{% else %}<span style="color:var(--red);">✗</span>{% endif %}
+      </td>
+      <td style="font-size:0.78rem; color:var(--muted); white-space:nowrap;">{{ row.created_at[:10] if row.created_at else '-' }}</td>
+      <td style="font-size:0.78rem; color:var(--muted); white-space:nowrap;">{{ row.last_login[:16] if row.last_login else '-' }}</td>
+      <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_concept else 'var(--muted)' }};">{{ row.search_concept or '-' }}</td>
+      <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_expression else 'var(--muted)' }};">{{ row.search_expression or '-' }}</td>
+      <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_probid else 'var(--muted)' }};">{{ row.search_probid or '-' }}</td>
+      <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_unit else 'var(--muted)' }};">{{ row.search_unit or '-' }}</td>
+      <td style="text-align:center;">
+        {% if row.print_preview %}
+          <button class="log-count-btn" onclick="openCartLogModal('{{ row.email }}','open_preview','미리보기 기록')">{{ row.print_preview }}</button>
+        {% else %}-{% endif %}
+      </td>
+      <td style="text-align:center;">
+        {% if row.save_pdf %}
+          <button class="log-count-btn" style="color:var(--green);" onclick="openCartLogModal('{{ row.email }}','save_pdf','PDF 저장 기록')">{{ row.save_pdf }}</button>
+        {% else %}-{% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="10" style="text-align:center; color:var(--muted); padding:1rem;">가입된 사용자가 없습니다.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div style="margin-top:0.8rem;">
+    <button class="copy-btn" onclick="copyEmails()">이메일 목록 복사</button>
   </div>
-  <button class="copy-btn" onclick="copyEmails()">이메일 목록 복사</button>
 </div>
 
 <!-- ⑧ 로그인 기록 -->
@@ -385,14 +425,59 @@ tr:hover td { background:rgba(255,255,255,0.03); }
   </table>
 </div>
 
+<!-- 카트 로그 상세 팝업 -->
+<div id="cart-log-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:14px; width:min(720px,95vw); max-height:80vh; display:flex; flex-direction:column; overflow:hidden;">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem 1.2rem; border-bottom:1px solid rgba(255,255,255,0.1);">
+      <span id="modal-title" style="font-weight:700; color:var(--cyan); font-size:0.95rem;"></span>
+      <button onclick="closeCartLogModal()" style="background:none; border:none; color:var(--muted); font-size:1.4rem; cursor:pointer; line-height:1;">×</button>
+    </div>
+    <div id="modal-body" style="overflow-y:auto; padding:1rem 1.2rem; flex:1;">
+      <p style="color:var(--muted);">불러오는 중...</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.log-count-btn {
+  background: rgba(6,182,212,0.12);
+  border: 1px solid rgba(6,182,212,0.3);
+  color: var(--cyan);
+  border-radius: 6px;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.log-count-btn:hover { background: rgba(6,182,212,0.25); }
+.modal-log-row {
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 0.7rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.modal-log-row:last-child { border-bottom: none; }
+.modal-pid-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 0.2rem; }
+.modal-pid-tag {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+</style>
+
 <script>
 async function deleteError(problem_id) {
   if (!confirm(problem_id + " 오류 신고를 해제(삭제)하시겠습니까?")) return;
-  const key = new URLSearchParams(window.location.search).get('key');
   const res = await fetch('/api/errors/delete', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ key, problem_id })
+      body: JSON.stringify({ problem_id })
   });
   if (res.ok) {
       document.getElementById('err-' + problem_id).remove();
@@ -403,11 +488,10 @@ async function deleteError(problem_id) {
 
 async function deleteAllErrors() {
   if (!confirm("모든 오류 신고를 일괄 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
-  const key = new URLSearchParams(window.location.search).get('key');
   const res = await fetch('/api/errors/delete_all', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ key })
+      body: JSON.stringify({})
   });
   if (res.ok) { location.reload(); }
   else { alert("삭제 권한이 없거나 실패했습니다."); }
@@ -418,17 +502,55 @@ function copyEmails() {
   navigator.clipboard.writeText(list.join('\n')).then(() => alert('복사됨: ' + list.length + '개'));
 }
 
-function filterByUser(email) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('email', email);
-  window.location.href = url.toString();
+async function openCartLogModal(email, eventType, title) {
+  const modal = document.getElementById('cart-log-modal');
+  const body  = document.getElementById('modal-body');
+  const titleEl = document.getElementById('modal-title');
+  titleEl.textContent = `${email} — ${title}`;
+  body.innerHTML = '<p style="color:var(--muted);">불러오는 중...</p>';
+  modal.style.display = 'flex';
+
+  try {
+    const res = await fetch(`/api/admin/user_cart_logs?email=${encodeURIComponent(email)}&event_type=${encodeURIComponent(eventType)}`);
+    const data = await res.json();
+    if (!data.logs || data.logs.length === 0) {
+      body.innerHTML = '<p style="color:var(--muted);">기록이 없습니다.</p>';
+      return;
+    }
+    body.innerHTML = '';
+    data.logs.forEach(log => {
+      const pids = (log.problem_ids || '').split(',').map(s => s.trim()).filter(Boolean);
+      const previewUrl = '/?pids=' + encodeURIComponent(pids.join(','));
+
+      const row = document.createElement('div');
+      row.className = 'modal-log-row';
+      row.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+          <span style="font-size:0.78rem; color:var(--muted);">${(log.created_at || '').slice(0,16)}</span>
+          <span style="font-size:0.8rem; color:var(--text);">문항 ${log.problem_count}개</span>
+          <a href="${previewUrl}" target="_blank"
+             style="background:rgba(217,70,239,0.15); border:1px solid rgba(217,70,239,0.35);
+                    color:#e879f9; border-radius:6px; padding:2px 10px; font-size:0.78rem;
+                    text-decoration:none; white-space:nowrap; flex-shrink:0;">
+            미리보기 열기 ↗
+          </a>
+        </div>
+        <div class="modal-pid-tags">${pids.map(p => `<span class="modal-pid-tag">${p}</span>`).join('')}</div>
+      `;
+      body.appendChild(row);
+    });
+  } catch(e) {
+    body.innerHTML = `<p style="color:var(--red);">오류: ${e.message}</p>`;
+  }
 }
 
-function clearFilter() {
-  const url = new URL(window.location.href);
-  url.searchParams.delete('email');
-  window.location.href = url.toString();
+function closeCartLogModal() {
+  document.getElementById('cart-log-modal').style.display = 'none';
 }
+
+document.getElementById('cart-log-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeCartLogModal();
+});
 </script>
 </body>
 </html>

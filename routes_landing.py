@@ -282,6 +282,37 @@ def delete_all_errors():
     return jsonify({'status': 'ok'}), 200
 
 
+# ── 관리자: 사용자별 cart 로그 상세 조회 ──────────────────────
+@landing_bp.route('/api/admin/user_cart_logs')
+def admin_user_cart_logs():
+    if not _check_admin_session():
+        return jsonify({'error': 'Unauthorized'}), 401
+    email = request.args.get('email', '').strip()
+    event_type = request.args.get('event_type', '').strip()
+    if not email or not event_type:
+        return jsonify({'error': 'email and event_type required'}), 400
+    if not os.path.exists(MAIN_DB_FILE):
+        return jsonify({'logs': []})
+    conn = sqlite3.connect(MAIN_DB_FILE)
+    conn.row_factory = sqlite3.Row
+    if event_type == 'open_preview':
+        rows = conn.execute(
+            '''SELECT id, event_type, problem_count, problem_ids, created_at
+               FROM cart_logs WHERE user_email=? AND event_type IN ('open_preview','print_preview')
+               ORDER BY id DESC LIMIT 100''',
+            (email,)
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            '''SELECT id, event_type, problem_count, problem_ids, created_at
+               FROM cart_logs WHERE user_email=? AND event_type=?
+               ORDER BY id DESC LIMIT 100''',
+            (email, event_type)
+        ).fetchall()
+    conn.close()
+    return jsonify({'logs': [dict(r) for r in rows]})
+
+
 # ── 관리자 대시보드 ──────────────────────────────────────────
 @landing_bp.route('/admin')
 def admin():
@@ -323,10 +354,53 @@ def admin():
         try:
             main_conn = sqlite3.connect(MAIN_DB_FILE)
             main_conn.row_factory = sqlite3.Row
-            users = main_conn.execute(
-                'SELECT email, is_paid, created_at FROM users ORDER BY id DESC'
+            users_raw = main_conn.execute(
+                'SELECT id, email, is_paid, is_verified, created_at FROM users ORDER BY id DESC'
             ).fetchall()
-            total_users = len(users)
+            total_users = len(users_raw)
+
+            # 사용자별 최근 로그인
+            last_login_map = {r['email']: r['last_at'] for r in main_conn.execute(
+                'SELECT email, MAX(created_at) as last_at FROM login_logs GROUP BY email'
+            ).fetchall()}
+
+            # 사용자별 검색 유형별 횟수
+            search_counts = {}
+            for r in main_conn.execute(
+                '''SELECT user_email, search_type, COUNT(*) as cnt
+                   FROM search_stats WHERE user_email IS NOT NULL AND user_email != ""
+                   GROUP BY user_email, search_type'''
+            ).fetchall():
+                search_counts.setdefault(r['user_email'], {})[r['search_type']] = r['cnt']
+
+            # 사용자별 cart 이벤트 횟수
+            cart_counts = {}
+            for r in main_conn.execute(
+                '''SELECT user_email, event_type, COUNT(*) as cnt
+                   FROM cart_logs WHERE user_email IS NOT NULL AND user_email != ""
+                   GROUP BY user_email, event_type'''
+            ).fetchall():
+                cart_counts.setdefault(r['user_email'], {})[r['event_type']] = r['cnt']
+
+            # 풍부한 사용자 목록 구성
+            users = []
+            for u in users_raw:
+                email = u['email']
+                sc = search_counts.get(email, {})
+                cc = cart_counts.get(email, {})
+                users.append({
+                    'email': email,
+                    'is_paid': u['is_paid'],
+                    'is_verified': u['is_verified'],
+                    'created_at': u['created_at'] or '',
+                    'last_login': last_login_map.get(email, ''),
+                    'search_concept':    sc.get('개념유사도', 0),
+                    'search_expression': sc.get('기출표현', 0),
+                    'search_probid':     sc.get('문항번호', 0),
+                    'search_unit':       sc.get('성취기준', 0),
+                    'print_preview':     cc.get('open_preview', 0),
+                    'save_pdf':          cc.get('save_pdf', 0),
+                })
             
             login_logs = main_conn.execute(
                 'SELECT email, ip, country, city, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
