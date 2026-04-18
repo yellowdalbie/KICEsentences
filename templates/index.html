@@ -1178,8 +1178,8 @@
                     unitsContainer.classList.toggle('collapsed');
                     subjTitle.querySelector('.obs-nav-toggle').classList.toggle('collapsed');
 
-                    // If opening the folder, auto-select the first unit
-                    if (isOpening) {
+                    // PC에서만 첫 단원 자동 선택 (모바일은 사용자가 직접 선택)
+                    if (isOpening && !isTouchDevice()) {
                         const firstUnit = unitsContainer.querySelector('.concept-unit-item');
                         if (firstUnit) {
                             firstUnit.click();
