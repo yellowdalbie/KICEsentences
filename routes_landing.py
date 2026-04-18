@@ -297,8 +297,8 @@ def admin():
     stats = {
         'total_visits':    db.execute('SELECT COUNT(*) FROM visits').fetchone()[0],
         'unique_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits').fetchone()[0],
-        'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at)=date('now')").fetchone()[0],
-        'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at)=date('now')").fetchone()[0],
+        'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours')").fetchone()[0],
+        'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours')").fetchone()[0],
         'subscribers':     0,
         'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
         'portal_visits':   db.execute('SELECT COUNT(*) FROM portal_logs').fetchone()[0],
@@ -462,7 +462,7 @@ def admin():
     ).fetchall()
 
     daily_stats = db.execute(
-        '''SELECT date(created_at) as day, COUNT(*) as visits,
+        '''SELECT date(created_at, '-6 hours') as day, COUNT(*) as visits,
                   COUNT(DISTINCT visitor_id) as uniq
            FROM visits GROUP BY day ORDER BY day DESC LIMIT 14'''
     ).fetchall()

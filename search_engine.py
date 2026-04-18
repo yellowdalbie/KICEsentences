@@ -391,28 +391,47 @@ class OfflineQueryEngine:
         """
         쿼리에 대한 전체 Step 코사인 유사도 배열을 반환합니다.
 
+        IDF 가중치: 적은 어휘에 매칭되는 구체적 토큰일수록 높은 가중치를 부여.
+          weight_i = Σ log(N / df_t)  for t in query_tokens if t ∈ term_i
+          (N = vocab 크기, df_t = 토큰 t를 포함하는 vocab term 수)
+
         반환값: np.ndarray shape=(n_steps,), dtype=float32
-          각 원소는 해당 Step 인덱스의 예측 유사도 (0~1).
-          어휘 매칭 실패 시 zeros 배열 반환.
         """
+        import math
         tokens = self._tokenize(query)
         if not tokens:
             return np.zeros(self.n_steps, dtype=np.float32)
 
-        # 어휘 매칭: 각 토큰이 어휘 문자열에 포함되는 개수 → 가중치
-        vocab_weights: dict[int, float] = {}
+        # 1) 각 토큰의 DF (몇 개 vocab term에 포함되는가) + term별 히트 목록을 한 번에 수집
+        token_df: dict[str, int] = {t: 0 for t in tokens}
+        term_hits: dict[int, list] = {}
         for i, term in enumerate(self.terms):
-            overlap = sum(1 for t in tokens if t in term)
-            if overlap > 0:
-                vocab_weights[i] = overlap
+            hits = [t for t in tokens if t in term]
+            if hits:
+                term_hits[i] = hits
+                for t in hits:
+                    token_df[t] += 1
+
+        if not term_hits:
+            return np.zeros(self.n_steps, dtype=np.float32)
+
+        # 2) IDF: log(N / df) — df가 클수록(광범위 토큰) 낮은 가중치
+        n_vocab = len(self.terms)
+        token_idf = {t: math.log(n_vocab / df) for t, df in token_df.items() if df > 0}
+
+        # 3) vocab term별 가중치 = 매칭 토큰들의 IDF 합
+        vocab_weights: dict[int, float] = {}
+        for i, hits in term_hits.items():
+            w = sum(token_idf.get(t, 0.0) for t in hits)
+            if w > 0:
+                vocab_weights[i] = w
 
         if not vocab_weights:
             return np.zeros(self.n_steps, dtype=np.float32)
 
-        # 가중 평균으로 Step 점수 집계
+        # 4) 정규화 후 Step 점수 집계
         total_weight = sum(vocab_weights.values())
         step_scores = np.zeros(self.n_steps, dtype=np.float32)
-
         for vocab_idx, weight in vocab_weights.items():
             w = weight / total_weight
             indices = self.top_k_indices[vocab_idx]  # (K,)

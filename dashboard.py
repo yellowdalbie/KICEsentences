@@ -330,7 +330,7 @@ def csrf_protect():
         return
     origin = request.headers.get('Origin', '')
     referer = request.headers.get('Referer', '')
-    host = request.host  # e.g. "158.180.90.73:5050" or "localhost:5050"
+    host = request.host  # e.g. "158.180.90.73:8181" or "localhost:8181"
     # Origin 또는 Referer 중 하나가 같은 호스트여야 함
     allowed = origin.endswith(host) or referer.startswith(f'http://{host}') or referer.startswith(f'https://{host}')
     # 로컬호스트는 항상 허용 (오프라인 패키지 등)
