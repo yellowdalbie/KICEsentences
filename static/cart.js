@@ -61,12 +61,13 @@ function hideCartThumbTooltip() {
     if (_cartThumbTooltipEl) _cartThumbTooltipEl.style.display = 'none';
 }
 
-// Toggle cart slide
-cartToggleBtn.addEventListener('click', () => {
-    problemCart.classList.toggle('open');
-    // 사이드바 닫힐 때 남아있는 썸네일 툴팁 제거
-    if (!problemCart.classList.contains('open')) hideCartThumbTooltip();
-});
+// Toggle cart slide (PC: 기존 사이드 토글 / 모바일: FAB가 대신 처리)
+if (cartToggleBtn) {
+    cartToggleBtn.addEventListener('click', () => {
+        problemCart.classList.toggle('open');
+        if (!problemCart.classList.contains('open')) hideCartThumbTooltip();
+    });
+}
 
 function updateCartUI() {
     // Update badge number
@@ -110,6 +111,11 @@ function updateCartUI() {
 
     // Refresh visually in tables if they are stamped
     refreshTableCartVisuals();
+
+    // 모바일 FAB 뱃지 동기화
+    if (typeof updateCartFabBadge === 'function') {
+        updateCartFabBadge(cartProblemIds.size);
+    }
 }
 
 function _doAddItem(strId) {
@@ -119,6 +125,10 @@ function _doAddItem(strId) {
     cartProblemIds.add(strId);
     if (cartProblemIds.size === 1 && !problemCart.classList.contains('open')) {
         problemCart.classList.add('open');
+        // 모바일 바텀시트 열릴 때 스크롤 잠금
+        if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+            document.body.style.overflow = 'hidden';
+        }
     }
     updateCartUI();
 }
@@ -1578,6 +1588,19 @@ function updateAuthNavUI() {
 
     // Clear existing contents
     appSection.innerHTML = '';
+
+    // 모바일 앱바 로그인 버튼 동기화
+    const mobileLoginBtn = document.getElementById('mobile-login-btn');
+    if (mobileLoginBtn) {
+        if (window.AUTH_STATE && window.AUTH_STATE.isLoggedIn) {
+            const name = window.AUTH_STATE.displayName || (window.AUTH_STATE.email || '').split('@')[0];
+            mobileLoginBtn.textContent = name;
+            mobileLoginBtn.onclick = () => openMyPage();
+        } else {
+            mobileLoginBtn.textContent = '로그인';
+            mobileLoginBtn.onclick = () => openAuthModal('login');
+        }
+    }
 
     if (window.AUTH_STATE.isLoggedIn) {
         const email = window.AUTH_STATE.email || '';

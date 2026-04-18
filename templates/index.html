@@ -14,6 +14,35 @@
 </head>
 
 <body>
+    <!-- ── 모바일 앱바 (pointer: coarse 기기에서만 표시) ── -->
+    <div class="mobile-appbar" id="mobile-appbar" style="display:none;">
+        <button class="mobile-appbar-tip-btn" onclick="openTipModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            팁
+        </button>
+        <span class="mobile-appbar-logo">LYNX</span>
+        {% if not offline_mode %}
+        <button class="mobile-appbar-login-btn" id="mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
+        {% else %}
+        <span style="width:60px;"></span>
+        {% endif %}
+    </div>
+
+    <!-- ── 모바일 FAB (pointer: coarse 기기에서만 표시) ── -->
+    <button id="cart-fab" style="display:none;" aria-label="장바구니 열기">
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span id="cart-fab-badge" style="display:none;">0</span>
+    </button>
+
+    <!-- ── 모바일 Inspector 패널 ── -->
+    <div id="inspector-panel">
+        <div id="inspector-panel-header">
+            <span id="inspector-panel-title"></span>
+            <button id="inspector-close-btn" onclick="closeInspector()" aria-label="닫기">✕</button>
+        </div>
+        <div id="inspector-panel-body" class="latex-font"></div>
+    </div>
+
     <div class="app-container">
         <!-- Top Navigation & Search -->
         <header class="top-nav-container">
@@ -210,7 +239,7 @@
             <section id="view-overview" class="view-section active">
                 <div style="display: flex; justify-content: center; margin-top: 1rem;">
                     <div class="chart-card glass" style="padding: 1.5rem; width: 100%; max-width: 900px;">
-                        <div
+                        <div class="stats-grid"
                             style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
                             <div
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
@@ -318,8 +347,7 @@
                             color: var(--accent-magenta); border-radius: 6px; width: 26px; height: 26px;
                             cursor: pointer; display: flex; align-items: center; justify-content: center;
                             transition: all 0.15s; flex-shrink: 0;
-                        " onmouseover="this.style.background='rgba(217,70,239,0.25)'"
-                            onmouseout="this.style.background='rgba(217,70,239,0.12)'" title="이전 검색">
+                        " title="이전 검색">
                             <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5"
                                 fill="none" stroke-linecap="round">
                                 <polyline points="15 18 9 12 15 6" />
@@ -335,8 +363,7 @@
                             color: var(--accent-magenta); border-radius: 6px; width: 26px; height: 26px;
                             cursor: pointer; display: flex; align-items: center; justify-content: center;
                             transition: all 0.15s; flex-shrink: 0;
-                        " onmouseover="this.style.background='rgba(217,70,239,0.25)'"
-                            onmouseout="this.style.background='rgba(217,70,239,0.12)'" title="다음 검색">
+                        " title="다음 검색">
                             <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2.5"
                                 fill="none" stroke-linecap="round">
                                 <polyline points="9 18 15 12 9 6" />
@@ -420,8 +447,7 @@
                     letter-spacing: 0.04em;
                     cursor: pointer;
                     transition: all 0.2s;
-                " onmouseover="this.style.background='linear-gradient(90deg,rgba(217,70,239,0.4),rgba(6,182,212,0.4))'"
-                    onmouseout="this.style.background='linear-gradient(90deg,rgba(217,70,239,0.2),rgba(6,182,212,0.2))'">
+                ">
                     미리보기 / 인쇄
                 </button>
                 <!-- ⋮ kebab menu -->
@@ -450,8 +476,7 @@
                             background: none; border: none; text-align: left;
                             color: var(--accent-cyan); font-size: 0.83rem; cursor: pointer;
                             transition: background 0.15s;
-                        " onmouseover="this.style.background='rgba(6,182,212,0.1)'"
-                            onmouseout="this.style.background='none'">
+                        ">
                             🔗 더블 — 유사 문항 자동 추가
                         </button>
                         <div style="height: 1px; background: rgba(255,255,255,0.07); margin: 0 8px;"></div>
@@ -460,8 +485,7 @@
                             background: none; border: none; text-align: left;
                             color: #f87171; font-size: 0.83rem; cursor: pointer;
                             transition: background 0.15s;
-                        " onmouseover="this.style.background='rgba(239,68,68,0.1)'"
-                            onmouseout="this.style.background='none'">
+                        ">
                             🗑 전체 비우기
                         </button>
                     </div>
@@ -561,6 +585,125 @@
             viewSections.forEach(sec => {
                 sec.classList.remove('active');
                 if (sec.id === 'view-' + viewName) sec.classList.add('active');
+            });
+            if (viewName === 'concepts') initMobileSplitTabs();
+        }
+
+        // ══════════════════════════════════════════════════════
+        // 모바일 UX 헬퍼
+        // ══════════════════════════════════════════════════════
+        const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches;
+
+        // ── Step A: 앱바 표시 (touch 기기만) ──
+        (function initMobileAppbar() {
+            if (!isTouchDevice()) return;
+            document.getElementById('mobile-appbar').style.display = 'flex';
+            document.getElementById('cart-fab').style.display = 'flex';
+        })();
+
+        // ── Step C: Inspector Mode ──
+        function openInspector(content, title) {
+            const panel = document.getElementById('inspector-panel');
+            const body  = document.getElementById('inspector-panel-body');
+            const titleEl = document.getElementById('inspector-panel-title');
+            panel.style.display = 'block';
+            body.innerHTML = content;
+            if (titleEl) titleEl.textContent = title || '';
+            requestAnimationFrame(() => panel.classList.add('open'));
+            if (window.renderMathInElement) {
+                renderMathInElement(body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ]
+                });
+            }
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeInspector() {
+            const panel = document.getElementById('inspector-panel');
+            panel.classList.remove('open');
+            document.body.style.overflow = '';
+            setTimeout(() => { panel.style.display = 'none'; }, 300);
+        }
+
+        // 검색결과 탭 이벤트: 터치 기기에서 tooltip-trigger 탭 → Inspector 열기
+        document.addEventListener('click', (e) => {
+            if (!isTouchDevice()) return;
+            const trigger = e.target.closest('.tooltip-trigger');
+            if (!trigger) return;
+            const content = decodeURIComponent(trigger.getAttribute('data-tooltip') || '');
+            if (!content) return;
+            e.preventDefault();
+            e.stopPropagation();
+            // 문항ID 셀인 경우 타이틀에 문항 코드 표시
+            const probId = trigger.getAttribute('data-prob-id');
+            const title  = probId ? `문항 ${probId} — 탭하면 장바구니에 담깁니다` : '';
+            openInspector(content, title);
+        }, true);
+
+        // ── Step D: 장바구니 FAB ──
+        function updateCartFabBadge(count) {
+            const badge = document.getElementById('cart-fab-badge');
+            if (!badge) return;
+            if (count > 0) {
+                badge.style.display = 'flex';
+                badge.textContent = count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        document.getElementById('cart-fab').addEventListener('click', () => {
+            if (document.getElementById('inspector-panel').classList.contains('open')) {
+                closeInspector();
+            }
+            const cart = document.getElementById('problem-cart');
+            const isOpen = cart.classList.contains('open');
+            if (isOpen) {
+                cart.classList.remove('open');
+                document.body.style.overflow = '';
+            } else {
+                cart.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+
+        // ── Step E: 성취기준 split-pane 탭 전환 ──
+        function initMobileSplitTabs() {
+            if (!isTouchDevice()) return;
+            const layout = document.querySelector('.split-pane-layout');
+            if (!layout || layout.querySelector('.mobile-split-tabs')) return;
+            const panes = layout.querySelectorAll('.pane-box');
+            if (panes.length < 2) return;
+
+            const tabBar = document.createElement('div');
+            tabBar.className = 'mobile-split-tabs';
+            tabBar.innerHTML = `
+                <button class="mobile-split-tab active" data-pane="0">탐색</button>
+                <button class="mobile-split-tab" data-pane="1">결과</button>
+            `;
+            layout.insertBefore(tabBar, panes[0]);
+
+            function switchSplitTab(idx) {
+                tabBar.querySelectorAll('.mobile-split-tab').forEach((t, i) => {
+                    t.classList.toggle('active', i === idx);
+                });
+                panes.forEach((p, i) => p.classList.toggle('mobile-hidden', i !== idx));
+            }
+
+            tabBar.addEventListener('click', (e) => {
+                const tab = e.target.closest('.mobile-split-tab');
+                if (!tab) return;
+                switchSplitTab(parseInt(tab.dataset.pane));
+            });
+
+            // 트리 항목 클릭 시 자동으로 결과 탭 전환
+            layout.addEventListener('click', (e) => {
+                if (e.target.closest('.obs-file-leaf, .obs-nav-item')) {
+                    setTimeout(() => switchSplitTab(1), 100);
+                }
             });
         }
 
@@ -1179,8 +1322,8 @@
                                         data-step-id="${row.step_id}"
                                         data-step-title="${encodeURIComponent(row.step_title || safeTrigger)}"
                                         data-concept-id="${row.action_concept_id || ''}"
-                                        style="opacity:0.6;cursor:pointer;color:var(--accent-magenta);"
-                                        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">${linkSvg}</span>` : ''}
+                                        style="opacity:0.6;cursor:pointer;color:var(--accent-magenta);transition:opacity 0.15s;"
+                                        >${linkSvg}</span>` : ''}
                                 </span>
                                 <span>${row.step_number ? `[${row.step_number}단계] ` : ''}${escapeHtml(safeTrigger)}</span>
                             </div>
@@ -1590,7 +1733,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     KICE Lynx 활용 가이드
                 </h2>
-                <button onclick="closeTipModal()" style="background:none; border:none; color:#94a3b8; font-size:2rem; cursor:pointer; line-height:1; transition:color 0.2s;" onmouseover="this.style.color='#f8fafc'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+                <button onclick="closeTipModal()" class="tip-modal-close-btn" style="background:none; border:none; color:#94a3b8; font-size:2rem; cursor:pointer; line-height:1; transition:color 0.2s;">&times;</button>
             </div>
             <!-- Scrollable Body -->
             <div style="padding:1.5rem 1.8rem 2rem; overflow-y:auto; flex:1;">
