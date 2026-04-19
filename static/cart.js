@@ -1575,7 +1575,8 @@ function updateVerifyBanner() {
         return;
     }
 
-    document.body.prepend(banner);
+    const stickyBars = document.getElementById('sticky-bars') || document.body;
+    stickyBars.prepend(banner);
 }
 
 function updateAuthNavUI() {

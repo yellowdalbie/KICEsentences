@@ -14,18 +14,21 @@
 </head>
 
 <body>
-    <!-- ── 모바일 앱바 (pointer: coarse 기기에서만 표시) ── -->
-    <div class="mobile-appbar" id="mobile-appbar" style="display:none;">
-        <button class="mobile-appbar-tip-btn" onclick="openTipModal()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            팁
-        </button>
-        <span class="mobile-appbar-logo">LYNX</span>
-        {% if not offline_mode %}
-        <button class="mobile-appbar-login-btn" id="mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
-        {% else %}
-        <span style="width:60px;"></span>
-        {% endif %}
+    <!-- ── 상단 고정 래퍼 (배너 + 모바일 앱바) ── -->
+    <div id="sticky-bars">
+        <!-- verify-banner가 JS로 여기에 prepend됨 -->
+        <div class="mobile-appbar" id="mobile-appbar" style="display:none;">
+            <button class="mobile-appbar-tip-btn" onclick="openTipModal()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                팁
+            </button>
+            <span class="mobile-appbar-logo">LYNX</span>
+            {% if not offline_mode %}
+            <button class="mobile-appbar-login-btn" id="mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
+            {% else %}
+            <span style="width:60px;"></span>
+            {% endif %}
+        </div>
     </div>
 
     <!-- ── 모바일 FAB (pointer: coarse 기기에서만 표시) ── -->
