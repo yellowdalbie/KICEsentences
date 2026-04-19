@@ -1545,9 +1545,15 @@ async function initAuth() {
     updateVerifyBanner();
 }
 
+function _setBannerHeightVar() {
+    const banner = document.getElementById('verify-banner');
+    document.documentElement.style.setProperty('--verify-banner-h', banner ? banner.offsetHeight + 'px' : '0px');
+}
+
 window.closeVerifyBanner = function() {
     const banner = document.getElementById('verify-banner');
     if (banner) banner.remove();
+    _setBannerHeightVar();
 };
 
 function updateVerifyBanner() {
@@ -1577,6 +1583,7 @@ function updateVerifyBanner() {
 
     const stickyBars = document.getElementById('sticky-bars') || document.body;
     stickyBars.prepend(banner);
+    requestAnimationFrame(_setBannerHeightVar);
 }
 
 function updateAuthNavUI() {

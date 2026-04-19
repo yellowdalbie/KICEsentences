@@ -62,7 +62,7 @@
                 <div class="brand-subtitle" style="margin-top: 5px;">Linking Yields & Nodes of eXams</div>
             </div>
 
-            <div id="global-actions-left" style="position: fixed; left: 1.5rem; top: 1.2rem; z-index: 9999; display: flex; align-items: center; gap: 0.8rem;">
+            <div id="global-actions-left" style="position: fixed; left: 1.5rem; z-index: 9999; display: flex; align-items: center; gap: 0.8rem;">
                 <button class="tip-toggle-btn" onclick="openTipModal()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     활용 팁
@@ -73,7 +73,7 @@
             </div>
 
             {% if not offline_mode %}
-            <div id="auth-app-section" style="position: fixed; right: 1.5rem; top: 1.2rem; display: flex; align-items: center; gap: 0.8rem; z-index: 9999;">
+            <div id="auth-app-section" style="position: fixed; right: 1.5rem; display: flex; align-items: center; gap: 0.8rem; z-index: 9999;">
                 <button onclick="openAuthModal('login')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; backdrop-filter: blur(4px);">로그인</button>
                 <button onclick="openAuthModal('register')" style="background: var(--accent-cyan); border: none; color: #030712; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 700; box-shadow: 0 4px 12px rgba(6,182,212,0.3);">회원가입</button>
             </div>
