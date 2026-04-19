@@ -1542,6 +1542,22 @@ async function initAuth() {
         window.AUTH_STATE = { isLoggedIn: false, email: '', isPaid: false, displayName: '' };
     }
     updateAuthNavUI();
+    updateVerifyBanner();
+}
+
+function updateVerifyBanner() {
+    const existing = document.getElementById('verify-banner');
+    if (existing) existing.remove();
+    if (!window.AUTH_STATE.isLoggedIn || window.AUTH_STATE.isVerified || window.AUTH_STATE.isAdmin) return;
+    const email = window.AUTH_STATE.email;
+    const banner = document.createElement('div');
+    banner.id = 'verify-banner';
+    banner.innerHTML = `
+      <span class="verify-banner-msg">이메일 인증을 완료하면 모든 기능을 사용할 수 있습니다. 메일이 오지 않았다면 스팸함을 확인해주세요.</span>
+      <a href="javascript:void(0)" class="verify-banner-link" onclick="resendVerifyEmail('${email.replace(/'/g, "\\'")}')">인증 메일 재발송</a>
+      <button class="verify-banner-close" onclick="document.getElementById('verify-banner').remove()" title="닫기">✕</button>
+    `;
+    document.body.prepend(banner);
 }
 
 function updateAuthNavUI() {
@@ -1715,14 +1731,14 @@ window.submitForgotPassword = async function() {
 function handleVerifyParams() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('verified') === '1') {
-        history.replaceState(null, '', '/');
-        initAuth().then(() => showCustomAlert('\uc774\uba54\uc77c \uc778\uc99d\uc774 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \ub85c\uadf8\uc778 \uc0c1\ud0dc\uac00 \uc720\uc9c0\ub429\ub2c8\ub2e4.'));
+        history.replaceState(null, '', '/app');
+        initAuth().then(() => showCustomAlert('이메일 인증이 완료되었습니다.'));
     } else if (params.get('verify_error') === 'invalid') {
-        history.replaceState(null, '', '/');
-        showCustomAlert('\uc720\ud6a8\ud558\uc9c0 \uc54a\uc740 \uc778\uc99d \ub9c1\ud06c\uc785\ub2c8\ub2e4.');
+        history.replaceState(null, '', '/app');
+        showCustomAlert('유효하지 않은 인증 링크입니다.');
     } else if (params.get('verify_error') === 'expired') {
-        history.replaceState(null, '', '/');
-        showCustomAlert('\uc778\uc99d \ub9c1\ud06c\uac00 \ub9cc\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \ub9c8\uc774\ud398\uc774\uc9c0\uc5d0\uc11c \uc7ac\ubc1c\uc1a1\ud574\uc8fc\uc138\uc694.');
+        history.replaceState(null, '', '/app');
+        showCustomAlert('인증 링크가 만료되었습니다. 마이페이지에서 재발송해주세요.');
     }
 }
 

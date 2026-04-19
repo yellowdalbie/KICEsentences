@@ -370,10 +370,12 @@ def auth_register():
         return jsonify({'error': '이미 가입된 이메일 계정입니다.'}), 400
         
     hashed_pw = generate_password_hash(pw)
+    verify_token = secrets.token_urlsafe(32)
+    verify_exp = (datetime.now() + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
     conn.execute(
-        'INSERT INTO users (email, password_hash, is_paid, is_verified, created_at) '
-        'VALUES (?, ?, 0, 1, datetime("now", "+9 hours"))',
-        (email, hashed_pw)
+        'INSERT INTO users (email, password_hash, is_paid, is_verified, verify_token, verify_token_exp, created_at) '
+        'VALUES (?, ?, 0, 0, ?, ?, datetime("now", "+9 hours"))',
+        (email, hashed_pw, verify_token, verify_exp)
     )
     conn.commit()
 
@@ -385,7 +387,11 @@ def auth_register():
     session['is_paid'] = user['is_paid']
     session.permanent = True
 
-    return jsonify({'status': 'ok', 'email': email, 'is_paid': False}), 200
+    base_url = BASE_URL or request.host_url.rstrip('/')
+    verify_url = f'{base_url}/verify-email?token={verify_token}'
+    threading.Thread(target=send_verify_email, args=(email, verify_url), daemon=True).start()
+
+    return jsonify({'status': 'ok', 'email': email, 'is_paid': False, 'isVerified': False}), 200
 
 @app.route('/api/auth/login', methods=['POST'])
 def auth_login():
@@ -509,31 +515,30 @@ def auth_me():
 def verify_email_route():
     token = request.args.get('token', '').strip()
     if not token:
-        return redirect('/?verify_error=invalid')
+        return redirect('/app?verify_error=invalid')
     conn = get_user_db()
     user = conn.execute(
         'SELECT id, email, verify_token_exp FROM users WHERE verify_token=? AND is_verified=0', (token,)
     ).fetchone()
     if not user:
         conn.close()
-        return redirect('/?verify_error=invalid')
+        return redirect('/app?verify_error=invalid')
     try:
         exp = datetime.strptime(user['verify_token_exp'], '%Y-%m-%d %H:%M:%S')
         if exp < datetime.now():
             conn.close()
-            return redirect('/?verify_error=expired')
+            return redirect('/app?verify_error=expired')
     except Exception:
         pass
     conn.execute('UPDATE users SET is_verified=1, verify_token=NULL, verify_token_exp=NULL WHERE id=?', (user['id'],))
     conn.commit()
-    # 자동 로그인
     paid_row = conn.execute('SELECT is_paid FROM users WHERE id=?', (user['id'],)).fetchone()
     conn.close()
     session['user_id'] = user['id']
     session['email'] = user['email']
     session['is_paid'] = paid_row['is_paid'] if paid_row else 0
     session.permanent = True
-    return redirect('/?verified=1')
+    return redirect('/app?verified=1')
 
 
 @app.route('/api/auth/resend_verify', methods=['POST'])
