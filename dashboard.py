@@ -51,6 +51,7 @@ OFFLINE_MODE = os.environ.get('OFFLINE_MODE', '0') == '1'
 
 # 관리자 이메일 (이 이메일로 로그인 시 관리자 권한 부여)
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'yellowsouls@naver.com').strip().lower()
+BASE_URL = os.environ.get('BASE_URL', '').rstrip('/')
 
 # ── 벡터 인덱스 및 오프라인 쿼리 엔진 로드 ──────────────────────
 _vec_data = None
@@ -551,7 +552,7 @@ def auth_resend_verify():
     conn.execute('UPDATE users SET verify_token=?, verify_token_exp=? WHERE id=?', (token, exp, user['id']))
     conn.commit()
     conn.close()
-    base_url = request.host_url.rstrip('/')
+    base_url = BASE_URL or request.host_url.rstrip('/')
     verify_url = f'{base_url}/verify-email?token={token}'
     threading.Thread(target=send_verify_email, args=(email, verify_url), daemon=True).start()
     return jsonify({'status': 'ok'}), 200
@@ -573,7 +574,7 @@ def auth_forgot_password():
     conn.execute('UPDATE users SET reset_token=?, reset_token_exp=? WHERE id=?', (token, exp, user['id']))
     conn.commit()
     conn.close()
-    base_url = request.host_url.rstrip('/')
+    base_url = BASE_URL or request.host_url.rstrip('/')
     reset_url = f'{base_url}/reset-password?token={token}'
     threading.Thread(target=send_reset_email, args=(email, reset_url), daemon=True).start()
     return jsonify({'status': 'ok'}), 200
