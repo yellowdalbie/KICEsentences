@@ -3103,11 +3103,6 @@ body.preview-open #global-actions-left {
 
 /* ── 이메일 인증 배너 ────────────────────────────────────────── */
 #verify-banner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 9999;
     display: flex;
     align-items: center;
     gap: 0.8rem;
@@ -3116,6 +3111,8 @@ body.preview-open #global-actions-left {
     border-bottom: 1px solid rgba(245,158,11,0.35);
     font-size: 0.82rem;
     flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
 }
 .verify-banner-msg {
     flex: 1;
