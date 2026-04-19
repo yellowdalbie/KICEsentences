@@ -213,6 +213,7 @@ def get_user_db():
         ('verify_token_exp','DATETIME'),
         ('reset_token',     'TEXT'),
         ('reset_token_exp', 'DATETIME'),
+        ('last_seen_at',    'DATETIME'),
     ]:
         try:
             conn.execute(f'ALTER TABLE users ADD COLUMN {_col} {_defn}')
@@ -492,9 +493,11 @@ def auth_delete_account():
 @app.route('/api/auth/me', methods=['GET'])
 def auth_me():
     if 'user_id' in session:
-        # DB에서 최신 is_paid 상태 조회
         conn = get_user_db()
         user = conn.execute('SELECT is_paid, is_verified, display_name FROM users WHERE id=?', (session['user_id'],)).fetchone()
+        if user:
+            conn.execute("UPDATE users SET last_seen_at=datetime('now', '+9 hours') WHERE id=?", (session['user_id'],))
+            conn.commit()
         conn.close()
         if user:
             session['is_paid'] = user['is_paid']  # 세션 캐시 갱신

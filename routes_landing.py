@@ -355,14 +355,9 @@ def admin():
             main_conn = sqlite3.connect(MAIN_DB_FILE)
             main_conn.row_factory = sqlite3.Row
             users_raw = main_conn.execute(
-                'SELECT id, email, is_paid, is_verified, created_at FROM users ORDER BY id DESC'
+                'SELECT id, email, is_paid, is_verified, created_at, last_seen_at FROM users ORDER BY id DESC'
             ).fetchall()
             total_users = len(users_raw)
-
-            # 사용자별 최근 로그인
-            last_login_map = {r['email']: r['last_at'] for r in main_conn.execute(
-                'SELECT email, MAX(created_at) as last_at FROM login_logs GROUP BY email'
-            ).fetchall()}
 
             # 사용자별 검색 유형별 횟수
             search_counts = {}
@@ -393,7 +388,7 @@ def admin():
                     'is_paid': u['is_paid'],
                     'is_verified': u['is_verified'],
                     'created_at': u['created_at'] or '',
-                    'last_login': last_login_map.get(email, ''),
+                    'last_login': u['last_seen_at'] or '',
                     'search_concept':    sc.get('개념유사도', 0),
                     'search_expression': sc.get('기출표현', 0),
                     'search_probid':     sc.get('문항번호', 0),
