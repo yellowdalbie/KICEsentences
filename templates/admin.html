@@ -352,18 +352,18 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 <div class="section-box" style="overflow-x:auto;">
   <table id="user-table" style="min-width:900px;">
     <thead>
-      <tr>
-        <th>이메일</th>
-        <th>인증</th>
-        <th>가입일</th>
-        <th>최근 접속</th>
-        <th title="개념유사도">개념</th>
-        <th title="기출표현">표현</th>
-        <th title="문항번호">번호</th>
-        <th title="성취기준">성취</th>
-        <th title="일별 방문횟수">방문일수</th>
-        <th>미리보기</th>
-        <th>PDF저장</th>
+      <tr id="user-table-header">
+        <th data-col="0" data-type="str">이메일 <span class="sort-arrow"></span></th>
+        <th data-col="1" data-type="str">인증 <span class="sort-arrow"></span></th>
+        <th data-col="2" data-type="str">가입일 <span class="sort-arrow"></span></th>
+        <th data-col="3" data-type="str">최근 접속 <span class="sort-arrow"></span></th>
+        <th data-col="4" data-type="num" title="개념유사도">개념 <span class="sort-arrow"></span></th>
+        <th data-col="5" data-type="num" title="기출표현">표현 <span class="sort-arrow"></span></th>
+        <th data-col="6" data-type="num" title="문항번호">번호 <span class="sort-arrow"></span></th>
+        <th data-col="7" data-type="num" title="성취기준">성취 <span class="sort-arrow"></span></th>
+        <th data-col="8" data-type="num" title="일별 방문횟수">방문일수 <span class="sort-arrow"></span></th>
+        <th data-col="9" data-type="num">미리보기 <span class="sort-arrow"></span></th>
+        <th data-col="10" data-type="num">PDF저장 <span class="sort-arrow"></span></th>
       </tr>
     </thead>
     <tbody>
@@ -553,6 +553,59 @@ function closeCartLogModal() {
 document.getElementById('cart-log-modal').addEventListener('click', function(e) {
   if (e.target === this) closeCartLogModal();
 });
+
+// ── 사용자 테이블 정렬 ──────────────────────────────────────
+(function() {
+  let sortCol = -1, sortAsc = true;
+
+  function getCellVal(row, col, type) {
+    const cell = row.cells[col];
+    if (!cell) return '';
+    const txt = cell.innerText.trim();
+    if (type === 'num') return isNaN(txt) || txt === '-' ? -1 : parseFloat(txt);
+    return txt === '-' ? '' : txt;
+  }
+
+  function updateArrows(ths) {
+    ths.forEach((th, i) => {
+      const arrow = th.querySelector('.sort-arrow');
+      if (!arrow) return;
+      arrow.textContent = i === sortCol ? (sortAsc ? ' ▲' : ' ▼') : '';
+    });
+  }
+
+  const header = document.getElementById('user-table-header');
+  if (!header) return;
+  const ths = Array.from(header.querySelectorAll('th[data-col]'));
+
+  ths.forEach(th => {
+    th.style.cursor = 'pointer';
+    th.style.userSelect = 'none';
+    th.addEventListener('click', () => {
+      const col = parseInt(th.dataset.col);
+      const type = th.dataset.type || 'str';
+      if (sortCol === col) sortAsc = !sortAsc;
+      else { sortCol = col; sortAsc = true; }
+
+      const tbody = document.querySelector('#user-table tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.sort((a, b) => {
+        const va = getCellVal(a, col, type);
+        const vb = getCellVal(b, col, type);
+        if (va === vb) return 0;
+        if (type === 'num') return sortAsc ? va - vb : vb - va;
+        return sortAsc ? va.localeCompare(vb, 'ko') : vb.localeCompare(va, 'ko');
+      });
+      rows.forEach(r => tbody.appendChild(r));
+      updateArrows(ths);
+    });
+  });
+})();
 </script>
+
+<style>
+#user-table th[data-col]:hover { background: rgba(255,255,255,0.06); }
+.sort-arrow { color: var(--cyan); font-size: 0.75rem; }
+</style>
 </body>
 </html>
