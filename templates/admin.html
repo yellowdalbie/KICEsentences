@@ -361,6 +361,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
         <th title="기출표현">표현</th>
         <th title="문항번호">번호</th>
         <th title="성취기준">성취</th>
+        <th title="일별 방문횟수">방문일수</th>
         <th>미리보기</th>
         <th>PDF저장</th>
       </tr>
@@ -381,6 +382,7 @@ tr:hover td { background:rgba(255,255,255,0.03); }
       <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_expression else 'var(--muted)' }};">{{ row.search_expression or '-' }}</td>
       <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_probid else 'var(--muted)' }};">{{ row.search_probid or '-' }}</td>
       <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_unit else 'var(--muted)' }};">{{ row.search_unit or '-' }}</td>
+      <td style="text-align:center; color:{{ 'var(--cyan)' if row.visit_count else 'var(--muted)' }};">{{ row.visit_count or '-' }}</td>
       <td style="text-align:center;">
         {% if row.print_preview %}
           <button class="log-count-btn" onclick="openCartLogModal('{{ row.email }}','open_preview','미리보기 기록')">{{ row.print_preview }}</button>

@@ -355,7 +355,7 @@ def admin():
             main_conn = sqlite3.connect(MAIN_DB_FILE)
             main_conn.row_factory = sqlite3.Row
             users_raw = main_conn.execute(
-                'SELECT id, email, is_paid, is_verified, created_at, last_seen_at FROM users ORDER BY id DESC'
+                'SELECT id, email, is_paid, is_verified, created_at, last_seen_at, visit_count FROM users ORDER BY id DESC'
             ).fetchall()
             total_users = len(users_raw)
 
@@ -389,6 +389,7 @@ def admin():
                     'is_verified': u['is_verified'],
                     'created_at': u['created_at'] or '',
                     'last_login': u['last_seen_at'] or '',
+                    'visit_count': u['visit_count'] or 0,
                     'search_concept':    sc.get('개념유사도', 0),
                     'search_expression': sc.get('기출표현', 0),
                     'search_probid':     sc.get('문항번호', 0),

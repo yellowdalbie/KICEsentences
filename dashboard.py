@@ -214,6 +214,8 @@ def get_user_db():
         ('reset_token',     'TEXT'),
         ('reset_token_exp', 'DATETIME'),
         ('last_seen_at',    'DATETIME'),
+        ('last_visit_date', 'DATE'),
+        ('visit_count',     'INTEGER DEFAULT 0'),
     ]:
         try:
             conn.execute(f'ALTER TABLE users ADD COLUMN {_col} {_defn}')
@@ -494,9 +496,16 @@ def auth_delete_account():
 def auth_me():
     if 'user_id' in session:
         conn = get_user_db()
-        user = conn.execute('SELECT is_paid, is_verified, display_name FROM users WHERE id=?', (session['user_id'],)).fetchone()
+        user = conn.execute('SELECT is_paid, is_verified, display_name, last_visit_date FROM users WHERE id=?', (session['user_id'],)).fetchone()
         if user:
-            conn.execute("UPDATE users SET last_seen_at=datetime('now', '+9 hours') WHERE id=?", (session['user_id'],))
+            today = datetime.now().strftime('%Y-%m-%d')
+            if user['last_visit_date'] != today:
+                conn.execute(
+                    "UPDATE users SET last_seen_at=datetime('now','+9 hours'), last_visit_date=?, visit_count=COALESCE(visit_count,0)+1 WHERE id=?",
+                    (today, session['user_id'])
+                )
+            else:
+                conn.execute("UPDATE users SET last_seen_at=datetime('now','+9 hours') WHERE id=?", (session['user_id'],))
             conn.commit()
         conn.close()
         if user:
