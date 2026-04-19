@@ -1503,7 +1503,6 @@ async function submitAuth() {
         } else {
             closeAuthModal();
             await initAuth();
-            showCustomAlert(authMode === 'register' ? '가입이 완료되었습니다.' : '로그인되었습니다.');
         }
     } catch (e) {
         errorMsg.innerText = '서버 통신 실패';
