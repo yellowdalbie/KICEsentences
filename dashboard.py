@@ -36,6 +36,7 @@ app.register_blueprint(landing_bp)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 DB_FILE = os.path.join(BASE_DIR, 'kice_database.sqlite')
 USER_DB_FILE = os.path.join(BASE_DIR, 'kice_userdata.sqlite')
