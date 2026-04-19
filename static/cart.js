@@ -1553,15 +1553,28 @@ window.closeVerifyBanner = function() {
 function updateVerifyBanner() {
     const existing = document.getElementById('verify-banner');
     if (existing) existing.remove();
-    if (!window.AUTH_STATE.isLoggedIn || window.AUTH_STATE.isVerified || window.AUTH_STATE.isAdmin) return;
-    const email = window.AUTH_STATE.email;
+    if (window.AUTH_STATE.isAdmin) return;
+
     const banner = document.createElement('div');
     banner.id = 'verify-banner';
-    banner.innerHTML = `
-      <span class="verify-banner-msg">이메일 인증을 완료하면 모든 기능을 사용할 수 있습니다. 메일이 오지 않았다면 스팸함을 확인해주세요.</span>
-      <a href="javascript:void(0)" class="verify-banner-link" onclick="resendVerifyEmail('${email.replace(/'/g, "\\'")}')">인증 메일 재발송</a>
-      <button class="verify-banner-close" onclick="closeVerifyBanner()" title="닫기">✕</button>
-    `;
+
+    if (!window.AUTH_STATE.isLoggedIn) {
+        banner.innerHTML = `
+          <span class="verify-banner-msg">이메일 주소로 간편하게 무료 회원가입이 가능합니다. 회원이 되시고 원하는 문항을 모아서 출력해보세요.</span>
+          <a href="javascript:void(0)" class="verify-banner-link" onclick="window.openAuthModal('register')">무료 회원가입</a>
+          <button class="verify-banner-close" onclick="closeVerifyBanner()" title="닫기">✕</button>
+        `;
+    } else if (!window.AUTH_STATE.isVerified) {
+        const email = window.AUTH_STATE.email;
+        banner.innerHTML = `
+          <span class="verify-banner-msg">이메일 인증을 완료하면 모든 기능을 사용할 수 있습니다. 메일이 오지 않았다면 스팸함을 확인해주세요.</span>
+          <a href="javascript:void(0)" class="verify-banner-link" onclick="resendVerifyEmail('${email.replace(/'/g, "\\'")}')">인증 메일 재발송</a>
+          <button class="verify-banner-close" onclick="closeVerifyBanner()" title="닫기">✕</button>
+        `;
+    } else {
+        return;
+    }
+
     document.body.prepend(banner);
 }
 
