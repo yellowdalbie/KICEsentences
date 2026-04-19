@@ -564,13 +564,10 @@ def auth_forgot_password():
     if not email:
         return jsonify({'error': '이메일을 입력해주세요.'}), 400
     conn = get_user_db()
-    user = conn.execute('SELECT id, is_verified FROM users WHERE email=?', (email,)).fetchone()
+    user = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()
     if not user:
         conn.close()
         return jsonify({'status': 'ok'}), 200  # 이메일 존재 여부 노출 방지
-    if not user['is_verified']:
-        conn.close()
-        return jsonify({'error': '이메일 인증을 먼저 완료해주세요.', 'code': 'unverified', 'email': email}), 403
     token = secrets.token_urlsafe(32)
     exp = (datetime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
     conn.execute('UPDATE users SET reset_token=?, reset_token_exp=? WHERE id=?', (token, exp, user['id']))
