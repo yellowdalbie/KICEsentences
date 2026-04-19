@@ -1545,9 +1545,23 @@ async function initAuth() {
     updateVerifyBanner();
 }
 
+function _applyBannerMargin() {
+    const banner = document.getElementById('verify-banner');
+    const appContainer = document.querySelector('.app-container');
+    if (!appContainer) return;
+    appContainer.style.marginTop = banner ? banner.offsetHeight + 'px' : '';
+}
+
+function closeVerifyBanner() {
+    const banner = document.getElementById('verify-banner');
+    if (banner) banner.remove();
+    _applyBannerMargin();
+}
+
 function updateVerifyBanner() {
     const existing = document.getElementById('verify-banner');
     if (existing) existing.remove();
+    _applyBannerMargin();
     if (!window.AUTH_STATE.isLoggedIn || window.AUTH_STATE.isVerified || window.AUTH_STATE.isAdmin) return;
     const email = window.AUTH_STATE.email;
     const banner = document.createElement('div');
@@ -1555,9 +1569,10 @@ function updateVerifyBanner() {
     banner.innerHTML = `
       <span class="verify-banner-msg">이메일 인증을 완료하면 모든 기능을 사용할 수 있습니다. 메일이 오지 않았다면 스팸함을 확인해주세요.</span>
       <a href="javascript:void(0)" class="verify-banner-link" onclick="resendVerifyEmail('${email.replace(/'/g, "\\'")}')">인증 메일 재발송</a>
-      <button class="verify-banner-close" onclick="document.getElementById('verify-banner').remove()" title="닫기">✕</button>
+      <button class="verify-banner-close" onclick="closeVerifyBanner()" title="닫기">✕</button>
     `;
     document.body.prepend(banner);
+    requestAnimationFrame(_applyBannerMargin);
 }
 
 function updateAuthNavUI() {

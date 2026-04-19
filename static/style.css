@@ -3103,15 +3103,19 @@ body.preview-open #global-actions-left {
 
 /* ── 이메일 인증 배너 ────────────────────────────────────────── */
 #verify-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
     display: flex;
     align-items: center;
     gap: 0.8rem;
     padding: 0.6rem 1rem;
-    background: linear-gradient(90deg, rgba(245,158,11,0.15), rgba(245,158,11,0.08));
-    border-bottom: 1px solid rgba(245,158,11,0.35);
+    background: linear-gradient(90deg, rgba(245,158,11,0.18), rgba(245,158,11,0.1));
+    border-bottom: 1px solid rgba(245,158,11,0.4);
     font-size: 0.82rem;
     flex-wrap: wrap;
-    width: 100%;
     box-sizing: border-box;
 }
 .verify-banner-msg {
