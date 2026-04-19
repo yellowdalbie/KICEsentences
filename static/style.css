@@ -3110,8 +3110,14 @@ body.preview-open #global-actions-left {
 
 #global-actions-left,
 #auth-app-section {
-    top: calc(var(--verify-banner-h, 0px) + 1.2rem);
-    transition: top 0.15s ease;
+    top: 1.2rem;
+}
+
+@media (pointer: fine) {
+    #sticky-bars {
+        padding-top: 4.5rem;
+        position: relative;
+    }
 }
 
 #verify-banner {

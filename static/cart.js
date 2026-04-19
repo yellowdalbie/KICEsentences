@@ -1545,8 +1545,7 @@ async function initAuth() {
 }
 
 function _setBannerHeightVar() {
-    const banner = document.getElementById('verify-banner');
-    document.documentElement.style.setProperty('--verify-banner-h', banner ? banner.offsetHeight + 'px' : '0px');
+    // 모바일에서만 사용 (현재 미사용, 향후 확장용)
 }
 
 window.closeVerifyBanner = function() {
@@ -1581,7 +1580,7 @@ function updateVerifyBanner() {
     }
 
     const stickyBars = document.getElementById('sticky-bars') || document.body;
-    stickyBars.prepend(banner);
+    stickyBars.appendChild(banner);
     requestAnimationFrame(_setBannerHeightVar);
 }
 
