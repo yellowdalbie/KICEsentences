@@ -369,22 +369,22 @@ def auth_register():
         return jsonify({'error': '이미 가입된 이메일 계정입니다.'}), 400
         
     hashed_pw = generate_password_hash(pw)
-    verify_token = secrets.token_urlsafe(32)
-    verify_exp = (datetime.now() + timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
     conn.execute(
-        'INSERT INTO users (email, password_hash, is_paid, is_verified, verify_token, verify_token_exp, created_at) '
-        'VALUES (?, ?, 0, 0, ?, ?, datetime("now", "+9 hours"))',
-        (email, hashed_pw, verify_token, verify_exp)
+        'INSERT INTO users (email, password_hash, is_paid, is_verified, created_at) '
+        'VALUES (?, ?, 0, 1, datetime("now", "+9 hours"))',
+        (email, hashed_pw)
     )
     conn.commit()
+
+    user = conn.execute('SELECT id, email, is_paid FROM users WHERE email=?', (email,)).fetchone()
     conn.close()
 
-    # 인증 메일 비동기 발송
-    base_url = request.host_url.rstrip('/')
-    verify_url = f'{base_url}/verify-email?token={verify_token}'
-    threading.Thread(target=send_verify_email, args=(email, verify_url), daemon=True).start()
+    session['user_id'] = user['id']
+    session['email'] = user['email']
+    session['is_paid'] = user['is_paid']
+    session.permanent = True
 
-    return jsonify({'status': 'verify_required', 'email': email}), 200
+    return jsonify({'status': 'ok', 'email': email, 'is_paid': False}), 200
 
 @app.route('/api/auth/login', methods=['POST'])
 def auth_login():
@@ -405,9 +405,6 @@ def auth_login():
     if not user or not check_password_hash(user['password_hash'], pw):
         _record_login_fail(login_ip)
         return jsonify({'error': '이메일 또는 비밀번호가 일치하지 않습니다.'}), 401
-
-    if not user['is_verified'] and user['email'] != ADMIN_EMAIL:
-        return jsonify({'error': '이메일 인증이 필요합니다.', 'code': 'unverified', 'email': user['email']}), 403
 
     session['user_id'] = user['id']
     session['email'] = user['email']

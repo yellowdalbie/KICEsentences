@@ -1498,50 +1498,12 @@ async function submitAuth() {
         const data = await res.json();
         
         if (!res.ok) {
-            if (data.code === 'unverified') {
-                errorMsg.textContent = '이메일 인증이 필요합니다.  ';
-                const resendLink = document.createElement('a');
-                resendLink.href = 'javascript:void(0)';
-                resendLink.textContent = '인증 메일 재발송';
-                resendLink.style.cssText = 'color:#06b6d4;font-weight:600;text-decoration:underline;';
-                resendLink.onclick = () => resendVerifyEmail(data.email);
-                errorMsg.appendChild(resendLink);
-                errorMsg.style.display = 'block';
-            } else {
-                errorMsg.innerText = data.error || '오류가 발생했습니다.';
-                errorMsg.style.display = 'block';
-            }
-        } else if (authMode === 'register' && data.status === 'verify_required') {
-            // 가입 완료 — 인증 메일 안내 화면으로 전환
-            const content = document.querySelector('#auth-modal .modal-content');
-            if (content) {
-                content.innerHTML = `
-                  <div style="text-align:center;padding:1rem 0;">
-                    <div style="width:52px;height:52px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                    </div>
-                    <h3 style="margin:0 0 0.8rem;color:#f1f5f9;font-size:1.1rem;">메일함을 확인해주세요</h3>
-                    <p style="color:#94a3b8;font-size:0.88rem;line-height:1.6;margin:0 0 0.5rem;">
-                      <strong style="color:#e2e8f0;">${data.email}</strong>으로<br>인증 메일을 발송했습니다.
-                    </p>
-                    <p style="color:#64748b;font-size:0.8rem;margin:0 0 1.5rem;">
-                      메일 내 링크를 클릭하면 인증이 완료되고<br>서비스를 이용할 수 있습니다.
-                    </p>
-                    <button onclick="closeAuthModal()"
-                      style="width:100%;background:linear-gradient(135deg,#06b6d4,#0891b2);border:none;border-radius:10px;padding:0.8rem;font-size:0.95rem;font-weight:700;color:#030712;cursor:pointer;">
-                      확인
-                    </button>
-                    <div style="margin-top:1rem;">
-                      <span style="font-size:0.78rem;color:#64748b;">메일을 못 받으셨나요?</span>
-                      <a href="javascript:void(0)" onclick="resendVerifyEmail('${data.email}')"
-                        style="font-size:0.78rem;color:#06b6d4;margin-left:6px;font-weight:600;text-decoration:none;">재발송</a>
-                    </div>
-                  </div>`;
-            }
+            errorMsg.innerText = data.error || '오류가 발생했습니다.';
+            errorMsg.style.display = 'block';
         } else {
             closeAuthModal();
             await initAuth();
-            showCustomAlert('로그인되었습니다.');
+            showCustomAlert(authMode === 'register' ? '가입이 완료되었습니다.' : '로그인되었습니다.');
         }
     } catch (e) {
         errorMsg.innerText = '서버 통신 실패';
@@ -1736,17 +1698,7 @@ window.submitForgotPassword = async function() {
         });
         const data = await res.json();
         if (!res.ok) {
-            if (data.code === 'unverified') {
-                errorEl.textContent = '\uc774\uba54\uc77c \uc778\uc99d\uc744 \uba3c\uc800 \uc644\ub8cc\ud574\uc8fc\uc138\uc694.  ';
-                const resendLink = document.createElement('a');
-                resendLink.href = 'javascript:void(0)';
-                resendLink.textContent = '\uc778\uc99d \uba54\uc77c \uc7ac\ubc1c\uc1a1';
-                resendLink.style.cssText = 'color:#06b6d4;font-weight:600;text-decoration:underline;';
-                resendLink.onclick = () => { closeForgotPasswordModal(); resendVerifyEmail(data.email); };
-                errorEl.appendChild(resendLink);
-            } else {
-                errorEl.textContent = data.error || '\uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.';
-            }
+            errorEl.textContent = data.error || '\uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.';
             errorEl.style.display = 'block';
         } else {
             document.getElementById('forgot-pw-form').style.display = 'none';
@@ -2461,17 +2413,8 @@ function openMyPage() {
     if (usernameEl) usernameEl.textContent = displayName || email.split('@')[0];
     const emailEl = document.getElementById('mypage-email');
     if (emailEl) emailEl.textContent = email;
-    // 이메일 인증 상태 표시
     const verifyStatusEl = document.getElementById('mypage-verify-status');
-    if (verifyStatusEl) {
-        if (window.AUTH_STATE?.isVerified) {
-            verifyStatusEl.innerHTML = '<span style="color:#10b981;font-size:0.75rem;font-weight:600;">✓ 인증됨</span>';
-        } else {
-            verifyStatusEl.innerHTML = `<span style="color:#f59e0b;font-size:0.75rem;font-weight:600;">⚠ 미인증</span>
-              <a href="javascript:void(0)" onclick="resendVerifyEmail('${email.replace(/'/g, "\\'")}')"
-                style="font-size:0.73rem;color:#06b6d4;margin-left:6px;text-decoration:underline;">인증 메일 재발송</a>`;
-        }
-    }
+    if (verifyStatusEl) verifyStatusEl.innerHTML = '';
     const nameInput = document.getElementById('display-name-input');
     if (nameInput) nameInput.value = displayName !== email.split('@')[0] ? displayName : '';
     const hintEl = document.getElementById('display-name-hint');
