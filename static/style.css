@@ -3103,10 +3103,8 @@ body.preview-open #global-actions-left {
 
 /* ── 이메일 인증 배너 ────────────────────────────────────────── */
 #verify-banner {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
     z-index: 9999;
     display: flex;
     align-items: center;

@@ -1545,21 +1545,14 @@ async function initAuth() {
     updateVerifyBanner();
 }
 
-function _applyBannerMargin() {
-    const banner = document.getElementById('verify-banner');
-    document.body.style.paddingTop = banner ? banner.offsetHeight + 'px' : '';
-}
-
 window.closeVerifyBanner = function() {
     const banner = document.getElementById('verify-banner');
     if (banner) banner.remove();
-    _applyBannerMargin();
 };
 
 function updateVerifyBanner() {
     const existing = document.getElementById('verify-banner');
     if (existing) existing.remove();
-    _applyBannerMargin();
     if (!window.AUTH_STATE.isLoggedIn || window.AUTH_STATE.isVerified || window.AUTH_STATE.isAdmin) return;
     const email = window.AUTH_STATE.email;
     const banner = document.createElement('div');
@@ -1570,7 +1563,6 @@ function updateVerifyBanner() {
       <button class="verify-banner-close" onclick="closeVerifyBanner()" title="닫기">✕</button>
     `;
     document.body.prepend(banner);
-    requestAnimationFrame(_applyBannerMargin);
 }
 
 function updateAuthNavUI() {
