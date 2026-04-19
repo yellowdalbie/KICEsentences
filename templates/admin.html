@@ -357,11 +357,11 @@ tr:hover td { background:rgba(255,255,255,0.03); }
         <th data-col="1" data-type="str">인증 <span class="sort-arrow"></span></th>
         <th data-col="2" data-type="str">가입일 <span class="sort-arrow"></span></th>
         <th data-col="3" data-type="str">최근 접속 <span class="sort-arrow"></span></th>
-        <th data-col="4" data-type="num" title="개념유사도">개념 <span class="sort-arrow"></span></th>
-        <th data-col="5" data-type="num" title="기출표현">표현 <span class="sort-arrow"></span></th>
-        <th data-col="6" data-type="num" title="문항번호">번호 <span class="sort-arrow"></span></th>
-        <th data-col="7" data-type="num" title="성취기준">성취 <span class="sort-arrow"></span></th>
-        <th data-col="8" data-type="num" title="일별 방문횟수">방문일수 <span class="sort-arrow"></span></th>
+        <th data-col="4" data-type="num" title="일별 방문횟수">방문일수 <span class="sort-arrow"></span></th>
+        <th data-col="5" data-type="num" title="개념유사도">개념 <span class="sort-arrow"></span></th>
+        <th data-col="6" data-type="num" title="기출표현">표현 <span class="sort-arrow"></span></th>
+        <th data-col="7" data-type="num" title="문항번호">번호 <span class="sort-arrow"></span></th>
+        <th data-col="8" data-type="num" title="성취기준">성취 <span class="sort-arrow"></span></th>
         <th data-col="9" data-type="num">미리보기 <span class="sort-arrow"></span></th>
         <th data-col="10" data-type="num">PDF저장 <span class="sort-arrow"></span></th>
       </tr>
@@ -378,11 +378,11 @@ tr:hover td { background:rgba(255,255,255,0.03); }
       </td>
       <td style="font-size:0.78rem; color:var(--muted); white-space:nowrap;">{{ row.created_at[:10] if row.created_at else '-' }}</td>
       <td style="font-size:0.78rem; color:var(--muted); white-space:nowrap;">{{ row.last_login[:16] if row.last_login else '-' }}</td>
+      <td style="text-align:center; color:{{ 'var(--cyan)' if row.visit_count else 'var(--muted)' }};">{{ row.visit_count or '-' }}</td>
       <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_concept else 'var(--muted)' }};">{{ row.search_concept or '-' }}</td>
       <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_expression else 'var(--muted)' }};">{{ row.search_expression or '-' }}</td>
       <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_probid else 'var(--muted)' }};">{{ row.search_probid or '-' }}</td>
       <td style="text-align:center; color:{{ 'var(--cyan)' if row.search_unit else 'var(--muted)' }};">{{ row.search_unit or '-' }}</td>
-      <td style="text-align:center; color:{{ 'var(--cyan)' if row.visit_count else 'var(--muted)' }};">{{ row.visit_count or '-' }}</td>
       <td style="text-align:center;">
         {% if row.print_preview %}
           <button class="log-count-btn" onclick="openCartLogModal('{{ row.email }}','open_preview','미리보기 기록')">{{ row.print_preview }}</button>
