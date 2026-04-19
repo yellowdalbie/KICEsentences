@@ -1547,16 +1547,14 @@ async function initAuth() {
 
 function _applyBannerMargin() {
     const banner = document.getElementById('verify-banner');
-    const appContainer = document.querySelector('.app-container');
-    if (!appContainer) return;
-    appContainer.style.marginTop = banner ? banner.offsetHeight + 'px' : '';
+    document.body.style.paddingTop = banner ? banner.offsetHeight + 'px' : '';
 }
 
-function closeVerifyBanner() {
+window.closeVerifyBanner = function() {
     const banner = document.getElementById('verify-banner');
     if (banner) banner.remove();
     _applyBannerMargin();
-}
+};
 
 function updateVerifyBanner() {
     const existing = document.getElementById('verify-banner');
