@@ -18,10 +18,6 @@
     <div id="sticky-bars">
         <!-- verify-banner가 JS로 여기에 prepend됨 -->
         <div class="mobile-appbar" id="mobile-appbar" style="display:none;">
-            <button class="mobile-appbar-tip-btn" onclick="openTipModal()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                팁
-            </button>
             <span class="mobile-appbar-logo">LYNX</span>
             {% if not offline_mode %}
             <button class="mobile-appbar-login-btn" id="mobile-login-btn" onclick="openAuthModal('login')">로그인</button>
@@ -55,25 +51,15 @@
 
     <div class="app-container">
         <!-- Top Navigation & Search -->
-        <header class="top-nav-container">
+        <header class="top-nav-container" style="position: relative;">
             <div class="logo brand-container" style="cursor: pointer;" data-view="overview">
                 <span class="brand-kice">KICE</span>
                 <h1 class="brand" style="margin-top: -10px;">LYNX</h1>
                 <div class="brand-subtitle" style="margin-top: 5px;">Linking Yields & Nodes of eXams</div>
             </div>
 
-            <div id="global-actions-left" style="position: fixed; left: 1.5rem; z-index: 9999; display: flex; align-items: center; gap: 0.8rem;">
-                <button class="tip-toggle-btn" onclick="openTipModal()">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    활용 팁
-                </button>
-                <button class="tip-toggle-btn" onclick="scrollToBoard()" style="background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.25);color:#67e8f9;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    게시판
-                </button>
-                <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3;">
-                    기하(2022)와 미적분II(2022)는 해설과 정답이 서비스되지 않습니다.<br>'기출표현'검색과 '문항번호'검색에서 문항 검색은 가능합니다.
-                </div>
+            <div id="service-notice" style="position: absolute; left: 1.5rem; top: 2rem; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; max-width: 220px; opacity: 0.8;">
+                기하(2022)와 미적분II(2022)는<br>해설과 정답이 서비스되지 않습니다.<br>'기출표현'·'문항번호' 검색은 가능합니다.
             </div>
 
             {% if not offline_mode %}
@@ -84,11 +70,17 @@
             {% endif %}
 
             <!-- Search Mode Selector -->
-            <div class="search-mode-pills">
-                <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
-                <button class="search-pill" data-tab="tab-expression">기출표현</button>
-                <button class="search-pill" data-tab="tab-probid">문항번호</button>
-                <button class="search-pill" data-tab="tab-unit">성취기준</button>
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <div class="search-mode-pills">
+                    <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
+                    <button class="search-pill" data-tab="tab-expression">기출표현</button>
+                    <button class="search-pill" data-tab="tab-probid">문항번호</button>
+                    <button class="search-pill" data-tab="tab-unit">성취기준</button>
+                </div>
+                <button class="board-nav-btn" onclick="scrollToBoard()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    게시판
+                </button>
             </div>
 
             <!-- 1. Keyword Search Input -->
@@ -2011,77 +2003,6 @@
         </div>
     </div>
 
-    <!-- TIP Modal -->
-    <div id="tip-modal" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:2000; align-items:center; justify-content:center; background:rgba(15,23,42,0.4); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);">
-        <div class="tip-modal-content" style="background:rgba(20,29,46,0.95); border:1px solid rgba(6,182,212,0.3); border-radius:16px; width:90%; max-width:560px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,0.6);">
-            <!-- Fixed Header -->
-            <div style="display:flex; justify-content:space-between; align-items:center; padding:1.2rem 1.8rem; background:rgba(15,23,42,0.8); border-bottom:1px solid rgba(255,255,255,0.06);">
-                <h2 style="color:#fff; font-size:1.15rem; font-weight:700; margin:0; letter-spacing:0.02em; display:flex; align-items:center; gap:8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    KICE Lynx 활용 가이드
-                </h2>
-                <button onclick="closeTipModal()" class="tip-modal-close-btn" style="background:none; border:none; color:#94a3b8; font-size:2rem; cursor:pointer; line-height:1; transition:color 0.2s;">&times;</button>
-            </div>
-            <!-- Scrollable Body -->
-            <div style="padding:1.5rem 1.8rem 2rem; overflow-y:auto; flex:1;">
-                <div id="tip-list" style="display:flex; flex-direction:column; gap:1.2rem;">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        const LINK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5b8dee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin:0 1px"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
-        const SYS_TIPS = [
-            { title: "개념으로 문항 찾기", desc: "코사인법칙으로 변의 길이를 구하는 문항을 모아 보려면, <b>개념유사도</b> 검색창에 <b>'코사인법칙 변'</b>이라고 입력하세요." },
-            { title: "특정 번호 문항 모아 보기", desc: "30번 문항들을 한번에 보려면, <b>문항번호</b> 검색창에 <b>'30번'</b>이라고 입력하세요. 특정 문항 코드(예: 2024수능_14)를 입력하면 해당 문항으로 바로 이동합니다." },
-            { title: "수식·조건 표현으로 찾기", desc: "특정 수식이나 조건이 해설에 그대로 등장하는 문항을 찾으려면 <b>기출표현</b> 탭을 이용하세요. 개념어보다 원문 표현에 가까운 검색을 할 수 있습니다." },
-            { title: "단원별로 탐색하기", desc: "교육과정 단원 기준으로 문항을 탐색하려면 <b>성취기준</b> 탭에서 단원명을 클릭하세요. 각 성취기준에 해당하는 문항 목록이 나타납니다." },
-            { title: "해설은 마우스를 올리면 나타납니다", desc: "검색 결과의 각 풀이 단계에 마우스를 올리면 해당 단계의 <b>해설 전문이 팝업으로</b> 표시됩니다. 문항 번호에 마우스를 올리면 문항 이미지 미리보기도 볼 수 있습니다." },
-            { title: "문항을 장바구니에 담으려면", desc: "검색 결과에서 <b>문항 번호를 클릭</b>하면 장바구니에 담깁니다. 다시 클릭하면 제거됩니다. 오른쪽 하단 장바구니 아이콘으로 담긴 목록을 확인할 수 있습니다." },
-            { title: "같은 풀이 단계를 쓰는 문항 찾기", desc: `검색 결과에서 각 풀이 단계 왼쪽의 ${LINK_ICON} 아이콘을 클릭하면, 같은 수학적 접근을 활용하는 다른 문항들을 모아볼 수 있습니다.` },
-            { title: "유사 쌍둥이 문항 자동으로 채우기", desc: "장바구니에 문항을 담은 후 <b>🔗 더블</b> 버튼을 누르면, 각 문항과 풀이 구조가 가장 비슷한 다른 연도·시험의 문항을 자동으로 찾아 세트를 완성합니다." },
-            { title: "인쇄 순서는 드래그로 조정", desc: "미리보기 / 인쇄 버튼을 누른 뒤, 왼쪽 목록에서 문항을 드래그해 <b>순서를 자유롭게 조정</b>할 수 있습니다. 조정된 순서 그대로 출력됩니다." },
-            { title: "정답과 해설, 포함 여부를 선택해서 인쇄", desc: "인쇄 미리보기 상단에서 <b>정답 표기</b>(미표기 / 각 문항 / 문제지 끝)와 <b>해설 포함</b> 여부를 선택할 수 있습니다. 용도에 맞게 조합해 출력하세요." },
-            { title: "성취기준 코드가 궁금하다면", desc: "검색 결과 오른쪽 열의 성취기준 코드에 마우스를 올리면 <b>해당 성취기준의 전체 이름</b>이 표시됩니다. 교육과정 연계 여부를 빠르게 확인할 수 있습니다." }
-        ];
-
-        function openTipModal() {
-            const listContainer = document.getElementById('tip-list');
-            listContainer.innerHTML = '';
-            SYS_TIPS.forEach(tip => {
-                const item = document.createElement('div');
-                item.style.cssText = 'background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:1.2rem; display:flex; flex-direction:column; gap:6px;';
-                item.innerHTML = `
-                    <div style="font-size:1.05rem; font-weight:600; color:#fff;">${tip.title}</div>
-                    <div style="font-size:0.9rem; color:#8d96ad; line-height:1.6;">${tip.desc.replace(/<b>/g, '<b style="color:#c8d0e0; font-weight:600;">')}</div>
-                `;
-                listContainer.appendChild(item);
-            });
-            const modal = document.getElementById('tip-modal');
-            modal.style.display = 'flex';
-            modal.style.opacity = '0';
-            setTimeout(() => {
-                modal.style.transition = 'opacity 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                modal.style.opacity = '1';
-            }, 10);
-        }
-
-        function closeTipModal() {
-            const modal = document.getElementById('tip-modal');
-            modal.style.opacity = '0';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 200);
-        }
-
-        // 창 바깥(배경) 클릭 시 닫기
-        document.getElementById('tip-modal').addEventListener('click', function (e) {
-            if (e.target === this) {
-                closeTipModal();
-            }
-        });
-    </script>
 
     {% if offline_mode %}
       <span>KICE Lynx v2025.11</span>
