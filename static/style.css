@@ -3213,3 +3213,8 @@ body.preview-open #global-actions-left {
 .bd-comment-content { font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; }
 .bd-reply-btn { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; padding: 0; text-decoration: underline; }
 .bd-del-btn { background: none; border: none; color: #f87171; font-size: 0.75rem; cursor: pointer; padding: 0; }
+
+/* 아코디언 활성 행 */
+.board-row-active td { background: rgba(6,182,212,0.06) !important; }
+#board-accordion-row td { cursor: default; }
+#board-accordion-inner { transition: max-height 0.3s ease; }

@@ -3,14 +3,16 @@
 ══════════════════════════════════════════════════════════ */
 
 // ── 전역 상태 ──────────────────────────────────────────────
-let _boardFilter   = 'all';
-let _boardPage     = 1;
-let _boardSelectMode = false;
-let _boardSelected  = new Set();
-let _boardCurrentPost = null;   // 현재 열려 있는 게시글 데이터
-let _bwType        = null;      // 글쓰기 모달 타입 ('question'|'error')
-let _bwSelectedProbId = null;   // 글쓰기 선택 문항
-let _publishCallback = null;    // PDF 인쇄 콜백
+let _boardFilter      = 'all';
+let _boardPage        = 1;
+let _boardSelectMode  = false;
+let _boardSelected    = new Set();
+let _boardCurrentPost = null;   // 현재 펼쳐진 게시글 데이터
+let _expandedPostId   = null;   // 현재 펼쳐진 행의 post_id
+let _expandedTr       = null;   // 펼침 행 DOM (아코디언)
+let _bwType           = null;
+let _bwSelectedProbId = null;
+let _publishCallback  = null;
 
 // 세션 상태 (index.html의 전역 변수와 동기화)
 function _getUser() {
@@ -161,7 +163,7 @@ function _makeRow(post, isNotice, showCheck) {
       if (cb) { cb.checked = !cb.checked; togglePostSelect(post.id, cb); }
       return;
     }
-    openBoardDetail(post.id, post.type);
+    toggleAccordion(tr, post.id, post.type);
   });
   return tr;
 }
@@ -196,119 +198,187 @@ window.bulkDeletePosts = async function() {
   loadBoardList();
 };
 
-// ── 게시글 상세 ──────────────────────────────────────────
-window.openBoardDetail = async function(postId, postType) {
-  const user = _getUser();
+// ── 아코디언 토글 ─────────────────────────────────────────
+async function toggleAccordion(tr, postId, postType) {
+  // 같은 행 재클릭 → 접기
+  if (_expandedPostId === postId) {
+    _collapseAccordion();
+    return;
+  }
+  // 다른 행이 펼쳐져 있으면 먼저 접기
+  _collapseAccordion();
 
-  // 공지 외: 미로그인/미인증 차단
+  const user = _getUser();
   if (postType !== 'notice') {
-    if (!user.loggedIn) {
-      showBoardAuthModal('login');
-      return;
-    }
-    if (!user.verified) {
-      showBoardAuthModal('verify');
-      return;
-    }
+    if (!user.loggedIn)   { showBoardAuthModal('login');  return; }
+    if (!user.verified)   { showBoardAuthModal('verify'); return; }
   }
 
-  const overlay = document.getElementById('board-detail-overlay');
-  overlay.style.display = 'block';
-  overlay.scrollTop = 0;
+  _expandedPostId = postId;
+  tr.classList.add('board-row-active');
 
-  // 로딩 상태
-  document.getElementById('bd-title').textContent = '불러오는 중...';
-  document.getElementById('bd-content').textContent = '';
+  // 펼침 행 삽입
+  const expandTr = document.createElement('tr');
+  expandTr.id = 'board-accordion-row';
+  expandTr.innerHTML = `
+    <td colspan="7" style="padding:0; border-bottom:1px solid rgba(255,255,255,0.08);">
+      <div id="board-accordion-inner"
+           style="overflow:hidden; max-height:0; transition:max-height 0.3s ease;">
+        <div style="padding:1.2rem 1rem; background:rgba(6,182,212,0.03);">
+          <div style="color:var(--text-muted); font-size:0.85rem;">불러오는 중...</div>
+        </div>
+      </div>
+    </td>`;
+  tr.insertAdjacentElement('afterend', expandTr);
+  _expandedTr = expandTr;
+
+  // 애니메이션 시작
+  requestAnimationFrame(() => {
+    const inner = document.getElementById('board-accordion-inner');
+    if (inner) inner.style.maxHeight = '2000px';
+  });
 
   try {
-    const res  = await fetch(`/api/board/posts/${postId}`);
-    if (res.status === 401) { overlay.style.display = 'none'; showBoardAuthModal('login'); return; }
-    if (res.status === 403) { overlay.style.display = 'none'; showBoardAuthModal('verify'); return; }
+    const res = await fetch(`/api/board/posts/${postId}`);
+    if (res.status === 401) { _collapseAccordion(); showBoardAuthModal('login');  return; }
+    if (res.status === 403) { _collapseAccordion(); showBoardAuthModal('verify'); return; }
     const post = await res.json();
     _boardCurrentPost = post;
-    _fillDetailView(post, user);
+    _fillAccordion(post, user);
   } catch(e) {
-    document.getElementById('bd-title').textContent = '오류가 발생했습니다.';
+    const inner = document.getElementById('board-accordion-inner');
+    if (inner) inner.innerHTML = '<div style="padding:1rem;color:#f87171;font-size:0.85rem;">불러오기 실패</div>';
   }
-};
+}
 
-function _fillDetailView(post, user) {
-  // 뱃지
-  const badge = document.getElementById('bd-type-badge');
-  badge.className = `board-type-badge ${TYPE_CLASS[post.type]||''}`;
-  badge.textContent = TYPE_LABEL[post.type] || post.type;
-
-  document.getElementById('bd-title').textContent   = post.title;
-  document.getElementById('bd-author').textContent  = '작성자: ' + post.author_name;
-  document.getElementById('bd-date').textContent    = post.created_at ? post.created_at.slice(0,16) : '';
-  document.getElementById('bd-content').textContent = post.content || '';
-
-  // 좋아요
-  const likeBtn = document.getElementById('bd-like-btn');
-  if (post.type !== 'notice') {
-    likeBtn.style.display = 'flex';
-    _updateDetailLike(post.user_liked, post.like_count);
-  } else {
-    likeBtn.style.display = 'none';
+function _collapseAccordion() {
+  if (_expandedTr) {
+    const inner = document.getElementById('board-accordion-inner');
+    if (inner) { inner.style.maxHeight = '0'; }
+    setTimeout(() => { if (_expandedTr) { _expandedTr.remove(); _expandedTr = null; } }, 300);
   }
+  // 행 강조 제거
+  document.querySelectorAll('.board-row-active').forEach(r => r.classList.remove('board-row-active'));
+  _expandedPostId   = null;
+  _boardCurrentPost = null;
+}
 
-  // 편집자 설명 수정 버튼 (본인 편집물만)
-  const editDescBtn = document.getElementById('bd-edit-desc-btn');
-  editDescBtn.style.display = (post.type === 'edit' && post.is_own) ? 'inline-block' : 'none';
+function _fillAccordion(post, user) {
+  const inner = document.getElementById('board-accordion-inner');
+  if (!inner) return;
 
-  // 편집물 문항 목록
-  const probSection = document.getElementById('bd-problems-section');
-  const refSection  = document.getElementById('bd-ref-problem-section');
-  probSection.style.display = 'none';
-  refSection.style.display  = 'none';
+  // 좋아요 버튼 HTML
+  const likeHtml = post.type !== 'notice' ? `
+    <button id="bd-like-btn"
+      onclick="toggleDetailLike()"
+      style="display:inline-flex;align-items:center;gap:0.3rem;
+             background:none;border:1px solid ${post.user_liked ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.12)'};
+             border-radius:20px;padding:0.22rem 0.65rem;cursor:pointer;
+             font-size:0.78rem;color:${post.user_liked ? '#f87171' : 'var(--text-muted)'};transition:all 0.2s;">
+      <span id="bd-like-heart">${post.user_liked ? '♥' : '♡'}</span>
+      <span id="bd-like-count">${post.like_count || 0}</span>
+    </button>` : '';
 
-  if (post.type === 'edit' && post.problem_ids && post.problem_ids.length) {
-    probSection.style.display = 'block';
-    const list = document.getElementById('bd-problems-list');
-    list.innerHTML = post.problem_ids.map(pid => `
-      <div style="display:flex;align-items:center;gap:0.8rem;padding:0.5rem 0.8rem;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;">
-        <span style="font-size:0.85rem;font-weight:600;min-width:130px;">${_escHtml(pid)}</span>
-        <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="${_escHtml(pid)}" style="max-height:60px;border-radius:5px;"
+  // 편집자 설명 수정 버튼
+  const editDescHtml = (post.type === 'edit' && post.is_own) ? `
+    <button onclick="openEditDesc()"
+      style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+             color:var(--text-muted);padding:0.22rem 0.65rem;border-radius:6px;cursor:pointer;font-size:0.75rem;">
+      편집자 설명 수정</button>` : '';
+
+  // 수록 문항 (편집물)
+  let problemsHtml = '';
+  if (post.type === 'edit' && post.problem_ids?.length) {
+    const cards = post.problem_ids.map(pid => `
+      <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0.6rem;
+                  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+                  border-radius:7px;">
+        <span style="font-size:0.8rem;font-weight:600;min-width:120px;">${_escHtml(pid)}</span>
+        <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="" style="max-height:50px;border-radius:4px;"
           onerror="this.style.display='none'">
-      </div>
-    `).join('');
-  } else if (post.type !== 'edit' && post.problem_ids && post.problem_ids.length) {
-    refSection.style.display = 'block';
+      </div>`).join('');
+    problemsHtml = `
+      <div style="margin-top:1rem;">
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;">수록 문항</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">${cards}</div>
+        <button onclick="printFromBoard()"
+          style="margin-top:0.8rem;background:var(--accent-cyan);border:none;color:#030712;
+                 padding:0.4rem 1.1rem;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:700;">
+          PDF 저장</button>
+      </div>`;
+  } else if (post.type !== 'edit' && post.problem_ids?.length) {
     const pid = post.problem_ids[0];
-    document.getElementById('bd-ref-problem-id').textContent = pid;
-    const thumb = document.getElementById('bd-ref-thumbnail');
-    thumb.src = `/static/thumbnails/${pid}.png`;
-    thumb.alt = pid;
-    thumb.style.display = 'block';
-    thumb.onerror = () => { thumb.style.display = 'none'; };
+    problemsHtml = `
+      <div style="margin-top:1rem;">
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;">관련 문항</div>
+        <div style="display:flex;align-items:center;gap:0.8rem;padding:0.5rem 0.7rem;
+                    background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+                    border-radius:8px;width:fit-content;">
+          <span style="font-weight:600;font-size:0.85rem;">${_escHtml(pid)}</span>
+          <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="" style="max-height:60px;border-radius:5px;"
+            onerror="this.style.display='none'">
+        </div>
+      </div>`;
   }
 
-  // 댓글
-  const commentSection = document.getElementById('bd-comments-section');
-  const commentForm    = document.getElementById('bd-comment-form');
-  const loginNotice    = document.getElementById('bd-comment-login-notice');
+  // 댓글 영역 ID (아코디언 내부 전용)
+  const commentInputHtml = (post.type !== 'notice' && user.loggedIn && user.verified) ? `
+    <div style="margin-top:0.8rem;">
+      <textarea id="bd-comment-input" rows="2" placeholder="댓글을 입력하세요..."
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);
+               border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.55rem;
+               color:var(--text-color);font-size:0.83rem;resize:none;font-family:inherit;"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:0.4rem;margin-top:0.3rem;">
+        <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">
+          <input type="checkbox" id="bd-comment-anon"> 익명
+        </label>
+        <button onclick="submitComment(null)"
+          style="background:var(--accent-cyan);border:none;color:#030712;
+                 padding:0.32rem 0.9rem;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:700;">등록</button>
+      </div>
+    </div>` : (post.type !== 'notice' ? `
+    <div id="bd-comment-login-notice"
+      style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:0.4rem;margin-top:0.5rem;">
+      댓글을 작성하려면 이메일 인증이 필요합니다.</div>` : '');
 
-  if (post.type === 'notice') {
-    commentSection.style.display = 'none';
-  } else {
-    commentSection.style.display = 'block';
+  inner.innerHTML = `
+    <div style="padding:1.1rem 1rem 1.2rem; background:rgba(6,182,212,0.03);">
+      <!-- 메타 -->
+      <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.7rem;">
+        <span class="board-type-badge ${TYPE_CLASS[post.type]||''}">${TYPE_LABEL[post.type]||post.type}</span>
+        <span style="font-size:0.78rem;color:var(--text-muted);">${_escHtml(post.author_name)}</span>
+        <span style="font-size:0.78rem;color:var(--text-muted);">${post.created_at ? post.created_at.slice(0,16) : ''}</span>
+        ${likeHtml}
+        ${editDescHtml}
+      </div>
+      <!-- 내용 -->
+      ${post.content ? `<div style="font-size:0.88rem;color:var(--text-color);line-height:1.7;white-space:pre-wrap;margin-bottom:0.5rem;">${_escHtml(post.content)}</div>` : ''}
+      <!-- 문항 -->
+      ${problemsHtml}
+      <!-- 댓글 -->
+      ${post.type !== 'notice' ? `
+        <div style="margin-top:1.1rem;border-top:1px solid rgba(255,255,255,0.07);padding-top:0.9rem;">
+          <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;margin-bottom:0.6rem;">댓글</div>
+          <div id="bd-comments-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+          ${commentInputHtml}
+        </div>` : ''}
+    </div>`;
+
+  if (post.type !== 'notice') {
     _renderComments(post.comments || []);
-    if (user.loggedIn && user.verified) {
-      commentForm.style.display  = 'block';
-      loginNotice.style.display  = 'none';
-    } else {
-      commentForm.style.display  = 'none';
-      loginNotice.style.display  = 'block';
-    }
   }
 }
 
 function _updateDetailLike(liked, count) {
-  document.getElementById('bd-like-heart').textContent = liked ? '♥' : '♡';
-  document.getElementById('bd-like-count').textContent = count;
-  const btn = document.getElementById('bd-like-btn');
-  btn.style.color        = liked ? '#f87171' : 'var(--text-muted)';
-  btn.style.borderColor  = liked ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.12)';
+  const heart = document.getElementById('bd-like-heart');
+  const cnt   = document.getElementById('bd-like-count');
+  const btn   = document.getElementById('bd-like-btn');
+  if (heart) heart.textContent = liked ? '♥' : '♡';
+  if (cnt)   cnt.textContent   = count;
+  if (btn) {
+    btn.style.color       = liked ? '#f87171' : 'var(--text-muted)';
+    btn.style.borderColor = liked ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.12)';
+  }
 }
 
 window.toggleDetailLike = async function() {
@@ -320,14 +390,12 @@ window.toggleDetailLike = async function() {
   _boardCurrentPost.user_liked = data.liked;
   _boardCurrentPost.like_count = data.count;
   _updateDetailLike(data.liked, data.count);
-  loadBoardList();
+  // 목록 행의 좋아요 수 갱신
+  const row = document.querySelector(`tr[data-post-id="${_boardCurrentPost.id}"] td:last-child`);
+  if (row) row.textContent = data.count;
 };
 
-window.closeBoardDetail = function() {
-  document.getElementById('board-detail-overlay').style.display = 'none';
-  _boardCurrentPost = null;
-  loadBoardList();
-};
+window.closeBoardDetail = function() { _collapseAccordion(); };
 
 // ── 댓글 렌더링 ──────────────────────────────────────────
 function _renderComments(comments) {
@@ -415,16 +483,18 @@ window.submitComment = async function(parentId) {
 
   // 댓글 새로고침
   const detail = await fetch(`/api/board/posts/${_boardCurrentPost.id}`);
-  const data   = await detail.json();
-  _renderComments(data.comments || []);
+  const updated = await detail.json();
+  _boardCurrentPost = updated;
+  _renderComments(updated.comments || []);
 };
 
 window.deleteComment = async function(commentId) {
   if (!confirm('댓글을 삭제할까요?')) return;
   await fetch(`/api/board/comments/${commentId}`, { method: 'DELETE' });
-  const detail = await fetch(`/api/board/posts/${_boardCurrentPost.id}`);
-  const data   = await detail.json();
-  _renderComments(data.comments || []);
+  const detail  = await fetch(`/api/board/posts/${_boardCurrentPost.id}`);
+  const updated = await detail.json();
+  _boardCurrentPost = updated;
+  _renderComments(updated.comments || []);
 };
 
 // ── 편집자 설명 수정 ──────────────────────────────────────
@@ -442,8 +512,14 @@ window.submitEditDesc = async function() {
     body: JSON.stringify({ content })
   });
   document.getElementById('board-edit-desc-modal').style.display = 'none';
-  document.getElementById('bd-content').textContent = content;
   _boardCurrentPost.content = content;
+  // 아코디언 내 본문 갱신
+  const inner = document.getElementById('board-accordion-inner');
+  if (inner) {
+    const contentEl = inner.querySelector('[data-role="content"]');
+    if (contentEl) contentEl.textContent = content;
+    else _fillAccordion(_boardCurrentPost, _getUser());
+  }
 };
 
 // ── 게시판에서 PDF 인쇄 ───────────────────────────────────
