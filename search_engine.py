@@ -176,14 +176,15 @@ class HybridSearchEngine:
         has_trigger = (self._step_trigger_vecs is not None or self._cluster_ids is not None)
 
         if has_trigger:
-            # 가중치: 트리거(0.40) + BM25(0.30) + 벡터(0.20) + CPT(0.10)
+            # 가중치: 트리거(0.40) + 벡터(0.30) + BM25(0.15) + CPT(0.15)
+            # 교육과정 게이트(trigger+CPT=0.55) 유지, 게이트 내 변별은 Vec 우선
             final = (0.40 * trigger_scores
-                     + 0.30 * bm25_norm
-                     + 0.20 * vec_scores
-                     + 0.10 * cpt_scores)
+                     + 0.30 * vec_scores
+                     + 0.15 * bm25_norm
+                     + 0.15 * cpt_scores)
         else:
-            # 폴백: 기존 가중치
-            final = 0.15 * cpt_scores + 0.45 * bm25_norm + 0.40 * vec_scores
+            # 폴백: Vec 우선
+            final = 0.15 * cpt_scores + 0.30 * bm25_norm + 0.55 * vec_scores
 
         final[q_idx] = -1.0   # 자기 자신 제외
 
@@ -383,9 +384,8 @@ class OfflineQueryEngine:
 
     @staticmethod
     def _tokenize(query: str) -> list[str]:
-        """쿼리를 공백·구두점 기준으로 분리, 2글자 이상 토큰만 반환."""
-        tokens = re.split(r'[\s·,·.·/·(·)·\[\]]+', query.strip())
-        return [t for t in tokens if len(t) >= 2]
+        """HybridSearchEngine과 동일한 조사 제거 토크나이저 사용."""
+        return _tokenize(query)
 
     def get_cos_sims(self, query: str, min_score: float = 0.0) -> np.ndarray:
         """

@@ -85,7 +85,7 @@ def load_concepts(conn):
                 cursor.execute('''
                     INSERT INTO concepts (id, curriculum_unit, standard_name, keywords)
                     VALUES (?, ?, ?, ?)
-                ''', (c.get('id'), c.get('curriculum_unit'), c.get('standard_name'), ', '.join(c.get('keywords', [])) if isinstance(c.get('keywords'), list) else c.get('keywords', '')))
+                ''', (c.get('id'), c.get('curriculum_unit'), c.get('standard_name'), json.dumps(c.get('keywords', []) if isinstance(c.get('keywords'), list) else [], ensure_ascii=False)))
     except FileNotFoundError:
         print(f"Warning: {CONCEPTS_FILE} not found.")
     conn.commit()
