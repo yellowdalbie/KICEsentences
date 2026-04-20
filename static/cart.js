@@ -1183,13 +1183,24 @@ async function logAndPrint() {
                 });
             } catch(e) {}
         }
+        // body 직접 자식으로 깨끗한 인쇄 루트 생성 (래퍼 구조 우회)
+        const printRoot = document.createElement('div');
+        printRoot.id = 'kice-print-root';
+        document.querySelectorAll('#print-preview-body .csat-page').forEach(page => {
+            printRoot.appendChild(page.cloneNode(true));
+        });
+        document.body.appendChild(printRoot);
+
         const now = new Date();
         const pad = n => String(n).padStart(2, '0');
         const datetime = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
         const originalTitle = document.title;
         document.title = `${title}_${datetime}`;
         window.print();
-        window.addEventListener('afterprint', () => { document.title = originalTitle; }, { once: true });
+        window.addEventListener('afterprint', () => {
+            document.title = originalTitle;
+            printRoot.remove();
+        }, { once: true });
         logCartEvent('save_pdf', finalIds);
     };
 

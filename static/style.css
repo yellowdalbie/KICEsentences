@@ -2023,15 +2023,16 @@ body.preview-open #global-actions-left {
 }
 
 /* ========================================================================= */
-/* Print: force zero margins at top level so Chrome/Edge respect it */
 @page {
     size: A4 portrait;
     margin: 0;
 }
 
-/* Print Media Query */
-/* ========================================================================= */
 @media print {
+    /* #kice-print-root 외 모든 요소 숨김 */
+    body > *:not(#kice-print-root) {
+        display: none !important;
+    }
 
     body {
         background: #ffffff !important;
@@ -2046,54 +2047,10 @@ body.preview-open #global-actions-left {
         image-rendering: crisp-edges !important;
     }
 
-    /* Hide everything in the main app */
-    .app-container,
-    #problem-cart,
-    #print-preview-backdrop,
-    #print-preview-header,
-    .no-print {
-        display: none !important;
-    }
-
-    /* Override modal to print normally */
-    #print-preview-modal {
-        position: static !important;
+    #kice-print-root {
         display: block !important;
-        width: 100% !important;
-        height: auto !important;
-        background: transparent !important;
-    }
-
-    #print-preview-layout {
-        display: block !important;
-        overflow: visible !important;
-    }
-
-    #print-preview-scroll-area {
-        overflow: visible !important;
-        display: block !important;
-        padding: 0 !important;
-    }
-
-    #print-preview-content {
-        box-shadow: none !important;
         margin: 0 !important;
-        border-radius: 0 !important;
-        max-width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
-        background: transparent !important;
-    }
-
-    #print-preview-content {
-        display: block !important;
-    }
-
-    #print-preview-body {
-        display: block !important;
         padding: 0 !important;
-        overflow: visible !important;
-        background: transparent !important;
     }
 
     .csat-page {
