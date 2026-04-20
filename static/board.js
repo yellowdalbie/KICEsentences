@@ -300,7 +300,7 @@ function _fillAccordion(post, user) {
     problemsHtml = `
       <div style="margin-top:1rem;">
         <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;">수록 문항</div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">${cards}</div>
+        <div style="display:flex;flex-direction:column;gap:0.4rem;">${cards}</div>
         <button onclick="printFromBoard()"
           style="margin-top:0.8rem;background:var(--accent-cyan);border:none;color:#030712;
                  padding:0.4rem 1.1rem;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:700;">
@@ -694,6 +694,7 @@ window.openBoardPublishModal = function(titleStr, problemIds, printCallback) {
 
 window.closeBoardPublish = function() {
   document.getElementById('board-publish-modal').style.display = 'none';
+  if (_publishCallback?.fn) _publishCallback.fn();
   _publishCallback = null;
 };
 
