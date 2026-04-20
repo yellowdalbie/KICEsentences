@@ -24,6 +24,7 @@ const searchQueryLog = [];
 let restoredTempIds = null;
 let cartRestoreWarningShown = false;
 let currentAutoTitle = '';
+let _setLoadedTitle = null;
 
 // ── 전역 썸네일 tooltip (document.body에 직접 붙여 transform 영향 차단) ──
 let _cartThumbTooltipEl = null;
@@ -122,6 +123,7 @@ function _doAddItem(strId) {
     if (cartProblemIds.size === 20) {
         showCustomAlert('21번째 문항부터는 인쇄 미리보기 로딩이 다소 느릴 수 있습니다.');
     }
+    _setLoadedTitle = null;
     cartProblemIds.add(strId);
     if (cartProblemIds.size === 1 && !problemCart.classList.contains('open')) {
         problemCart.classList.add('open');
@@ -138,6 +140,7 @@ function toggleCartItem(problemId) {
     const strId = String(problemId);
 
     if (cartProblemIds.has(strId)) {
+        _setLoadedTitle = null;
         cartProblemIds.delete(strId);
         updateCartUI();
     } else {
@@ -307,13 +310,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const ids = Array.from(cartProblemIds);
 
             if (!(typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE)) {
-                // 자동 명칭 생성
-                try {
-                    const titleRes = await fetch(`/api/sets/auto_title?ids=${encodeURIComponent(ids.join(','))}`);
-                    const titleData = await titleRes.json();
-                    currentAutoTitle = titleData.title || '문항 세트';
-                } catch(e) {
-                    currentAutoTitle = '문항 세트';
+                // 자동 명칭 생성 (내 문항지에서 불러온 경우 사용자 타이틀 우선)
+                if (_setLoadedTitle) {
+                    currentAutoTitle = _setLoadedTitle;
+                    _setLoadedTitle = null;
+                } else {
+                    try {
+                        const titleRes = await fetch(`/api/sets/auto_title?ids=${encodeURIComponent(ids.join(','))}`);
+                        const titleData = await titleRes.json();
+                        currentAutoTitle = titleData.title || '문항 세트';
+                    } catch(e) {
+                        currentAutoTitle = '문항 세트';
+                    }
                 }
                 // 임시저장
                 try {
@@ -2466,6 +2474,7 @@ async function loadSetToCart(setId) {
             const set = await res.json();
             cartProblemIds.clear();
             set.problem_ids.forEach(id => cartProblemIds.add(id));
+            _setLoadedTitle = set.title || null;
             restoredTempIds = [...set.problem_ids];
             cartRestoreWarningShown = true;
             updateCartUI();
