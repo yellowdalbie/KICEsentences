@@ -58,10 +58,6 @@
                 <div class="brand-subtitle" style="margin-top: 5px;">Linking Yields & Nodes of eXams</div>
             </div>
 
-            <div id="service-notice" style="position: absolute; left: 1.5rem; top: 2rem; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; max-width: 220px; opacity: 0.8;">
-                기하(2022)와 미적분II(2022)는<br>해설과 정답이 서비스되지 않습니다.<br>'기출표현'·'문항번호' 검색은 가능합니다.
-            </div>
-
             {% if not offline_mode %}
             <div id="auth-app-section" style="position: fixed; right: 1.5rem; display: flex; align-items: center; gap: 0.8rem; z-index: 9999;">
                 <button onclick="openAuthModal('login')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-color); padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; backdrop-filter: blur(4px);">로그인</button>
@@ -70,7 +66,7 @@
             {% endif %}
 
             <!-- Search Mode Selector -->
-            <div style="display: flex; align-items: center; gap: 0.8rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 900px; margin: 0 auto;">
                 <div class="search-mode-pills">
                     <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
                     <button class="search-pill" data-tab="tab-expression">기출표현</button>
@@ -2457,6 +2453,47 @@ function tmCopy() {
     </div>
   </div>
 </div>
+
+<!-- 서비스 범위 안내 팝업 -->
+<div id="service-notice-modal" class="no-print" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9500; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);">
+  <div style="background:rgba(15,22,40,0.98); border:1px solid rgba(6,182,212,0.3); border-radius:16px; padding:2rem 2.2rem; max-width:480px; width:90%; box-shadow:0 24px 60px rgba(0,0,0,0.6); position:relative;">
+    <h3 style="color:#fff; margin:0 0 1rem; font-size:1.05rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      서비스 범위 안내
+    </h3>
+    <p style="color:#94a3b8; font-size:0.9rem; line-height:1.8; margin:0 0 1.6rem;">
+      <b style="color:#67e8f9;">기하(2022)</b>와 <b style="color:#67e8f9;">미적분II(2022)</b>는<br>
+      해설과 정답이 서비스되지 않습니다.<br>
+      <span style="font-size:0.85rem;">'기출표현' 검색과 '문항번호' 검색에서 문항 검색은 가능합니다.</span>
+    </p>
+    <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
+      <button onclick="closeServiceNoticeModal(true)"
+        style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text-muted);
+               padding:0.5rem 1.1rem; border-radius:8px; cursor:pointer; font-size:0.82rem;">
+        일주일간 다시 보지 않음
+      </button>
+      <button onclick="closeServiceNoticeModal(false)"
+        style="background:var(--accent-cyan); border:none; color:#030712;
+               padding:0.5rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.83rem; font-weight:700;">
+        확인
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+  function closeServiceNoticeModal(suppress1Week) {
+    if (suppress1Week) {
+      localStorage.setItem('svc_notice_hide_until', Date.now() + 7 * 24 * 60 * 60 * 1000);
+    }
+    document.getElementById('service-notice-modal').style.display = 'none';
+  }
+  (function() {
+    const until = localStorage.getItem('svc_notice_hide_until');
+    if (!until || Date.now() > parseInt(until)) {
+      document.getElementById('service-notice-modal').style.display = 'flex';
+    }
+  })();
+</script>
 
 </body>
 

@@ -54,7 +54,15 @@ window.scrollToBoard = function() {
   if (kw) kw.classList.add('active');
   setTimeout(() => {
     const panel = document.getElementById('board-panel');
-    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!panel) return;
+    const panelHeight = panel.offsetHeight;
+    const vh = window.innerHeight;
+    const panelTop = panel.getBoundingClientRect().top + window.scrollY;
+    // 게시판이 화면보다 작으면 하단이 화면 하단에, 크면 상단이 화면 상단에
+    const targetY = panelHeight < vh
+      ? panelTop + panelHeight - vh
+      : panelTop;
+    window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
   }, 50);
 };
 
@@ -242,6 +250,8 @@ async function toggleAccordion(tr, postId, postType) {
       if (inner.style.maxHeight !== '0px') inner.style.maxHeight = 'none';
     }, { once: true });
   });
+  // 펼친 게시글 제목 행이 화면 상단에 오도록 스크롤
+  setTimeout(() => { tr.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
 
   try {
     const res = await fetch(`/api/board/posts/${postId}`);
@@ -268,6 +278,17 @@ function _collapseAccordion() {
   _boardCurrentPost = null;
 }
 
+// 닫기 버튼: 아코디언 닫고 해당 행이 화면 중앙에 오도록 스크롤
+window.closeBoardPost = function() {
+  const mainRow = _expandedTr ? _expandedTr.previousElementSibling : null;
+  _collapseAccordion();
+  if (mainRow) {
+    setTimeout(() => {
+      mainRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 350);
+  }
+};
+
 function _fillAccordion(post, user) {
   const inner = document.getElementById('board-accordion-inner');
   if (!inner) return;
@@ -290,6 +311,13 @@ function _fillAccordion(post, user) {
       style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
              color:var(--text-muted);padding:0.22rem 0.65rem;border-radius:6px;cursor:pointer;font-size:0.75rem;">
       편집자 설명 수정</button>` : '';
+
+  // 메타 영역 우측 장바구니 담기 버튼 (편집 + 문항 있을 때)
+  const cartBtnTopHtml = (post.type === 'edit' && post.problem_ids?.length) ? `
+    <button onclick="addProblemsToCartFromBoard()"
+      style="background:var(--accent-cyan);border:none;color:#030712;
+             padding:0.28rem 0.9rem;border-radius:7px;cursor:pointer;font-size:0.8rem;font-weight:700;">
+      장바구니 담기</button>` : '';
 
   // 수록 문항 (편집물)
   let problemsHtml = '';
@@ -351,12 +379,15 @@ function _fillAccordion(post, user) {
   inner.innerHTML = `
     <div style="padding:1.1rem 1rem 1.2rem; background:rgba(6,182,212,0.03);">
       <!-- 메타 -->
-      <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;margin-bottom:0.7rem;">
-        <span class="board-type-badge ${TYPE_CLASS[post.type]||''}">${TYPE_LABEL[post.type]||post.type}</span>
-        <span style="font-size:0.78rem;color:var(--text-muted);">${_escHtml(post.author_name)}</span>
-        <span style="font-size:0.78rem;color:var(--text-muted);">${post.created_at ? post.created_at.slice(0,16) : ''}</span>
-        ${likeHtml}
-        ${editDescHtml}
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.7rem;">
+        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+          <span class="board-type-badge ${TYPE_CLASS[post.type]||''}">${TYPE_LABEL[post.type]||post.type}</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);">${_escHtml(post.author_name)}</span>
+          <span style="font-size:0.78rem;color:var(--text-muted);">${post.created_at ? post.created_at.slice(0,16) : ''}</span>
+          ${likeHtml}
+          ${editDescHtml}
+        </div>
+        ${cartBtnTopHtml}
       </div>
       <!-- 내용 -->
       ${post.content ? `<div style="font-size:0.88rem;color:var(--text-color);line-height:1.7;white-space:pre-wrap;margin-bottom:0.5rem;">${_escHtml(post.content)}</div>` : ''}
@@ -369,6 +400,13 @@ function _fillAccordion(post, user) {
           <div id="bd-comments-list" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
           ${commentInputHtml}
         </div>` : ''}
+      <!-- 닫기 -->
+      <div style="display:flex;justify-content:center;margin-top:1rem;padding-top:0.8rem;border-top:1px solid rgba(255,255,255,0.06);">
+        <button onclick="closeBoardPost()"
+          style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+                 color:var(--text-muted);padding:0.35rem 2rem;border-radius:6px;cursor:pointer;
+                 font-size:0.82rem;transition:all 0.15s;">닫기</button>
+      </div>
     </div>`;
 
   if (post.type !== 'notice') {
