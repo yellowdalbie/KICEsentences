@@ -346,6 +346,8 @@ function logCartEvent(eventType, problemIds) {
 }
 
 async function openPrintPreview() {
+    const _existingTitle = printModalBody.querySelector('.exam-title');
+    if (_existingTitle) { const t = _existingTitle.textContent.trim(); if (t) currentAutoTitle = t; }
     printModalBody.innerHTML = '<div style="display:flex; justify-content:center; padding:3rem;"><div class="loader">이미지 및 정답을 불러오는 중...</div></div>';
     printModal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
