@@ -145,7 +145,7 @@
 
             <!-- 3. Unit Search Selection (No input, just tree activation) -->
             <div id="tab-unit" class="huge-search-wrapper">
-                <div style="text-align:center; color: var(--text-muted); font-size: 1.1rem; padding: 1rem;">
+                <div id="unit-tab-placeholder" style="text-align:center; color: var(--text-muted); font-size: 1.1rem; padding: 1rem;">
                     아래에서 과목과 단원을 선택하여 특정 성취기준에 해당하는 문항을 탐색하세요.
                 </div>
             </div>
@@ -831,6 +831,8 @@
                 }
 
                 if (targetTab === 'tab-unit') {
+                    const unitPlaceholder = document.getElementById('unit-tab-placeholder');
+                    if (unitPlaceholder) unitPlaceholder.style.display = '';
                     switchView('concepts');
                 } else if (targetTab === 'tab-expression') {
                     // Start fresh if they just clicked the tab, could show earlier results but let's reset to overview until search is run
@@ -1224,6 +1226,8 @@
         }
 
         async function searchConceptProblems(conceptId, conceptLabel) {
+            const unitPlaceholder = document.getElementById('unit-tab-placeholder');
+            if (unitPlaceholder) unitPlaceholder.style.display = 'none';
             // 로딩 표시: view-search 로 전환 후 placeholder 표시
             switchView('search');
             const placeholderMsg = document.getElementById('search-placeholder-msg');
