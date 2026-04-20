@@ -1155,44 +1155,43 @@ async function logAndPrint() {
     const orderedIds = Array.from(sidebarItems)
         .map(li => li.dataset.problemId)
         .filter(Boolean);
-    // fallback: 사이드바에 data-problem-id 없으면 cartProblemIds 사용
     const finalIds = orderedIds.length > 0 ? orderedIds : Array.from(cartProblemIds);
 
-    // 현재 타이틀 추출 (사용자가 직접 수정했을 경우 우선, 아니면 자동 생성 타이틀)
+    // 현재 타이틀 추출
     const examTitleEl = printModalBody?.querySelector('.exam-title');
     const editedTitle = (examTitleEl?.textContent || '').trim();
     const title = editedTitle || currentAutoTitle || '문항 세트';
 
-    if (!(typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE)) {
-        // 완전저장
-        try {
-            await fetch('/api/sets/final', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    problem_ids: finalIds,
-                    title: title,
-                    source_query: getBestSearchQuery()
-                })
-            });
-        } catch(e) { /* 저장 실패해도 인쇄는 진행 */ }
+    // 실제 인쇄 실행 함수
+    const doPrint = async () => {
+        if (!(typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE)) {
+            try {
+                await fetch('/api/sets/final', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ problem_ids: finalIds, title, source_query: getBestSearchQuery() })
+                });
+            } catch(e) {}
+        }
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const datetime = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+        const originalTitle = document.title;
+        document.title = `${title}_${datetime}`;
+        window.print();
+        window.addEventListener('afterprint', () => { document.title = originalTitle; }, { once: true });
+        logCartEvent('save_pdf', finalIds);
+    };
+
+    // 로그인+인증 사용자: 게시 옵션 모달 → 게시 후 인쇄
+    const isOffline = typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE;
+    if (!isOffline && window.AUTH_STATE?.isLoggedIn && window.AUTH_STATE?.isVerified
+        && typeof window.openBoardPublishModal === 'function') {
+        window.openBoardPublishModal(title, finalIds, doPrint);
+        return;
     }
 
-    // PDF 파일명 설정 (document.title 트릭)
-    const now = new Date();
-    const pad = n => String(n).padStart(2, '0');
-    const datetime = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
-    const pdfFilename = `${title}_${datetime}`;
-    const originalTitle = document.title;
-    document.title = pdfFilename;
-
-    window.print();
-
-    window.addEventListener('afterprint', () => {
-        document.title = originalTitle;
-    }, { once: true });
-
-    logCartEvent('save_pdf', finalIds);
+    await doPrint();
 }
 
 function closePrintPreview() {
@@ -1542,6 +1541,13 @@ async function initAuth() {
     }
     updateAuthNavUI();
     updateVerifyBanner();
+    if (typeof window.boardSetUser === 'function') {
+        window.boardSetUser({
+            loggedIn: window.AUTH_STATE.isLoggedIn,
+            verified: window.AUTH_STATE.isVerified,
+            isAdmin:  window.AUTH_STATE.isAdmin,
+        });
+    }
 }
 
 function _setBannerHeightVar() {
@@ -2211,6 +2217,121 @@ window.openErrorReportModal = openErrorReportModal;
 window.closeErrorReportModal = closeErrorReportModal;
 window.submitErrorReport = submitErrorReport;
 window.removeErrProb = removeErrProb;
+
+// ── 게시판 글쓰기용 연도 버튼 (단일 선택) ─────────────────────
+let _bwYear = '', _bwExam = '';
+
+function initBoardWriteYearButtons(onSelectCallback) {
+    const g1 = document.getElementById('bw-yr-group-1');
+    const g2 = document.getElementById('bw-yr-group-2');
+    const g3 = document.getElementById('bw-yr-group-3');
+    const g4 = document.getElementById('bw-yr-group-4');
+
+    // 기존 버튼 초기화
+    [g1,g2,g3,g4].forEach(g => {
+        if (!g) return;
+        // label span 빼고 나머지 제거
+        const label = g.querySelector('.error-group-label');
+        g.innerHTML = '';
+        if (label) g.appendChild(label);
+    });
+
+    _bwYear = ''; _bwExam = '';
+
+    const addBtns = (group, yrs) => {
+        if (!group) return;
+        yrs.forEach(yr => {
+            group.insertAdjacentHTML('beforeend', getYrWrapHtml(yr));
+        });
+    };
+    addBtns(g1, yrs1); addBtns(g2, yrs2); addBtns(g3, yrs3); addBtns(g4, yrs4);
+
+    // yr-wrap 클릭 (bw- 컨텍스트 내에서만)
+    const overlay = document.getElementById('board-write-overlay');
+    if (!overlay) return;
+
+    overlay.querySelectorAll('.yr-wrap').forEach(wrap => {
+        const yrBtn = wrap.querySelector('.yr-btn');
+        const splits = wrap.querySelector('.error-split-btns');
+        if (!yrBtn || !splits) return;
+        yrBtn.onclick = () => {
+            overlay.querySelectorAll('.error-split-btns').forEach(el => el.style.display = 'none');
+            overlay.querySelectorAll('.yr-btn').forEach(el => el.style.display = 'block');
+            yrBtn.style.display = 'none';
+            splits.style.display = 'flex';
+            _bwYear = wrap.dataset.yr;
+            _bwExam = '';
+            const grid = document.getElementById('bw-step-grid');
+            if (grid) grid.style.display = 'none';
+            overlay.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+        };
+    });
+
+    overlay.querySelectorAll('.exam-btn').forEach(btn => {
+        btn.onclick = () => {
+            overlay.querySelectorAll('.exam-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            _bwYear = btn.dataset.yr;
+            _bwExam = btn.dataset.exam;
+            _renderBwGrid(onSelectCallback);
+        };
+    });
+}
+
+function _renderBwGrid(onSelectCallback) {
+    const gridContainer = document.getElementById('bw-step-grid');
+    if (!gridContainer) return;
+    gridContainer.style.display = 'flex';
+    gridContainer.innerHTML = '';
+    const y = parseInt(_bwYear);
+
+    const createBlock = (label, prefix, rows) => {
+        let h = `<div style="display:flex; align-items:flex-start; margin-bottom:4px; gap:8px;">`;
+        if (label) h += `<span style="font-size:0.75rem; color:var(--accent-cyan); font-weight:700; width:35px; flex-shrink:0; padding-top:6px;">${label}</span>`;
+        h += `<div style="display:flex; flex-direction:column; gap:6px; flex:1;">`;
+        for (let r of rows) {
+            h += `<div class="error-grid-row">`;
+            for (let i = r.start; i <= r.end; i++) {
+                const numStr = i < 10 ? '0' + i : '' + i;
+                let qExam = _bwExam === '수능' ? '수능' : '.' + _bwExam;
+                let pid = `${_bwYear}${qExam}${prefix}_${numStr}`;
+                if (y >= 2028) pid = `${_bwYear}${qExam}_${numStr}`;
+                else if (y >= 2022) {
+                    pid = prefix ? `${_bwYear}${qExam}${prefix}_${numStr}` : `${_bwYear}${qExam}_${numStr}`;
+                }
+                h += `<button class="error-prob-btn bw-prob-btn" data-pid="${pid}">${numStr}</button>`;
+            }
+            h += `</div>`;
+        }
+        h += `</div></div>`;
+        return h;
+    };
+
+    if (y >= 2014 && y <= 2016) {
+        gridContainer.innerHTML = createBlock('A형','A',[{start:1,end:13},{start:14,end:21},{start:22,end:25},{start:26,end:30}])
+                                + createBlock('B형','B',[{start:1,end:13},{start:14,end:21},{start:22,end:25},{start:26,end:30}]);
+    } else if (y >= 2017 && y <= 2021) {
+        gridContainer.innerHTML = createBlock('가형','가',[{start:1,end:13},{start:14,end:21},{start:22,end:25},{start:26,end:30}])
+                                + createBlock('나형','나',[{start:1,end:13},{start:14,end:21},{start:22,end:25},{start:26,end:30}]);
+    } else if (y >= 2022 && y <= 2027) {
+        gridContainer.innerHTML = createBlock('공통','',[{start:1,end:8},{start:9,end:15},{start:16,end:19},{start:20,end:22}])
+                                + createBlock('확통','확',[{start:23,end:30}])
+                                + createBlock('미적','미',[{start:23,end:30}])
+                                + createBlock('기하','기',[{start:23,end:30}]);
+    } else if (y >= 2028) {
+        gridContainer.innerHTML = createBlock('통합','',[{start:1,end:13},{start:14,end:21},{start:22,end:25},{start:26,end:30}]);
+    }
+
+    gridContainer.querySelectorAll('.bw-prob-btn').forEach(btn => {
+        btn.onclick = () => {
+            gridContainer.querySelectorAll('.bw-prob-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            if (onSelectCallback) onSelectCallback(btn.dataset.pid);
+        };
+    });
+}
+
+window.initBoardWriteYearButtons = initBoardWriteYearButtons;
 
 
 // ── 검색어 추적 ───────────────────────────────────────────────

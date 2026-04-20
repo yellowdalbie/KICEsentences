@@ -32,6 +32,9 @@ from email.mime.multipart import MIMEMultipart
 app = Flask(__name__)
 from routes_landing import landing_bp
 app.register_blueprint(landing_bp)
+from routes_board import board_bp, get_board_db
+app.register_blueprint(board_bp)
+get_board_db().close()  # board.sqlite 초기화
 
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
 app.config['SESSION_COOKIE_HTTPONLY'] = True

@@ -67,6 +67,10 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                     활용 팁
                 </button>
+                <button class="tip-toggle-btn" onclick="scrollToBoard()" style="background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.25);color:#67e8f9;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    게시판
+                </button>
                 <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.3;">
                     기하(2022)와 미적분II(2022)는 해설과 정답이 서비스되지 않습니다.<br>'기출표현'검색과 '문항번호'검색에서 문항 검색은 가능합니다.
                 </div>
@@ -101,12 +105,6 @@
                 </div>
                 <div class="search-helper-text" id="keyword-search-guide">
                     <span>수학 개념어 또는 풀이 방법 입력</span>
-                    {% if not offline_mode %}
-                    <button class="nav-report-btn" onclick="openErrorReportModal()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                        오류 신고
-                    </button>
-                    {% endif %}
                 </div>
             </div>
 
@@ -134,12 +132,6 @@
                         </svg>
                     </a>
                     <span>AND: 공백 | OR: 파이프(|) | NOT: 하이픈(-) | 구문: "따옴표"</span>
-                    {% if not offline_mode %}
-                    <button class="nav-report-btn" onclick="openErrorReportModal()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                        오류 신고
-                    </button>
-                    {% endif %}
                 </div>
             </div>
 
@@ -165,12 +157,6 @@
                 </div>
                 <div class="search-helper-text">
                     <span>예) 2024수능_30 · 2023.9모_15 · 2019수능나_26</span>
-                    {% if not offline_mode %}
-                    <button class="nav-report-btn" onclick="openErrorReportModal()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                        오류 신고
-                    </button>
-                    {% endif %}
                 </div>
             </div>
         </header>
@@ -246,7 +232,7 @@
             </section>
 
             <!-- View 1: Overview -->
-            <section id="view-overview" class="view-section active">
+            <section id="view-overview" class="view-section active" style="overflow-y:auto;">
                 <div style="display: flex; justify-content: center; margin-top: 1rem;">
                     <div class="chart-card glass" style="padding: 1.5rem; width: 100%; max-width: 900px;">
                         <div class="stats-grid"
@@ -288,6 +274,59 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- 게시판 패널 -->
+                <div id="board-panel" style="display:flex; justify-content:center; margin-top:2rem; margin-bottom:2rem;">
+                  <div style="width:100%; max-width:900px;">
+                    <!-- 게시판 헤더 -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:0.6rem;">
+                      <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#67e8f9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <span style="font-size:1.05rem; font-weight:700; color:var(--text-color);">게시판</span>
+                      </div>
+                      <!-- 필터 -->
+                      <div id="board-filter-bar" style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                        <!-- 관리자 선택 모드 버튼 -->
+                        {% if not offline_mode %}
+                        <button id="board-select-btn" style="display:none; padding:0.3rem 0.8rem; border-radius:6px; font-size:0.78rem; font-weight:600; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.08); color:#f87171; cursor:pointer;" onclick="toggleBoardSelectMode()">선택</button>
+                        <button id="board-delete-btn" style="display:none; padding:0.3rem 0.8rem; border-radius:6px; font-size:0.78rem; font-weight:600; border:1px solid rgba(239,68,68,0.5); background:rgba(239,68,68,0.15); color:#fca5a5; cursor:pointer;" onclick="bulkDeletePosts()">삭제</button>
+                        {% endif %}
+                        <div class="board-filter-pills" style="display:flex; gap:0.3rem;">
+                          <button class="board-filter-pill active" data-filter="all" onclick="setBoardFilter(this,'all')">전체</button>
+                          <button class="board-filter-pill" data-filter="edit" onclick="setBoardFilter(this,'edit')">편집</button>
+                          <button class="board-filter-pill" data-filter="question" onclick="setBoardFilter(this,'question')">질문</button>
+                          <button class="board-filter-pill" data-filter="error" onclick="setBoardFilter(this,'error')">오류</button>
+                          <button class="board-filter-pill" data-filter="liked" onclick="setBoardFilter(this,'liked')">좋아요</button>
+                        </div>
+                        <!-- 글쓰기 버튼 영역 -->
+                        <div id="board-write-btns" style="display:none; gap:0.4rem; margin-left:0.4rem;"></div>
+                      </div>
+                    </div>
+
+                    <!-- 게시글 목록 테이블 -->
+                    <div class="glass" style="border-radius:12px; overflow:hidden;">
+                      <table id="board-table" style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                        <thead>
+                          <tr style="border-bottom:1px solid rgba(255,255,255,0.08); color:var(--text-muted); font-size:0.78rem;">
+                            <th id="board-th-check" style="display:none; width:36px; padding:0.6rem 0.5rem; text-align:center;"></th>
+                            <th style="width:36px; padding:0.6rem 0.5rem; text-align:center;">#</th>
+                            <th style="width:52px; padding:0.6rem 0.3rem; text-align:center;">유형</th>
+                            <th style="padding:0.6rem 0.5rem; text-align:left;">제목</th>
+                            <th style="width:90px; padding:0.6rem 0.5rem; text-align:center;">작성자</th>
+                            <th style="width:90px; padding:0.6rem 0.5rem; text-align:center;">날짜</th>
+                            <th style="width:44px; padding:0.6rem 0.5rem; text-align:center;">♥</th>
+                          </tr>
+                        </thead>
+                        <tbody id="board-tbody">
+                          <tr><td colspan="6" style="padding:2rem; text-align:center; color:var(--text-muted);">불러오는 중...</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <!-- 페이지네이션 -->
+                    <div id="board-pagination" style="display:flex; justify-content:center; gap:0.4rem; margin-top:0.8rem;"></div>
+                  </div>
                 </div>
             </section>
 
@@ -1918,6 +1957,7 @@
 
     <!-- Include Cart Logic -->
     <script src="{{ url_for('static', filename='cart.js') }}?v=1.1"></script>
+    <script src="{{ url_for('static', filename='board.js') }}?v=1.0"></script>
     <!-- Custom Alert Modal -->
     <div id="custom-alert-modal" class="no-print">
         <div class="custom-alert-content">
@@ -2048,40 +2088,6 @@
     {% endif %}
 
     {% if not offline_mode %}
-    <!-- 오류 신고 모달 -->
-    <div id="error-report-overlay">
-        <div class="error-modal-card">
-            <button class="error-modal-close" onclick="closeErrorReportModal()">×</button>
-            <div class="error-banner">
-                정답이 없는 문항, 해설이 잘못된 문항 등등<br>
-                문항 번호만 알려주세요.<br>
-                개선하는 데 큰 도움이 됩니다.
-            </div>
-            
-            <div class="error-row" id="err-step-year">
-                <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-1">
-                    <span class="error-group-label">[A/B]</span>
-                </div>
-                <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-2">
-                    <span class="error-group-label">[가/나]</span>
-                </div>
-                <div class="error-yr-btns" style="margin-bottom:8px;" id="yr-group-3">
-                    <span class="error-group-label" style="font-size:0.65rem;">[확/미/기]</span>
-                </div>
-                <div class="error-yr-btns" id="yr-group-4">
-                    <span class="error-group-label">[통합]</span>
-                </div>
-            </div>
-
-            <div class="error-grid" id="err-step-grid" style="display:none; margin-top:10px;">
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top:15px;" id="err-submit-zone">
-                <div id="err-selected-list" style="display:flex; flex-wrap:wrap; gap:6px; flex:1; max-height:80px; overflow-y:auto; padding-right:10px;"></div>
-                <button class="error-submit-btn" id="err-submit-btn" style="width:130px; margin-top:0; flex-shrink:0;" disabled onclick="submitErrorReport()">오류 신고 제출</button>
-            </div>
-        </div>
-    </div>
     {% endif %}
 
     <!-- 마이페이지 모달 -->
@@ -2357,6 +2363,178 @@ function tmCopy() {
   });
 })();
 </script>
+
+<!-- ══════════════════════════════════════════
+     게시판 상세 오버레이
+════════════════════════════════════════════ -->
+<div id="board-detail-overlay" style="display:none; position:fixed; inset:0; z-index:8000; background:rgba(3,7,18,0.92); overflow-y:auto; padding:2rem 1rem;">
+  <div style="max-width:780px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:1.5rem;">
+      <button onclick="closeBoardDetail()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:var(--text-muted); padding:0.45rem 1rem; border-radius:8px; cursor:pointer; font-size:0.83rem;">← 목록</button>
+      <span id="bd-type-badge" style="font-size:0.75rem; font-weight:700; padding:0.25rem 0.6rem; border-radius:5px;"></span>
+    </div>
+
+    <div class="glass" style="border-radius:14px; padding:1.5rem; margin-bottom:1.2rem;">
+      <h2 id="bd-title" style="margin:0 0 0.8rem; font-size:1.2rem; color:var(--text-color);"></h2>
+      <div style="display:flex; align-items:center; gap:1rem; font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem; flex-wrap:wrap;">
+        <span id="bd-author"></span>
+        <span id="bd-date"></span>
+        <button id="bd-like-btn" onclick="toggleDetailLike()" style="display:flex; align-items:center; gap:0.3rem; background:none; border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:0.25rem 0.7rem; cursor:pointer; font-size:0.8rem; color:var(--text-muted); transition:all 0.2s;">
+          <span id="bd-like-heart">♡</span><span id="bd-like-count">0</span>
+        </button>
+        <button id="bd-edit-desc-btn" style="display:none; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.25rem 0.7rem; border-radius:6px; cursor:pointer; font-size:0.78rem;" onclick="openEditDesc()">편집자 설명 수정</button>
+      </div>
+      <div id="bd-content" style="font-size:0.9rem; color:var(--text-color); line-height:1.7; white-space:pre-wrap;"></div>
+    </div>
+
+    <!-- 편집물: 문항 카드 목록 -->
+    <div id="bd-problems-section" style="display:none; margin-bottom:1.2rem;">
+      <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.6rem; font-weight:600;">수록 문항</div>
+      <div id="bd-problems-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+      <button id="bd-pdf-btn" onclick="printFromBoard()" style="margin-top:1rem; background:var(--accent-cyan); border:none; color:#030712; padding:0.55rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">PDF 저장</button>
+    </div>
+
+    <!-- 질문/오류: 연결 문항 -->
+    <div id="bd-ref-problem-section" style="display:none; margin-bottom:1.2rem;">
+      <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.6rem; font-weight:600;">관련 문항</div>
+      <div id="bd-ref-problem-card" style="display:flex; align-items:center; gap:1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:0.8rem;">
+        <span id="bd-ref-problem-id" style="font-weight:700; font-size:0.9rem; min-width:120px;"></span>
+        <img id="bd-ref-thumbnail" src="" alt="" style="max-height:80px; border-radius:6px; display:none;">
+      </div>
+    </div>
+
+    <!-- 댓글 -->
+    <div id="bd-comments-section" style="display:none;">
+      <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem; font-weight:600;">댓글</div>
+      <div id="bd-comments-list" style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1rem;"></div>
+      <div id="bd-comment-form" style="display:none;">
+        <textarea id="bd-comment-input" placeholder="댓글을 입력하세요..." rows="3"
+          style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.7rem; color:var(--text-color); font-size:0.85rem; resize:vertical; font-family:inherit;"></textarea>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
+          <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.78rem; color:var(--text-muted); cursor:pointer;">
+            <input type="checkbox" id="bd-comment-anon"> 익명
+          </label>
+          <button onclick="submitComment(null)" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.4rem 1rem; border-radius:7px; cursor:pointer; font-size:0.82rem; font-weight:700;">등록</button>
+        </div>
+      </div>
+      <div id="bd-comment-login-notice" style="display:none; font-size:0.82rem; color:var(--text-muted); text-align:center; padding:0.5rem;">댓글을 작성하려면 이메일 인증이 필요합니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     게시글 권한 안내 모달
+════════════════════════════════════════════ -->
+<div id="board-auth-modal" style="display:none; position:fixed; inset:0; z-index:8500; background:rgba(3,7,18,0.85); display:flex; align-items:center; justify-content:center;">
+  <div class="glass" style="max-width:380px; width:90%; border-radius:16px; padding:2rem; text-align:center; position:relative;">
+    <button onclick="closeBoardAuthModal()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">×</button>
+    <div id="bam-icon" style="font-size:2rem; margin-bottom:0.8rem;">🔒</div>
+    <div id="bam-title" style="font-weight:700; font-size:1rem; color:var(--text-color); margin-bottom:0.5rem;"></div>
+    <div id="bam-desc" style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; margin-bottom:1.4rem;"></div>
+    <div id="bam-btns" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+  </div>
+</div>
+<script>document.getElementById('board-auth-modal').style.display='none';</script>
+
+<!-- ══════════════════════════════════════════
+     편집자 설명 수정 모달
+════════════════════════════════════════════ -->
+<div id="board-edit-desc-modal" style="display:none; position:fixed; inset:0; z-index:8500; background:rgba(3,7,18,0.85); align-items:center; justify-content:center;">
+  <div class="glass" style="max-width:480px; width:90%; border-radius:16px; padding:1.8rem; position:relative;">
+    <button onclick="document.getElementById('board-edit-desc-modal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">×</button>
+    <div style="font-weight:700; font-size:1rem; margin-bottom:1rem; color:var(--text-color);">편집자 설명 수정</div>
+    <textarea id="edit-desc-textarea" rows="5" placeholder="편집 의도나 설명을 입력하세요..."
+      style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.7rem; color:var(--text-color); font-size:0.88rem; resize:vertical; font-family:inherit;"></textarea>
+    <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:0.8rem;">
+      <button onclick="document.getElementById('board-edit-desc-modal').style.display='none'" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.45rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">취소</button>
+      <button onclick="submitEditDesc()" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.45rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     공지사항 작성 모달 (관리자 전용)
+════════════════════════════════════════════ -->
+<div id="board-notice-modal" style="display:none; position:fixed; inset:0; z-index:8500; background:rgba(3,7,18,0.85); align-items:center; justify-content:center;">
+  <div class="glass" style="max-width:520px; width:90%; border-radius:16px; padding:1.8rem; position:relative;">
+    <button onclick="document.getElementById('board-notice-modal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">×</button>
+    <div style="font-weight:700; font-size:1rem; margin-bottom:1rem; color:var(--text-color);">📌 공지사항 작성</div>
+    <input id="notice-title-input" type="text" placeholder="제목" maxlength="100"
+      style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.6rem 0.8rem; color:var(--text-color); font-size:0.9rem; margin-bottom:0.8rem;">
+    <textarea id="notice-content-input" rows="7" placeholder="내용을 입력하세요..."
+      style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.7rem; color:var(--text-color); font-size:0.88rem; resize:vertical; font-family:inherit;"></textarea>
+    <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:0.8rem;">
+      <button onclick="document.getElementById('board-notice-modal').style.display='none'" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.45rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">취소</button>
+      <button onclick="submitNotice()" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.45rem 1.2rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     질문/오류신고 작성 모달 (기존 오류신고 모달 흡수)
+════════════════════════════════════════════ -->
+<div id="board-write-overlay" style="display:none; position:fixed; inset:0; z-index:8500; background:rgba(3,7,18,0.85); align-items:center; justify-content:center;">
+  <div class="glass" style="max-width:540px; width:92%; border-radius:16px; padding:1.8rem; position:relative; max-height:90vh; overflow-y:auto;">
+    <button onclick="closeBoardWrite()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">×</button>
+    <div id="bw-title" style="font-weight:700; font-size:1rem; margin-bottom:0.3rem; color:var(--text-color);"></div>
+    <div id="bw-banner" style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;"></div>
+
+    <!-- 문항 선택 (기존 오류신고 모달 UI 이식) -->
+    <div id="bw-prob-select-section">
+      <div class="error-row" id="bw-yr-groups">
+        <div class="error-yr-btns" style="margin-bottom:8px;" id="bw-yr-group-1">
+          <span class="error-group-label">[A/B]</span>
+        </div>
+        <div class="error-yr-btns" style="margin-bottom:8px;" id="bw-yr-group-2">
+          <span class="error-group-label">[가/나]</span>
+        </div>
+        <div class="error-yr-btns" style="margin-bottom:8px;" id="bw-yr-group-3">
+          <span class="error-group-label" style="font-size:0.65rem;">[확/미/기]</span>
+        </div>
+        <div class="error-yr-btns" id="bw-yr-group-4">
+          <span class="error-group-label">[통합]</span>
+        </div>
+      </div>
+      <div class="error-grid" id="bw-step-grid" style="display:none; margin-top:10px;"></div>
+    </div>
+
+    <!-- 선택된 문항 표시 -->
+    <div style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px;">
+      <div id="bw-selected-problem" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">선택된 문항: <span id="bw-selected-label" style="color:var(--accent-cyan); font-weight:600;">없음</span></div>
+    </div>
+
+    <!-- 내용 입력 -->
+    <textarea id="bw-content-input" rows="4" placeholder="내용을 입력하세요..."
+      style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.7rem; color:var(--text-color); font-size:0.85rem; resize:vertical; font-family:inherit; margin-top:0.4rem;"></textarea>
+
+    <div style="display:flex; justify-content:flex-end; margin-top:0.8rem;">
+      <button id="bw-submit-btn" onclick="submitBoardWrite()" disabled
+        style="background:var(--accent-cyan); border:none; color:#030712; padding:0.5rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700; opacity:0.5; transition:opacity 0.2s;">작성 완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PDF 게시 옵션 모달
+════════════════════════════════════════════ -->
+<div id="board-publish-modal" style="display:none; position:fixed; inset:0; z-index:9500; background:rgba(3,7,18,0.9); align-items:center; justify-content:center;">
+  <div class="glass" style="max-width:440px; width:90%; border-radius:16px; padding:1.8rem; position:relative;">
+    <div style="font-weight:700; font-size:1rem; margin-bottom:1.2rem; color:var(--text-color);">📋 편집물 게시</div>
+    <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">인쇄물 제목</div>
+    <input id="publish-title-input" type="text" maxlength="100"
+      style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.6rem 0.8rem; color:var(--text-color); font-size:0.9rem; font-weight:600; margin-bottom:1rem;">
+    <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.4rem;">편집자 설명 <span style="color:rgba(255,255,255,0.3);">(선택)</span></div>
+    <textarea id="publish-desc-input" rows="3" placeholder="어떤 의도로 이 문항들을 담았는지 짧게 소개해보세요."
+      style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.6rem 0.8rem; color:var(--text-color); font-size:0.85rem; resize:none; font-family:inherit; margin-bottom:1rem;"></textarea>
+    <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--text-muted); margin-bottom:1.2rem; cursor:pointer;">
+      <input type="checkbox" id="publish-anon-check"> 아이디 비공개 (익명으로 게시)
+    </label>
+    <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
+      <button onclick="closeBoardPublish()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">취소 (인쇄만)</button>
+      <button onclick="confirmBoardPublish()" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.5rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">게시 후 인쇄</button>
+    </div>
+  </div>
+</div>
 
 </body>
 

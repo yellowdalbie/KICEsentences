@@ -3152,3 +3152,64 @@ body.preview-open #global-actions-left {
     padding: 0 0.2rem;
     line-height: 1;
 }
+
+/* ── 게시판 ────────────────────────────────────────────── */
+.board-filter-pill {
+  padding: 0.28rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.board-filter-pill:hover { background: rgba(255,255,255,0.09); color: var(--text-color); }
+.board-filter-pill.active { background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.4); color: #67e8f9; }
+
+#board-table td { padding: 0.6rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+#board-table tr:last-child td { border-bottom: none; }
+#board-table tr:not(.board-notice-row):hover td { background: rgba(255,255,255,0.03); }
+#board-table tr { cursor: pointer; }
+.board-notice-row td { background: rgba(6,182,212,0.04); font-weight: 600; }
+.board-type-badge {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.board-type-notice { background: rgba(6,182,212,0.15); color: #67e8f9; }
+.board-type-edit   { background: rgba(168,85,247,0.15); color: #c084fc; }
+.board-type-question { background: rgba(250,204,21,0.12); color: #fde047; }
+.board-type-error  { background: rgba(239,68,68,0.12); color: #f87171; }
+
+.board-page-btn {
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.board-page-btn.active { background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.35); color: #67e8f9; }
+
+.board-write-btn {
+  padding: 0.32rem 0.85rem;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+/* 댓글 */
+.bd-comment { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 9px; padding: 0.7rem 0.9rem; }
+.bd-reply   { background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); border-radius: 8px; padding: 0.6rem 0.8rem; margin-top: 0.4rem; margin-left: 1.5rem; }
+.bd-comment-meta { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem; display: flex; align-items:center; gap: 0.6rem; }
+.bd-comment-content { font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; }
+.bd-reply-btn { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; padding: 0; text-decoration: underline; }
+.bd-del-btn { background: none; border: none; color: #f87171; font-size: 0.75rem; cursor: pointer; padding: 0; }
