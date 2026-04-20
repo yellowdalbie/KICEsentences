@@ -66,17 +66,11 @@
             {% endif %}
 
             <!-- Search Mode Selector -->
-            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 900px; margin: 0 auto;">
-                <div class="search-mode-pills">
-                    <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
-                    <button class="search-pill" data-tab="tab-expression">기출표현</button>
-                    <button class="search-pill" data-tab="tab-probid">문항번호</button>
-                    <button class="search-pill" data-tab="tab-unit">성취기준</button>
-                </div>
-                <button class="board-nav-btn" onclick="scrollToBoard()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    게시판
-                </button>
+            <div class="search-mode-pills">
+                <button class="search-pill active" data-tab="tab-keyword">개념유사도</button>
+                <button class="search-pill" data-tab="tab-expression">기출표현</button>
+                <button class="search-pill" data-tab="tab-probid">문항번호</button>
+                <button class="search-pill" data-tab="tab-unit">성취기준</button>
             </div>
 
             <!-- 1. Keyword Search Input -->
@@ -222,42 +216,42 @@
             <!-- View 1: Overview -->
             <section id="view-overview" class="view-section active" style="overflow-y:auto;">
                 <div style="display: flex; justify-content: center; margin-top: 1rem;">
-                    <div class="chart-card glass" style="padding: 1.5rem; width: 100%; max-width: 900px;">
+                    <div class="chart-card glass" style="padding: 1rem; width: 100%; max-width: 900px;">
                         <div class="stats-grid"
-                            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+                            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.65rem;">
                             <div
-                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
-                                    style="color: #e879f9; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    style="color: #e879f9; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                                     개념유사도
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">수학적 풀이 방법이나 개념어를 입력하면, 해설의 접근법이 유사한 문항을 찾아드립니다.</p>
+                                <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; margin: 0;">수학적 풀이 방법이나 개념어를 입력하면, 해설의 접근법이 유사한 문항을 찾아드립니다.</p>
                             </div>
                             <div
-                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
-                                    style="color: #a855f7; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    style="color: #a855f7; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                                     기출표현
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">문제에 실린
+                                <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; margin: 0;">문제에 실린
                                     구체적인 수식, 조건, 단어 등 원본 텍스트를 정밀하게 검색합니다.</p>
                             </div>
                             <div
-                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
-                                    style="color: #818cf8; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    style="color: #818cf8; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                                     문항번호
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">수능·모의평가 문항번호를
+                                <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; margin: 0;">수능·모의평가 문항번호를
                                     직접 입력(예: 2026.9모_공22)하여 빠르게 검색합니다.</p>
                             </div>
                             <div
-                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 0.65rem; border: 1px solid rgba(255,255,255,0.05);">
                                 <h4
-                                    style="color: #22d3ee; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    style="color: #22d3ee; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
                                     성취기준
                                 </h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">교육과정의 성취기준
+                                <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.45; margin: 0;">교육과정의 성취기준
                                     폴더를 탐색하여 특정 단원에 해당하는 문항을 찾습니다.</p>
                             </div>
                         </div>
