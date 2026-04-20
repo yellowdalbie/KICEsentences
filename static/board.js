@@ -292,7 +292,7 @@ function _fillAccordion(post, user) {
     const cards = post.problem_ids.map(pid => `
       <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0.6rem;
                   background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
-                  border-radius:7px;">
+                  border-radius:7px;width:fit-content;">
         <span style="font-size:0.8rem;font-weight:600;min-width:120px;">${_escHtml(pid)}</span>
         <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="" style="max-height:50px;border-radius:4px;"
           onerror="this.style.display='none'">
@@ -301,10 +301,10 @@ function _fillAccordion(post, user) {
       <div style="margin-top:1rem;">
         <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;">수록 문항</div>
         <div style="display:flex;flex-direction:column;gap:0.4rem;">${cards}</div>
-        <button onclick="printFromBoard()"
+        <button onclick="addProblemsToCartFromBoard()"
           style="margin-top:0.8rem;background:var(--accent-cyan);border:none;color:#030712;
                  padding:0.4rem 1.1rem;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:700;">
-          PDF 저장</button>
+          장바구니 담기</button>
       </div>`;
   } else if (post.type !== 'edit' && post.problem_ids?.length) {
     const pid = post.problem_ids[0];
@@ -523,6 +523,43 @@ window.submitEditDesc = async function() {
 };
 
 // ── 게시판에서 PDF 인쇄 ───────────────────────────────────
+window.addProblemsToCartFromBoard = function() {
+  if (!_boardCurrentPost || !_boardCurrentPost.problem_ids || !_boardCurrentPost.problem_ids.length) return;
+  const newIds = _boardCurrentPost.problem_ids.map(id => String(id));
+
+  const doAdd = (replace) => {
+    if (replace) cartProblemIds.clear();
+    newIds.forEach(id => cartProblemIds.add(id));
+    if (typeof window.setCartLoadedTitle === 'function') window.setCartLoadedTitle(_boardCurrentPost.title);
+    if (typeof updateCartUI === 'function') updateCartUI();
+    showCustomAlert(replace ? '장바구니를 비우고 새로운 문항들을 담았습니다.' : `${newIds.length}개의 문항을 장바구니에 추가했습니다.`);
+  };
+
+  if (typeof cartProblemIds !== 'undefined' && cartProblemIds.size > 0) {
+    if (typeof showCustomConfirm === 'function') {
+      showCustomConfirm(
+        `이미 장바구니에 ${cartProblemIds.size}개의 문항이 있습니다.\n기존 문항을 유지하고 추가하시겠습니까?`,
+        () => doAdd(false),
+        {
+          confirmText: '유지 및 추가',
+          confirmStyle: 'safe',
+          cancelText: '비우고 추가',
+          cancelStyle: 'danger',
+          onCancel: () => doAdd(true)
+        }
+      );
+    } else {
+      if (confirm(`이미 장바구니에 ${cartProblemIds.size}개의 문항이 있습니다. 기존 문항을 유지할까요?`)) {
+        doAdd(false);
+      } else {
+        doAdd(true);
+      }
+    }
+  } else {
+    doAdd(false);
+  }
+};
+
 window.printFromBoard = function() {
   if (!_boardCurrentPost || !_boardCurrentPost.problem_ids) return;
   // cart.js의 openPrintPreviewFromIds 사용 (없으면 fallback)

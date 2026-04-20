@@ -25,6 +25,7 @@ let restoredTempIds = null;
 let cartRestoreWarningShown = false;
 let currentAutoTitle = '';
 let _setLoadedTitle = null;
+window.setCartLoadedTitle = function(title) { _setLoadedTitle = title || null; };
 
 // ── 전역 썸네일 tooltip (document.body에 직접 붙여 transform 영향 차단) ──
 let _cartThumbTooltipEl = null;
