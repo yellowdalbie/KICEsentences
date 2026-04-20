@@ -150,7 +150,7 @@ function _makeRow(post, isNotice, showCheck) {
     <td style="text-align:center;">${_typeBadge(post.type)}</td>
     <td style="color:var(--text-color);">${pinIcon}${_escHtml(post.title)}</td>
     <td style="text-align:center;color:var(--text-muted);font-size:0.8rem;">${_escHtml(post.author_name)}</td>
-    <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${_shortDate(post.created_at)}</td>
+    <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;white-space:nowrap;">${_shortDate(post.created_at)}</td>
     <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.like_count||0}</td>
   `;
 
