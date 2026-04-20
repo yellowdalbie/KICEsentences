@@ -217,7 +217,7 @@ async function toggleAccordion(tr, postId, postType) {
   _expandedPostId = postId;
   tr.classList.add('board-row-active');
 
-  // 펼침 행 삽입
+  // 펼침 행 삽입 (테이블에서 insertAdjacentElement 오작동 방지)
   const expandTr = document.createElement('tr');
   expandTr.id = 'board-accordion-row';
   expandTr.innerHTML = `
@@ -229,7 +229,7 @@ async function toggleAccordion(tr, postId, postType) {
         </div>
       </div>
     </td>`;
-  tr.insertAdjacentElement('afterend', expandTr);
+  tr.parentNode.insertBefore(expandTr, tr.nextSibling);
   _expandedTr = expandTr;
 
   // 애니메이션 시작
