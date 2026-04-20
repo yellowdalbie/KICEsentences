@@ -292,9 +292,9 @@ function _fillAccordion(post, user) {
     const cards = post.problem_ids.map(pid => `
       <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0.6rem;
                   background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
-                  border-radius:7px;width:fit-content;">
+                  border-radius:7px;">
         <span style="font-size:0.8rem;font-weight:600;min-width:120px;">${_escHtml(pid)}</span>
-        <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="" style="max-height:50px;border-radius:4px;"
+        <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="" style="width:180px;height:50px;object-fit:contain;object-position:left;border-radius:4px;background:rgba(255,255,255,0.04);"
           onerror="this.style.display='none'">
       </div>`).join('');
     problemsHtml = `
