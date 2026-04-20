@@ -313,6 +313,39 @@ def admin_user_cart_logs():
     return jsonify({'logs': [dict(r) for r in rows]})
 
 
+@landing_bp.route('/api/admin/visit_stats')
+def admin_visit_stats():
+    if not _check_admin_session():
+        return jsonify({'error': 'Unauthorized'}), 401
+    period = int(request.args.get('period', 14))
+    gran = request.args.get('gran', 'day')  # hour | day | month
+
+    if gran == 'hour':
+        label_expr = "strftime('%Y-%m-%d %H:00', created_at)"
+        date_filter = f"created_at >= datetime('now', '-{period} days')"
+    elif gran == 'month':
+        label_expr = "strftime('%Y-%m', created_at)"
+        date_filter = f"created_at >= datetime('now', '-{period} days')"
+    else:
+        label_expr = "date(created_at, '-6 hours')"
+        date_filter = f"date(created_at, '-6 hours') >= date('now', '-{period} days')"
+
+    if not DB_PATH.exists():
+        return jsonify([])
+    db = sqlite3.connect(DB_PATH)
+    db.row_factory = sqlite3.Row
+    rows = db.execute(f'''
+        SELECT {label_expr} as label,
+               COUNT(*) as visits,
+               COUNT(DISTINCT visitor_id) as uniq
+        FROM visits
+        WHERE {date_filter}
+        GROUP BY label ORDER BY label
+    ''').fetchall()
+    db.close()
+    return jsonify([{'label': r['label'], 'visits': r['visits'], 'uniq': r['uniq']} for r in rows])
+
+
 # ── 관리자 대시보드 ──────────────────────────────────────────
 @landing_bp.route('/admin')
 def admin():
