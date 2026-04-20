@@ -315,6 +315,7 @@
                             <th style="padding:0.6rem 0.5rem; text-align:left;">제목</th>
                             <th style="width:90px; padding:0.6rem 0.5rem; text-align:center;">작성자</th>
                             <th style="width:110px; padding:0.6rem 0.5rem; text-align:center; white-space:nowrap;">날짜</th>
+                            <th style="width:44px; padding:0.6rem 0.5rem; text-align:center;">읽음</th>
                             <th style="width:44px; padding:0.6rem 0.5rem; text-align:center;">♥</th>
                           </tr>
                         </thead>
@@ -2391,7 +2392,7 @@ function tmCopy() {
     <div id="bd-problems-section" style="display:none; margin-bottom:1.2rem;">
       <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.6rem; font-weight:600;">수록 문항</div>
       <div id="bd-problems-list" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
-      <button id="bd-pdf-btn" onclick="printFromBoard()" style="margin-top:1rem; background:var(--accent-cyan); border:none; color:#030712; padding:0.55rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">PDF 저장</button>
+      <button id="bd-pdf-btn" onclick="addProblemsToCartFromBoard()" style="margin-top:1rem; background:var(--accent-cyan); border:none; color:#030712; padding:0.55rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">장바구니 담기</button>
     </div>
 
     <!-- 질문/오류: 연결 문항 -->

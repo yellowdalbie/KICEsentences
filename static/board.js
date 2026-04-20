@@ -72,14 +72,14 @@ window.setBoardFilter = function(btn, filter) {
 // ── 목록 불러오기 ──────────────────────────────────────────
 async function loadBoardList() {
   const tbody = document.getElementById('board-tbody');
-  tbody.innerHTML = `<tr><td colspan="7" style="padding:2rem;text-align:center;color:var(--text-muted);">불러오는 중...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-muted);">불러오는 중...</td></tr>`;
 
   try {
     const res  = await fetch(`/api/board/posts?type=${_boardFilter}&page=${_boardPage}`);
     const data = await res.json();
     _renderBoardTable(data);
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="7" style="padding:1rem;text-align:center;color:#f87171;">불러오기 실패</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="padding:1rem;text-align:center;color:#f87171;">불러오기 실패</td></tr>`;
   }
 }
 
@@ -102,13 +102,13 @@ function _renderBoardTable(data) {
   if (data.mode === 'liked') {
     if (data.liked && data.liked.length) {
       const sep = document.createElement('tr');
-      sep.innerHTML = `<td colspan="7" style="padding:0.3rem 0.5rem;font-size:0.72rem;color:var(--text-muted);background:rgba(6,182,212,0.04);">─ 내가 좋아요 한 글</td>`;
+      sep.innerHTML = `<td colspan="8" style="padding:0.3rem 0.5rem;font-size:0.72rem;color:var(--text-muted);background:rgba(6,182,212,0.04);">─ 내가 좋아요 한 글</td>`;
       tbody.appendChild(sep);
       data.liked.forEach(p => tbody.appendChild(_makeRow(p, false, showCheck)));
     }
     if (data.others && data.others.length) {
       const sep2 = document.createElement('tr');
-      sep2.innerHTML = `<td colspan="7" style="padding:0.3rem 0.5rem;font-size:0.72rem;color:var(--text-muted);background:rgba(255,255,255,0.02);">─ 좋아요 많은 순</td>`;
+      sep2.innerHTML = `<td colspan="8" style="padding:0.3rem 0.5rem;font-size:0.72rem;color:var(--text-muted);background:rgba(255,255,255,0.02);">─ 좋아요 많은 순</td>`;
       tbody.appendChild(sep2);
       data.others.forEach(p => tbody.appendChild(_makeRow(p, false, showCheck)));
     }
@@ -118,7 +118,7 @@ function _renderBoardTable(data) {
 
   const posts = data.posts || [];
   if (!notices.length && !posts.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="padding:2rem;text-align:center;color:var(--text-muted);">게시글이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="padding:2rem;text-align:center;color:var(--text-muted);">게시글이 없습니다.</td></tr>`;
   }
   posts.forEach(p => tbody.appendChild(_makeRow(p, false, showCheck)));
 
@@ -153,6 +153,7 @@ function _makeRow(post, isNotice, showCheck) {
     <td style="color:var(--text-color);">${pinIcon}${_escHtml(post.title)}</td>
     <td style="text-align:center;color:var(--text-muted);font-size:0.8rem;">${_escHtml(post.author_name)}</td>
     <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;white-space:nowrap;">${_shortDate(post.created_at)}</td>
+    <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.view_count||0}</td>
     <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.like_count||0}</td>
   `;
 
@@ -221,7 +222,7 @@ async function toggleAccordion(tr, postId, postType) {
   const expandTr = document.createElement('tr');
   expandTr.id = 'board-accordion-row';
   expandTr.innerHTML = `
-    <td colspan="7" style="padding:0; border-bottom:1px solid rgba(255,255,255,0.08);">
+    <td colspan="8" style="padding:0; border-bottom:1px solid rgba(255,255,255,0.08);">
       <div id="board-accordion-inner"
            style="overflow:hidden; max-height:0; transition:max-height 0.3s ease;">
         <div style="padding:1.2rem 1rem; background:rgba(6,182,212,0.03);">

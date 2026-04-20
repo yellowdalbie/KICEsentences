@@ -66,7 +66,12 @@ def get_board_db():
         CREATE INDEX IF NOT EXISTS idx_likes_user    ON post_likes(user_id);
         CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
     ''')
-    conn.commit()
+    # view_count 컬럼 마이그레이션 (기존 DB 호환)
+    try:
+        conn.execute('ALTER TABLE posts ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0')
+        conn.commit()
+    except Exception:
+        pass
     return conn
 
 
@@ -137,6 +142,7 @@ def _serialize_post(conn, row, user_id=None, include_problems=False):
         'pinned': bool(row['pinned']),
         'created_at': row['created_at'],
         'updated_at': row['updated_at'],
+        'view_count': row['view_count'] if 'view_count' in row.keys() else 0,
         'like_count': _like_count(conn, row['id']),
         'user_liked': _user_liked(conn, row['id'], user_id),
         'is_own': (user_id is not None and user_id == row['author_id']),
@@ -302,6 +308,9 @@ def board_detail(post_id):
             if not user['is_verified']:
                 return jsonify({'error': 'verify_required'}), 403
 
+        conn.execute('UPDATE posts SET view_count = view_count + 1 WHERE id=?', (post_id,))
+        conn.commit()
+        row = conn.execute('SELECT * FROM posts WHERE id=?', (post_id,)).fetchone()
         post = _serialize_post(conn, row, uid, include_problems=True)
 
         # 댓글 (공지 제외)
