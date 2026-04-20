@@ -232,10 +232,14 @@ async function toggleAccordion(tr, postId, postType) {
   tr.parentNode.insertBefore(expandTr, tr.nextSibling);
   _expandedTr = expandTr;
 
-  // 애니메이션 시작
+  // 애니메이션 시작 → 완료 후 max-height 해제
   requestAnimationFrame(() => {
     const inner = document.getElementById('board-accordion-inner');
-    if (inner) inner.style.maxHeight = '2000px';
+    if (!inner) return;
+    inner.style.maxHeight = '3000px';
+    inner.addEventListener('transitionend', () => {
+      if (inner.style.maxHeight !== '0px') inner.style.maxHeight = 'none';
+    }, { once: true });
   });
 
   try {
@@ -290,12 +294,14 @@ function _fillAccordion(post, user) {
   let problemsHtml = '';
   if (post.type === 'edit' && post.problem_ids?.length) {
     const cards = post.problem_ids.map(pid => `
-      <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0.6rem;
+      <div style="display:flex;align-items:flex-start;gap:0.6rem;padding:0.4rem 0.6rem;
                   background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
-                  border-radius:7px;">
-        <span style="font-size:0.8rem;font-weight:600;min-width:120px;">${_escHtml(pid)}</span>
-        <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="" style="width:540px;height:150px;object-fit:contain;object-position:left;border-radius:4px;background:rgba(255,255,255,0.04);"
-          onerror="this.style.display='none'">
+                  border-radius:7px;width:580px;">
+        <span style="font-size:0.8rem;font-weight:600;min-width:120px;flex-shrink:0;padding-top:4px;">${_escHtml(pid)}</span>
+        <div style="flex:1;max-height:400px;overflow-y:auto;border-radius:4px;">
+          <img src="/static/thumbnails/${_escHtml(pid)}.png" alt="" style="width:100%;height:auto;display:block;border-radius:4px;"
+            onerror="this.style.display='none'">
+        </div>
       </div>`).join('');
     problemsHtml = `
       <div style="margin-top:1rem;">
