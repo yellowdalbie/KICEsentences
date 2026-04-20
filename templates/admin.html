@@ -76,12 +76,25 @@ tr:hover td { background:rgba(255,255,255,0.03); }
 <body>
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.8rem;">
   <h1 style="margin:0;">KICE Lynx 관리자 대시보드</h1>
-  <a href="/" style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.5rem 1rem; color:#94a3b8; text-decoration:none; font-size:0.85rem; font-weight:600; transition:all 0.2s;"
-     onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#f1f5f9';"
-     onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#94a3b8';">
-    ← 서비스로 돌아가기
-  </a>
+  <div style="display:inline-flex; gap:0.5rem;">
+    <a href="/" style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:0.5rem 1rem; color:#94a3b8; text-decoration:none; font-size:0.85rem; font-weight:600; transition:all 0.2s;"
+       onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='#f1f5f9';"
+       onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='#94a3b8';">
+      ← 서비스로 돌아가기
+    </a>
+    <button onclick="adminLogout()" style="display:inline-flex; align-items:center; gap:0.4rem; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:8px; padding:0.5rem 1rem; color:#f87171; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;"
+       onmouseover="this.style.background='rgba(239,68,68,0.18)';this.style.color='#fca5a5';"
+       onmouseout="this.style.background='rgba(239,68,68,0.08)';this.style.color='#f87171';">
+      로그아웃
+    </button>
+  </div>
 </div>
+<script>
+async function adminLogout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+</script>
 
 <!-- ① 핵심 지표 -->
 <h2>방문 현황</h2>
