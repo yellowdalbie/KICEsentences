@@ -2517,7 +2517,7 @@ function tmCopy() {
 <!-- ══════════════════════════════════════════
      PDF 게시 옵션 모달
 ════════════════════════════════════════════ -->
-<div id="board-publish-modal" style="display:none; position:fixed; inset:0; z-index:9500; background:rgba(3,7,18,0.9); align-items:center; justify-content:center;" onclick="if(event.target===this)closeBoardPublish()">
+<div id="board-publish-modal" style="display:none; position:fixed; inset:0; z-index:9500; background:rgba(3,7,18,0.9); align-items:center; justify-content:center;">
   <div class="glass" style="max-width:440px; width:90%; border-radius:16px; padding:1.8rem; position:relative;">
     <div style="font-weight:700; font-size:1rem; margin-bottom:1.2rem; color:var(--text-color);">📋 편집물 게시</div>
     <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem;">인쇄물 제목</div>
@@ -2530,8 +2530,8 @@ function tmCopy() {
       <input type="checkbox" id="publish-anon-check"> 아이디 비공개 (익명으로 게시)
     </label>
     <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
-      <button onclick="closeBoardPublish()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">취소 (인쇄만)</button>
-      <button onclick="confirmBoardPublish()" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.5rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">게시 후 인쇄</button>
+      <button onclick="closeBoardPublish()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">취소</button>
+      <button id="publish-confirm-btn" onclick="confirmBoardPublish()" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.5rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">게시 후 인쇄</button>
     </div>
   </div>
 </div>

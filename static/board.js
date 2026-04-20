@@ -694,30 +694,38 @@ window.openBoardPublishModal = function(titleStr, problemIds, printCallback) {
 
 window.closeBoardPublish = function() {
   document.getElementById('board-publish-modal').style.display = 'none';
-  // 게시 없이 바로 인쇄
-  if (_publishCallback?.fn) _publishCallback.fn();
   _publishCallback = null;
 };
 
 window.confirmBoardPublish = async function() {
+  const btn = document.getElementById('publish-confirm-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '게시 중...'; }
+
   const title   = (document.getElementById('publish-title-input')?.value||'').trim() || '문항 세트';
   const content = (document.getElementById('publish-desc-input')?.value||'').trim();
   const isAnon  = document.getElementById('publish-anon-check')?.checked ? 1 : 0;
   const ids     = _publishCallback?.ids || [];
 
-  document.getElementById('board-publish-modal').style.display = 'none';
-
   try {
-    await fetch('/api/board/posts', {
+    const res = await fetch('/api/board/posts', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ type:'edit', title, content: content||null, is_anonymous: isAnon, problem_ids: ids })
     });
-    loadBoardList();
-  } catch(e) { /* 실패해도 인쇄 진행 */ }
-
-  if (_publishCallback?.fn) _publishCallback.fn();
-  _publishCallback = null;
+    if (res.ok) {
+      document.getElementById('board-publish-modal').style.display = 'none';
+      loadBoardList();
+      if (_publishCallback?.fn) _publishCallback.fn();
+      _publishCallback = null;
+    } else {
+      const err = await res.json().catch(() => ({}));
+      window.showCustomAlert('게시 실패: ' + (err.message || '권한이 없습니다.'));
+      if (btn) { btn.disabled = false; btn.textContent = '게시 후 인쇄'; }
+    }
+  } catch(e) {
+    window.showCustomAlert('서버 연결 오류가 발생했습니다.');
+    if (btn) { btn.disabled = false; btn.textContent = '게시 후 인쇄'; }
+  }
 };
 
 // ── 인증 메일 재발송 (index.html의 함수 호출) ─────────────

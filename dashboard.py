@@ -392,6 +392,7 @@ def auth_register():
     session['user_id'] = user['id']
     session['email'] = user['email']
     session['is_paid'] = user['is_paid']
+    session['is_verified'] = False
     session.permanent = True
 
     base_url = BASE_URL or request.host_url.rstrip('/')
@@ -423,8 +424,9 @@ def auth_login():
     session['user_id'] = user['id']
     session['email'] = user['email']
     session['is_paid'] = user['is_paid']
+    session['is_verified'] = bool(user['is_verified'])
     session.permanent = True
-    
+
     # 로그인 기록 저장
     try:
         login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
@@ -512,7 +514,8 @@ def auth_me():
             conn.commit()
         conn.close()
         if user:
-            session['is_paid'] = user['is_paid']  # 세션 캐시 갱신
+            session['is_paid'] = user['is_paid']
+            session['is_verified'] = bool(user['is_verified'])
             email = session['email']
             display_name = user['display_name'] if user['display_name'] else email.split('@')[0]
             return jsonify({
@@ -553,6 +556,7 @@ def verify_email_route():
     session['user_id'] = user['id']
     session['email'] = user['email']
     session['is_paid'] = paid_row['is_paid'] if paid_row else 0
+    session['is_verified'] = True
     session.permanent = True
     return redirect('/app?verified=1')
 
