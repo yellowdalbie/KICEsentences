@@ -47,9 +47,9 @@ html { scroll-behavior: smooth; }
 
 body {
   background:
-    radial-gradient(ellipse 70% 55% at 8% 30%,  rgba(6,182,212,0.13)   0%, transparent 68%),
-    radial-gradient(ellipse 55% 65% at 92% 12%, rgba(217,70,239,0.11)  0%, transparent 65%),
-    radial-gradient(ellipse 50% 50% at 55% 90%, rgba(99,102,241,0.09)  0%, transparent 60%),
+    radial-gradient(ellipse 70% 55% at 8% 30%,  rgba(6,182,212,0.15)   0%, transparent 68%),
+    radial-gradient(ellipse 55% 65% at 92% 12%, rgba(217,70,239,0.13)  0%, transparent 65%),
+    radial-gradient(ellipse 50% 50% at 55% 90%, rgba(99,102,241,0.11)  0%, transparent 60%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -57,6 +57,50 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
 }
+
+/* ── 프리미엄 디자인 ───────────────────────────── */
+.glass-premium {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.blink { animation: blink-anim 0.8s ease-in-out infinite alternate; }
+@keyframes blink-anim {
+  from { opacity: 1; filter: brightness(1); }
+  to { opacity: 0.5; filter: brightness(1.5); box-shadow: 0 0 15px var(--cyan); }
+}
+
+.typing-cursor {
+  display: inline-block; width: 2px; height: 1em; background: var(--cyan);
+  margin-left: 2px; animation: cursor-blink 0.8s infinite;
+  vertical-align: middle;
+}
+@keyframes cursor-blink { 50% { opacity: 0; } }
+
+.scene-context {
+  font-size: 0.95rem; font-weight: 600; color: var(--cyan);
+  background: rgba(6, 182, 212, 0.1); padding: 0.6rem 1.2rem;
+  border-radius: 99px; display: inline-block; margin-bottom: 1.5rem;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  animation: fade-in-up 0.5s ease-out;
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mock-tooltip {
+  position: absolute; z-index: 50; background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--cyan); border-radius: 12px; padding: 1rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 280px;
+  pointer-events: none; animation: scale-in 0.2s ease-out;
+}
+@keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
 /* ── 공통 ───────────────────────────────────────── */
 .glass {
@@ -200,9 +244,9 @@ nav {
 .feat-item-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
 .feat-item-desc  { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
 
-.features-display { flex: 1; min-width: 0; position: sticky; top: 80px; }
-.feat-scene { display: none; }
-.feat-scene.active { display: block; }
+.features-display { flex: 1; min-width: 0; position: sticky; top: 120px; }
+.feat-scene { display: none; min-height: 520px; }
+.feat-scene.active { display: block; animation: fade-in-up 0.5s ease-out; }
 
 /* ── MOCK UI (공통) ─────────────────────────────── */
 .mock-wrap {
@@ -815,294 +859,209 @@ footer {
     <span>풀이 단계 <strong>2,200+</strong>개</span>
   </div>
 </section>
-
-
 <!-- FEATURES -->
 <section class="features" id="features">
   <div class="container">
-    <div class="section-label">Features</div>
-    <h2 class="section-title">수업 자료 제작, 이렇게 달라집니다</h2>
-    <p class="section-sub">
-      원하는 풀이 기법이 쓰인 기출 문항을 직접 찾아 구성하고, 정답·해설 포함 여부를 선택해 바로 인쇄합니다.
-    </p>
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <div class="section-label">Powerful Capabilities</div>
+      <h2 class="section-title">기출을 다루는 가장 완벽한 방법</h2>
+      <p class="section-sub" style="margin: 0 auto;">수능 수학의 본질을 꿰뚫는 검색부터, 공유와 소셜까지 이어지는 Lynx만의 특별한 경험을 만나보세요.</p>
+    </div>
 
     <div class="features-layout">
-
-      <!-- 왼쪽 메뉴 -->
-      <div class="features-nav">
-        <div class="feat-item active" data-scene="1">
-          <div class="feat-item-num">01</div>
-          <div class="feat-item-title">개념·풀이 기법으로 검색</div>
-          <div class="feat-item-desc">수학 개념어나 풀이 방법을 자연어로 입력하면 관련 기출 문항이 즉시 나타납니다.</div>
+      <!-- 5개 주요 탭 -->
+      <div class="features-nav" id="featNav">
+        <div class="feat-item active" data-id="scene1">
+          <div class="feat-item-num">01. SMART SEARCH</div>
+          <div class="feat-item-title">목적 기반 스마트 검색</div>
+          <div class="feat-item-desc">개념, 표현, 성취기준 등 당신이 찾고자 하는 모든 맥락을 이해합니다.</div>
         </div>
-        <div class="feat-item" data-scene="2">
-          <div class="feat-item-num">02</div>
-          <div class="feat-item-title">같은 접근법 문항 모아보기</div>
-          <div class="feat-item-desc">풀이 단계 옆 아이콘을 클릭하면 동일한 수학적 접근을 쓰는 다른 연도·시험의 문항을 한번에 볼 수 있습니다.</div>
+        <div class="feat-item" data-id="scene2">
+          <div class="feat-item-num">02. DEEP DISCOVERY</div>
+          <div class="feat-item-title">인터랙티브 탐색</div>
+          <div class="feat-item-desc">풀이 단계를 클릭하여 수학적 본질이 같은 문항들을 즉시 연결합니다.</div>
         </div>
-        <div class="feat-item" data-scene="3">
-          <div class="feat-item-num">03</div>
-          <div class="feat-item-title">장바구니로 문제지 구성</div>
-          <div class="feat-item-desc">문항 번호를 클릭하면 장바구니에 담기고, 다시 클릭하면 빠집니다. 원하는 구성이 만들어질 때까지 자유롭게 조정하세요.</div>
+        <div class="feat-item" data-id="scene3">
+          <div class="feat-item-num">03. WORKFLOW</div>
+          <div class="feat-item-title">스마트 워크플로우</div>
+          <div class="feat-item-desc">장바구니 수집부터 실시간 문항 배치까지, 자료 제작이 즐거워집니다.</div>
         </div>
-        <div class="feat-item" data-scene="4">
-          <div class="feat-item-num">04</div>
-          <div class="feat-item-title">정답·해설 포함 여부 선택 후 인쇄</div>
-          <div class="feat-item-desc">문제지 끝에 정답 모아서 / 각 문항 아래 / 미표기, 해설 포함 여부를 조합해 한 번에 출력합니다.</div>
+        <div class="feat-item" data-id="scene4">
+          <div class="feat-item-num">04. OUTPUT</div>
+          <div class="feat-item-title">출력 및 자동 발행</div>
+          <div class="feat-item-desc">최적화된 인쇄 옵션으로 PDF를 저장하고, 동시에 게시판에 발행하세요.</div>
+        </div>
+        <div class="feat-item" data-id="scene5">
+          <div class="feat-item-num">05. COMMUNITY</div>
+          <div class="feat-item-title">소셜 커뮤니티</div>
+          <div class="feat-item-desc">동료의 자료에 영감을 얻고, 클릭 한 번으로 내 장바구니에 복제합니다.</div>
         </div>
       </div>
 
-      <!-- 오른쪽 mock UI -->
-      <div class="features-display">
-
-        <!-- Scene 1: 검색 -->
-        <div class="feat-scene active" id="scene-1">
-          <div class="mock-wrap">
+      <div class="features-display" id="featDisplay">
+        <!-- Scene 1: Smart Search -->
+        <div class="feat-scene active" id="scene1">
+          <div class="scene-context" id="s1Context">"중복조합을 쓰는 조건부 확률 문제를 찾고 싶은데..."</div>
+          <div class="mock-wrap glass-premium">
             <div class="mock-titlebar">
               <div class="mock-dot mock-dot-r"></div>
               <div class="mock-dot mock-dot-y"></div>
               <div class="mock-dot mock-dot-g"></div>
-              <div class="mock-url-bar">localhost:5050</div>
+              <div class="mock-url-bar">https://kice-lynx.app/search</div>
             </div>
             <div class="mock-header">
-              <div class="mock-logo-sm"><span class="k">KICE </span>LY<span>N</span>X</div>
               <div class="mock-tabs">
-                <button class="mock-tab on">개념유사도</button>
+                <button class="mock-tab on" id="s1Tab">개념유사도</button>
                 <button class="mock-tab">기출표현</button>
-                <button class="mock-tab">문항번호</button>
                 <button class="mock-tab">성취기준</button>
+                <button class="mock-tab">문항번호</button>
               </div>
               <div class="mock-search-row">
-                <span>중복조합이 쓰이는 조건부 확률</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <span id="s1Query">중복조합을 이용한 조건부 확률<span class="typing-cursor"></span></span>
               </div>
+            </div>
+            <div class="mock-body" id="s1Results">
+              <div class="mock-card glass" style="animation: fade-in-up 0.4s ease-out 0.2s both;">
+                <div class="mock-card-header">
+                  <div class="mock-prob-id">2025.수능_확27</div>
+                  <div class="mock-year-tag">2025학년도 수능</div>
+                  <div style="margin-left:auto; font-size:0.7rem; color:var(--cyan); font-weight:700;">유사도 98%</div>
+                </div>
+                <div class="mock-steps">
+                  <div class="mock-step highlight">중복조합 구하기</div>
+                  <div class="mock-step">조건부 확률 적용</div>
+                </div>
+              </div>
+              <div class="mock-card glass" style="animation: fade-in-up 0.4s ease-out 0.3s both;">
+                <div class="mock-card-header">
+                  <div class="mock-prob-id">2024.9모_확28</div>
+                  <div class="mock-year-tag">2024학년도 9월 모의</div>
+                  <div style="margin-left:auto; font-size:0.7rem; color:var(--cyan); font-weight:700;">유사도 92%</div>
+                </div>
+                <div class="mock-steps">
+                  <div class="mock-step highlight">중복조합 조건 분석</div>
+                  <div class="mock-step">전체 경우의 수</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scene 2: Discovery -->
+        <div class="feat-scene" id="scene2">
+          <div class="scene-context">"본질적인 기출 매칭의 놀라움을 경험하세요"</div>
+          <div class="mock-wrap glass-premium mock-relative">
+            <div class="mock-header">
+               <div class="mock-prob-id selected-id">2025.수능_확27</div>
+               <div class="mock-year-tag">해설 분석</div>
             </div>
             <div class="mock-body">
-              <div class="mock-card">
-                <div class="mock-card-header">
-                  <span class="mock-prob-id">2025수능_27</span>
-                  <span class="mock-year-tag">확률과통계</span>
-                  <span style="font-size:0.7rem;color:var(--muted);margin-left:auto">유사도 0.94</span>
+              <div class="mock-card glass" style="border-color: var(--cyan);">
+                 <div style="font-size:0.8rem; font-weight:700; margin-bottom:0.5rem;">Step 1. 중복조합 구하기</div>
+                 <div style="font-size:0.72rem; color:var(--muted); line-height:1.5;">
+                   주머니에서 공을 꺼내는 행위는 중복을 허용하는 조합의 수와 동일합니다. $n+r-1 \text{C} r$ 공식을 사용하여...
+                 </div>
+                 <div style="margin-top:0.8rem; display:flex; justify-content:flex-end;">
+                   <div class="mock-step highlight blink" id="s2LinkBtn" style="cursor:pointer;">
+                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                     연관 검색
+                   </div>
+                 </div>
+              </div>
+              
+              <div id="s2Preview" class="mock-tooltip" style="display:none; bottom:20px; left:20px;">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--cyan); margin-bottom:0.5rem;">문항 프리뷰</div>
+                <div style="background:#fff; border-radius:4px; min-height:100px; display:flex; align-items:center; justify-content:center; color:#333; font-size:0.65rem; font-weight:700; text-align:center; padding:12px; line-height:1.4;" id="s2PreviewContent">
+                   [문항 이미지]<br>흰 공 4개, 검은 공 3개가 들어있는 주머니에서...
                 </div>
-                <div class="mock-steps">
-                  <span class="mock-step">사건 분리 후 경우의 수 나열</span>
-                  <span class="mock-step highlight">
-                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    중복조합으로 경우의 수 산출
-                  </span>
-                  <span class="mock-step">조건부 확률 정의 적용</span>
+                <div style="margin-top:0.8rem; font-size:0.65rem; color:var(--muted);" id="s2PreviewTitle">
+                   2025.수능_확27
                 </div>
               </div>
-              <div class="mock-card">
-                <div class="mock-card-header">
-                  <span class="mock-prob-id">2024.9모_28</span>
-                  <span class="mock-year-tag">확률과통계</span>
-                  <span style="font-size:0.7rem;color:var(--muted);margin-left:auto">유사도 0.91</span>
-                </div>
-                <div class="mock-steps">
-                  <span class="mock-step">조건 분류 후 케이스 분리</span>
-                  <span class="mock-step highlight">
-                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    중복조합으로 경우의 수 산출
-                  </span>
-                  <span class="mock-step">조건부 확률 공식으로 최종값 계산</span>
-                </div>
-              </div>
-              <div class="mock-card">
-                <div class="mock-card-header">
-                  <span class="mock-prob-id">2023수능_26</span>
-                  <span class="mock-year-tag">확률과통계</span>
-                  <span style="font-size:0.7rem;color:var(--muted);margin-left:auto">유사도 0.88</span>
-                </div>
-                <div class="mock-steps">
-                  <span class="mock-step">전체 사건과 조건 사건 분리</span>
-                  <span class="mock-step highlight">
-                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    중복조합으로 경우의 수 산출
-                  </span>
-                  <span class="mock-step">조건부 확률 정의 적용</span>
-                </div>
-              </div>
+            </div>
+            
+            <div id="s2ResultsArea" class="mock-body" style="display:none; border-top: 1px solid var(--border); background:rgba(6,182,212,0.03);">
+               <div style="font-size:0.75rem; font-weight:700; color:var(--cyan); margin-bottom:0.5rem;">연관 검색 결과 (Logic Matching)</div>
+               <div class="mock-card glass">
+                 <div class="mock-card-header">
+                   <div class="mock-prob-id">2024.9모_확28</div>
+                   <div style="margin-left:auto; font-size:0.7rem; color:var(--cyan);">유사도 92%</div>
+                 </div>
+               </div>
             </div>
           </div>
         </div>
 
-        <!-- Scene 2: 유사 문항 탐색 -->
-        <div class="feat-scene" id="scene-2">
-          <div class="mock-wrap">
-            <div class="mock-titlebar">
-              <div class="mock-dot mock-dot-r"></div>
-              <div class="mock-dot mock-dot-y"></div>
-              <div class="mock-dot mock-dot-g"></div>
-              <div class="mock-url-bar">localhost:5050</div>
-            </div>
+        <!-- Scene 3: Workflow -->
+        <div class="feat-scene" id="scene3">
+          <div class="scene-context">"클릭으로 수집하고 실시간으로 편집하세요"</div>
+          <div class="mock-wrap glass-premium" style="height:440px; display:flex; flex-direction:column;">
             <div class="mock-header">
-              <div class="mock-logo-sm"><span class="k">KICE </span>LY<span>N</span>X</div>
-              <div class="mock-tabs">
-                <button class="mock-tab on">개념유사도</button>
-                <button class="mock-tab">기출표현</button>
-                <button class="mock-tab">문항번호</button>
-                <button class="mock-tab">성취기준</button>
-              </div>
+               <div style="font-size:0.85rem; font-weight:700;">전체 문항</div>
+               <div class="mock-cart-fab" id="s3CartIcon" style="position:static; margin-left:auto; width:34px; height:34px;">
+                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                 <div class="mock-cart-count" id="s3CartCount">0</div>
+               </div>
             </div>
-            <div class="mock-body">
-              <div class="mock-card">
-                <div class="mock-card-header">
-                  <span class="mock-prob-id">2025수능_27</span>
-                  <span class="mock-year-tag">확률과통계</span>
-                </div>
-                <div class="mock-steps">
-                  <span class="mock-step">사건 분리 후 경우의 수 나열</span>
-                  <span class="mock-step highlight" style="box-shadow:0 0 0 1px rgba(6,182,212,0.5)">
-                    <svg class="mock-link-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    중복조합으로 경우의 수 산출 ← 클릭
-                  </span>
-                  <span class="mock-step">조건부 확률 정의 적용</span>
-                </div>
-              </div>
-              <div class="mock-similar-panel">
-                <div class="mock-similar-title">
-                  <svg style="display:inline;vertical-align:middle;margin-right:4px" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                  같은 단계를 쓰는 문항 9개
-                </div>
-                <div class="mock-similar-list">
-                  <span class="mock-similar-chip">2024.9모_28</span>
-                  <span class="mock-similar-chip">2023수능_26</span>
-                  <span class="mock-similar-chip">2022수능_27</span>
-                  <span class="mock-similar-chip">2021.9모_25</span>
-                  <span class="mock-similar-chip">2020수능_26</span>
-                  <span class="mock-similar-chip">2019수능나_26</span>
-                  <span class="mock-similar-chip">2018수능나_26</span>
-                  <span class="mock-similar-chip">2017수능나_25</span>
-                  <span class="mock-similar-chip">2016수능A_26</span>
-                </div>
-              </div>
+            <div class="mock-body" id="s3Body">
+               <div class="mock-card glass" style="cursor:pointer;" id="s3AddBtn">
+                 <div class="mock-card-header">
+                   <div class="mock-prob-id">2025.수능_확27</div>
+                   <div style="margin-left:auto;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+                 </div>
+               </div>
+               <div class="mock-card glass" style="cursor:pointer;">
+                 <div class="mock-card-header">
+                   <div class="mock-prob-id">2024.9모_확28</div>
+                   <div style="margin-left:auto;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14"/><path d="M12 5v14"/></svg></div>
+                 </div>
+               </div>
+            </div>
+            
+            <div id="s3PreviewArea" style="display:none; flex:1; overflow:hidden; border-top:1px solid var(--border);">
+               <div class="mock-print-sidebar" style="width:100%; border-right:none; height:100%;">
+                 <div class="mock-sidebar-title">장바구니 리스트 (드래그로 순서 변경)</div>
+                 <div class="mock-sidebar-item sel" id="s3DragItem" style="transition: all 0.5s ease;">
+                   <div class="mock-drag-handle"><span></span><span></span></div>
+                   <span class="mock-sidebar-num">1.</span> 2024.9모_확28
+                 </div>
+                 <div class="mock-sidebar-item" id="s3OtherItem" style="transition: all 0.5s ease;">
+                   <div class="mock-drag-handle"><span></span><span></span></div>
+                   <span class="mock-sidebar-num">2.</span> 2025.수능_확27
+                 </div>
+                 <div style="margin-top:1.5rem; text-align:center;">
+                   <button class="mock-btn-pdf blink" id="s3ToS4Btn">인쇄 미리보기</button>
+                 </div>
+               </div>
             </div>
           </div>
         </div>
 
-        <!-- Scene 3: 장바구니 -->
-        <div class="feat-scene" id="scene-3">
-          <div class="mock-wrap">
-            <div class="mock-titlebar">
-              <div class="mock-dot mock-dot-r"></div>
-              <div class="mock-dot mock-dot-y"></div>
-              <div class="mock-dot mock-dot-g"></div>
-              <div class="mock-url-bar">localhost:5050</div>
-            </div>
-            <div class="mock-header">
-              <div class="mock-logo-sm"><span class="k">KICE </span>LY<span>N</span>X</div>
-              <div style="font-size:0.72rem;color:var(--muted);margin-left:auto">문항 번호를 클릭하면 장바구니에 담깁니다</div>
-            </div>
-            <div class="mock-body mock-relative">
-              <div class="mock-card selected">
-                <div class="mock-card-header">
-                  <span class="mock-prob-id selected-id">2025수능_27</span>
-                  <span class="mock-year-tag">확률과통계</span>
-                  <span class="mock-cart-badge-inline">✓ 담김</span>
-                </div>
-                <div class="mock-steps">
-                  <span class="mock-step">사건 분리 후 경우의 수 나열</span>
-                  <span class="mock-step">중복조합으로 경우의 수 산출</span>
-                  <span class="mock-step">조건부 확률 정의 적용</span>
-                </div>
-              </div>
-              <div class="mock-card">
-                <div class="mock-card-header">
-                  <span class="mock-prob-id">2024.9모_28</span>
-                  <span class="mock-year-tag">확률과통계</span>
-                  <span class="mock-cart-badge-inline">✓ 담김</span>
-                </div>
-                <div class="mock-steps">
-                  <span class="mock-step">조건 분류 후 케이스 분리</span>
-                  <span class="mock-step">중복조합으로 경우의 수 산출</span>
-                  <span class="mock-step">조건부 확률 공식으로 최종값 계산</span>
-                </div>
-              </div>
-              <div class="mock-card selected">
-                <div class="mock-card-header">
-                  <span class="mock-prob-id selected-id">2023수능_26</span>
-                  <span class="mock-year-tag">확률과통계</span>
-                  <span class="mock-cart-badge-inline">✓ 담김</span>
-                </div>
-                <div class="mock-steps">
-                  <span class="mock-step">전체 사건과 조건 사건 분리</span>
-                  <span class="mock-step">중복조합으로 경우의 수 산출</span>
-                  <span class="mock-step">조건부 확률 정의 적용</span>
-                </div>
-              </div>
-              <div class="mock-cart-fab">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                <span class="mock-cart-count">2</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Scene 4: 실제 인쇄 미리보기 모사 -->
-        <div class="feat-scene" id="scene-4">
-          <div class="mock-print-modal">
-            <!-- 상단 옵션 바 -->
+        <!-- Scene 4: Publishing -->
+        <div class="feat-scene" id="scene4">
+          <div class="scene-context">"완벽한 결과물을 커뮤니티에 즉시 공유합니다"</div>
+          <div class="mock-print-modal glass-premium mock-relative">
             <div class="mock-print-topbar">
-              <span class="mock-print-title">인쇄 미리보기</span>
-              <div class="mock-pill-group">
-                <span class="mock-pill-label">정답 표기</span>
-                <div class="mock-pills">
-                  <span class="mock-pill">미표기</span>
-                  <span class="mock-pill">각 문항</span>
-                  <span class="mock-pill on">문제지 끝</span>
-                </div>
-              </div>
-              <div class="mock-pill-divider"></div>
-              <div class="mock-pill-group">
-                <span class="mock-pill-label">해설</span>
-                <div class="mock-pills">
-                  <span class="mock-pill">미포함</span>
-                  <span class="mock-pill on">포함</span>
-                </div>
+              <div class="mock-print-title">Preview</div>
+              <div class="mock-pills">
+                <button class="mock-pill" id="s4AnsBtn">정답 추가</button>
+                <button class="mock-pill" id="s4SolBtn">해설 추가</button>
               </div>
               <div class="mock-print-actions">
-                <button class="mock-btn-pdf">PDF 저장</button>
-                <button class="mock-btn-close">닫기</button>
+                <button class="mock-btn-pdf" id="s4PdfBtn">PDF 저장</button>
+              </div>
+              <div style="position:relative; margin-left:10px;">
+                <svg id="s4BoardIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2" style="cursor:pointer;"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
               </div>
             </div>
-
-            <!-- 레이아웃: 사이드바 + 용지 -->
             <div class="mock-print-layout">
-              <!-- 왼쪽 사이드바 -->
-              <div class="mock-print-sidebar">
-                <div class="mock-sidebar-title">문항 순서</div>
-                <div class="mock-sidebar-item sel">
-                  <div class="mock-drag-handle"><span></span><span></span><span></span></div>
-                  <div>
-                    <div style="font-size:0.58rem;color:#94a3b8">1</div>
-                    <div>2025수능_27</div>
-                  </div>
-                </div>
-                <div class="mock-sidebar-item">
-                  <div class="mock-drag-handle"><span></span><span></span><span></span></div>
-                  <div>
-                    <div style="font-size:0.58rem;color:#94a3b8">2</div>
-                    <div>2024.9모_28</div>
-                  </div>
-                </div>
-                <div class="mock-sidebar-item">
-                  <div class="mock-drag-handle"><span></span><span></span><span></span></div>
-                  <div>
-                    <div style="font-size:0.58rem;color:#94a3b8">3</div>
-                    <div>2023수능_26</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 오른쪽: 흰 A4 용지 -->
               <div class="mock-print-scroll">
-                <div class="mock-a4">
+                <div class="mock-a4" id="s4A4">
                   <div class="mock-a4-header">
                     <div class="mock-a4-subject">수학 영역</div>
                     <div class="mock-a4-title">확률과통계 — 조건부 확률 연습</div>
                   </div>
-
                   <!-- 문제 1 -->
                   <div class="mock-problem">
                     <div class="mock-prob-header">
@@ -1116,14 +1075,13 @@ footer {
                     <ul class="mock-choices">
                       <li>① 58&nbsp;&nbsp;② 62&nbsp;&nbsp;③ 66&nbsp;&nbsp;④ 70&nbsp;&nbsp;⑤ 74</li>
                     </ul>
-                    <div class="mock-sol-area">
+                    <div class="mock-sol-area s4-sol-area" style="display:none;">
                       <div class="mock-sol-area-title">풀이</div>
                       <div class="mock-sol-area-step">① 조건에 따라 사건 A, B 분리</div>
                       <div class="mock-sol-area-step">② 중복조합으로 각 경우의 수 산출</div>
                       <div class="mock-sol-area-step">③ 조건부 확률 P(B|A) = 66/110 = 3/5</div>
                     </div>
                   </div>
-
                   <!-- 문제 2 -->
                   <div class="mock-problem">
                     <div class="mock-prob-header">
@@ -1137,16 +1095,15 @@ footer {
                     <ul class="mock-choices">
                       <li>① 40&nbsp;&nbsp;② 44&nbsp;&nbsp;③ 48&nbsp;&nbsp;④ 52&nbsp;&nbsp;⑤ 56</li>
                     </ul>
-                    <div class="mock-sol-area">
+                    <div class="mock-sol-area s4-sol-area" style="display:none;">
                       <div class="mock-sol-area-title">풀이</div>
                       <div class="mock-sol-area-step">① 조건 분류 후 케이스 분리</div>
                       <div class="mock-sol-area-step">② 중복조합으로 경우의 수 산출</div>
                       <div class="mock-sol-area-step">③ 조건부 확률 공식으로 최종값 계산</div>
                     </div>
                   </div>
-
-                  <!-- 정답 표 (문제지 끝) -->
-                  <table class="mock-answer-table">
+                  <!-- 정답 표 -->
+                  <table class="mock-answer-table" id="s4AnswerTable" style="display:none;">
                     <thead>
                       <tr><th>문항</th><th>시험</th><th>정답</th><th>배점</th></tr>
                     </thead>
@@ -1159,9 +1116,50 @@ footer {
                 </div>
               </div>
             </div>
+            <div id="s4BoardPost" class="mock-tooltip" style="display:none; top:50px; right:20px; width:220px; border-color:var(--magenta);">
+               <div style="font-size:0.75rem; font-weight:700; color:var(--magenta); margin-bottom:0.4rem;">게시판 등록 완료!</div>
+               <div style="font-size:0.65rem; color:var(--text);">'2025 대비...' 자료가 커뮤니티에 발행되었습니다.</div>
+            </div>
           </div>
         </div>
 
+        <!-- Scene 5: Social -->
+        <div class="feat-scene" id="scene5">
+          <div class="scene-context">"검증된 자료를 가져와 나만의 구성을 만드세요"</div>
+          <div class="mock-wrap glass-premium" style="height:420px; display:flex; flex-direction:column;">
+            <div class="mock-titlebar">
+               <div style="font-size:0.75rem; font-weight:700;">커뮤니티 탐색</div>
+               <div id="s5CartIcon" style="margin-left:auto; width:34px; height:34px; position:relative;">
+                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                 <div class="mock-cart-count" id="s5CartCount" style="display:none;">0</div>
+               </div>
+            </div>
+            <div class="mock-body">
+               <div class="mock-card glass">
+                  <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.6rem;">
+                    <div style="width:32px; height:32px; border-radius:50%; background:var(--indigo); display:flex; align-items:center; justify-content:center; font-size:0.6rem;">L</div>
+                    <div>
+                      <div style="font-size:0.8rem; font-weight:700;">Lynx 추천 고난도 모음</div>
+                      <div style="font-size:0.65rem; color:var(--muted);">조회수 2.1k · 추천 자료</div>
+                    </div>
+                  </div>
+                  <div style="font-size:0.72rem; color:var(--text); line-height:1.4; margin-bottom:1rem;">
+                    수능 수학 기출 중 가장 정교한 논리 구조를 가진 8문항을 모았습니다.
+                  </div>
+                  <div style="display:flex; gap:0.8rem; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:0.3rem; font-size:0.7rem; color:var(--muted); cursor:pointer;" id="s5LikeBtn">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                      <span id="s5LikeCount">254</span>
+                    </div>
+                    <button class="mock-btn-pdf" style="margin-left:auto; font-size:0.65rem;" id="s5CopyBtn">내 장바구니로 복제</button>
+                  </div>
+               </div>
+            </div>
+            <div id="s5Notify" class="mock-tooltip" style="display:none; bottom:20px; right:20px; width:180px; border-color:var(--cyan);">
+               <div style="font-size:0.7rem; color:var(--text);">문항 리스트 8개가<br><b>내 장바구니</b>에 복제되었습니다!</div>
+            </div>
+          </div>
+        </div>
       </div><!-- /features-display -->
     </div><!-- /features-layout -->
   </div>
@@ -1199,16 +1197,228 @@ footer {
 
 
 <script>
-// ── Feature 탭 전환 ─────────────────────────────────
-document.querySelectorAll('.feat-item').forEach(item => {
-  item.addEventListener('click', () => {
-    const n = item.dataset.scene;
-    document.querySelectorAll('.feat-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.feat-scene').forEach(s => s.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('scene-' + n).classList.add('active');
+// ── Features Simulation Logic ─────────────────────────────
+(function() {
+  const featNavItems = document.querySelectorAll('.feat-item');
+  const featScenes = document.querySelectorAll('.feat-scene');
+  let activeSceneId = 'scene1';
+  let simulationIntervals = {};
+
+  // Tab Switching
+  featNavItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.dataset.id;
+      if (activeSceneId === targetId) return;
+      
+      // Reset animations/states of previous scene if needed
+      stopSimulation(activeSceneId);
+
+      // UI Switch
+      featNavItems.forEach(i => i.classList.remove('active'));
+      featScenes.forEach(s => s.classList.remove('active'));
+      item.classList.add('active');
+      const targetScene = document.getElementById(targetId);
+      targetScene.classList.add('active');
+      
+      activeSceneId = targetId;
+      startSimulation(targetId);
+    });
   });
-});
+
+  function startSimulation(id) {
+    if (id === 'scene1') runScene1();
+    if (id === 'scene2') runScene2();
+    if (id === 'scene3') runScene3();
+    if (id === 'scene4') runScene4();
+    if (id === 'scene5') runScene5();
+  }
+
+  function stopSimulation(id) {
+    if (simulationIntervals[id]) {
+      clearInterval(simulationIntervals[id]);
+      delete simulationIntervals[id];
+    }
+  }
+
+  // --- Scene 1: Smart Search Simulation ---
+  function runScene1() {
+    const context = document.getElementById('s1Context');
+    const query = document.getElementById('s1Query');
+    const tabs = document.querySelectorAll('#scene1 .mock-tab');
+    const scenarios = [
+      { tab: 0, ctx: '"중복조합을 쓰는 조건부 확률 문제를 찾고 싶은데..."', q: '중복조합을 이용한 조건부 확률' },
+      { tab: 1, ctx: '"오직 하나라는 표현을 쓴 문제가 있었는데..."', q: '오직 하나' },
+      { tab: 2, ctx: '"오늘 배운 교과서 성취기준으로 찾고 싶은데..."', q: '함수의 극한의 뜻을 알고, 이를 설명할 수 있다.' },
+      { tab: 3, ctx: '"22번 문제만 모아서 풀어보고 싶은데..."', q: '22번' }
+    ];
+    
+    let step = 0;
+    const animateSearch = () => {
+      const s = scenarios[step % scenarios.length];
+      context.innerText = s.ctx;
+      tabs.forEach((t, i) => i === s.tab ? t.classList.add('on') : t.classList.remove('on'));
+      
+      // Typing effect
+      let charIdx = 0;
+      query.innerHTML = '';
+      const typing = setInterval(() => {
+        query.innerHTML = s.q.substring(0, charIdx) + '<span class="typing-cursor"></span>';
+        charIdx++;
+        if (charIdx > s.q.length) {
+          clearInterval(typing);
+          step++;
+          simulationIntervals['scene1'] = setTimeout(animateSearch, 2000);
+        }
+      }, 50);
+    };
+    animateSearch();
+  }
+
+  // --- Scene 2: Discovery Simulation ---
+  function runScene2() {
+    const linkBtn = document.getElementById('s2LinkBtn');
+    const preview = document.getElementById('s2Preview');
+    const results = document.getElementById('s2ResultsArea');
+    
+    // Initial state
+    preview.style.display = 'none';
+    results.style.display = 'none';
+    
+    linkBtn.onclick = () => {
+      linkBtn.classList.remove('blink');
+      preview.style.display = 'block';
+      setTimeout(() => {
+        results.style.display = 'block';
+        results.style.animation = 'fade-in-up 0.5s ease-out';
+      }, 600);
+    };
+    
+    // Auto-trigger for demo if user doesn't click
+    simulationIntervals['scene2'] = setTimeout(() => {
+       if (preview.style.display === 'none') linkBtn.click();
+    }, 1500);
+  }
+
+  // --- Scene 3: Workflow Simulation ---
+  function runScene3() {
+    const addBtn = document.getElementById('s3AddBtn');
+    const cartIcon = document.getElementById('s3CartIcon');
+    const cartCount = document.getElementById('s3CartCount');
+    const body = document.getElementById('s3Body');
+    const previewArea = document.getElementById('s3PreviewArea');
+    const dragItem = document.getElementById('s3DragItem');
+    const otherItem = document.getElementById('s3OtherItem');
+    const toS4Btn = document.getElementById('s3ToS4Btn');
+    
+    addBtn.onclick = () => {
+      addBtn.style.opacity = '0.5';
+      cartIcon.classList.add('blink');
+      cartCount.innerText = '1';
+      setTimeout(() => {
+        cartIcon.classList.remove('blink');
+        body.style.display = 'none';
+        previewArea.style.display = 'block';
+        
+        // Simulation Drag & Drop
+        setTimeout(() => {
+           dragItem.style.transform = 'translateY(40px)';
+           otherItem.style.transform = 'translateY(-40px)';
+           setTimeout(() => {
+             dragItem.style.transform = '';
+             otherItem.style.transform = '';
+             // Actually swap order in DOM for realism
+             const p = dragItem.parentNode;
+             p.insertBefore(otherItem, dragItem);
+           }, 800);
+        }, 1000);
+      }, 800);
+    };
+    
+    toS4Btn.onclick = () => {
+      document.querySelector('[data-id="scene4"]').click();
+    };
+
+    simulationIntervals['scene3'] = setTimeout(() => {
+       if (body.style.display !== 'none') addBtn.click();
+    }, 1500);
+  }
+
+  // --- Scene 4: Publishing Simulation ---
+  function runScene4() {
+    const ansBtn = document.getElementById('s4AnsBtn');
+    const solBtn = document.getElementById('s4SolBtn');
+    const ansTable = document.getElementById('s4AnswerTable');
+    const solAreas = document.querySelectorAll('.s4-sol-area');
+    const boardIcon = document.getElementById('s4BoardIcon');
+    const boardPost = document.getElementById('s4BoardPost');
+
+    // Reset state
+    ansBtn.classList.remove('on');
+    solBtn.classList.remove('on');
+    ansTable.style.display = 'none';
+    solAreas.forEach(s => s.style.display = 'none');
+    boardPost.style.display = 'none';
+
+    ansBtn.onclick = () => {
+      ansBtn.classList.toggle('on');
+      ansTable.style.display = ansBtn.classList.contains('on') ? 'table' : 'none';
+    };
+    solBtn.onclick = () => {
+      solBtn.classList.toggle('on');
+      const show = solBtn.classList.contains('on');
+      solAreas.forEach(s => s.style.display = show ? 'block' : 'none');
+    };
+    boardIcon.onclick = () => {
+      boardIcon.classList.add('blink');
+      setTimeout(() => {
+        boardIcon.classList.remove('blink');
+        boardPost.style.display = 'block';
+        setTimeout(() => boardPost.style.display = 'none', 3000);
+      }, 600);
+    };
+
+    // Auto-steps
+    simulationIntervals['scene4'] = setTimeout(() => {
+       ansBtn.click();
+       setTimeout(() => {
+         solBtn.click();
+         setTimeout(() => boardIcon.click(), 1000);
+       }, 800);
+    }, 1200);
+  }
+
+  // --- Scene 5: Social Simulation ---
+  function runScene5() {
+    const likeBtn = document.getElementById('s5LikeBtn');
+    const likeCount = document.getElementById('s5LikeCount');
+    const copyBtn = document.getElementById('s5CopyBtn');
+    const notify = document.getElementById('s5Notify');
+    const cartIcon = document.getElementById('s5CartIcon');
+    const cartCount = document.getElementById('s5CartCount');
+    
+    likeBtn.onclick = () => {
+      likeBtn.style.color = 'var(--magenta)';
+      likeCount.innerText = '255';
+    };
+    copyBtn.onclick = () => {
+      copyBtn.innerText = '복제됨';
+      copyBtn.classList.add('on');
+      cartCount.style.display = 'flex';
+      cartCount.innerText = '8';
+      cartIcon.querySelector('svg').style.stroke = 'var(--cyan)';
+      notify.style.display = 'block';
+      setTimeout(() => notify.style.display = 'none', 3000);
+    };
+
+    simulationIntervals['scene5'] = setTimeout(() => {
+       likeBtn.click();
+       setTimeout(() => copyBtn.click(), 1000);
+    }, 1200);
+  }
+
+  // Start initial scene
+  startSimulation('scene1');
+})();
 
 
 // ── 모바일 기기 경고 배너 ──────────────────────────────
