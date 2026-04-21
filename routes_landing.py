@@ -366,14 +366,16 @@ def admin():
         'subscribers':     0,
         'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
         'portal_visits':   db.execute('SELECT COUNT(*) FROM portal_logs').fetchone()[0],
-        'search_totals':   {},
+        'search_totals':      {},
+        'search_anon_totals': {},
         'top_concepts':    [],
         'top_expressions': [],
         'top_probids':     [],
         'top_units':       [],
         'top_steps':       [],
         'zero_result_concepts': [],
-        'cart_totals':     {},
+        'cart_totals':      {},
+        'cart_anon_totals': {},
         'recent_cart_logs': [],
     }
 
@@ -435,9 +437,18 @@ def admin():
                 'SELECT email, ip, country, city, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
             ).fetchall()
             
-            # 검색 통계
-            search_rows = main_conn.execute('SELECT search_type, COUNT(*) as cnt FROM search_stats GROUP BY search_type').fetchall()
+            # 검색 통계 — 로그인 사용자만 (가입 사용자 합계와 일치)
+            search_rows = main_conn.execute(
+                "SELECT search_type, COUNT(*) as cnt FROM search_stats "
+                "WHERE user_email IS NOT NULL AND user_email != '' GROUP BY search_type"
+            ).fetchall()
             stats['search_totals'] = { r['search_type']: r['cnt'] for r in search_rows }
+            # 비로그인 검색 통계
+            anon_search_rows = main_conn.execute(
+                "SELECT search_type, COUNT(*) as cnt FROM search_stats "
+                "WHERE user_email IS NULL OR user_email = '' GROUP BY search_type"
+            ).fetchall()
+            stats['search_anon_totals'] = { r['search_type']: r['cnt'] for r in anon_search_rows }
             
             # 인기 검색어 (유형별 Top 10) — step_id: 접두사 항목은 별도 테이블로
             stats['top_concepts'] = main_conn.execute('''
@@ -483,11 +494,18 @@ def admin():
                 GROUP BY query_text ORDER BY cnt DESC LIMIT 10
             ''').fetchall()
 
-            # 장바구니/인쇄 이벤트 집계
+            # 장바구니/인쇄 이벤트 집계 — 로그인 사용자만 (가입 사용자 합계와 일치)
             cart_rows = main_conn.execute(
-                "SELECT event_type, COUNT(*) as cnt FROM cart_logs GROUP BY event_type"
+                "SELECT event_type, COUNT(*) as cnt FROM cart_logs "
+                "WHERE user_email IS NOT NULL AND user_email != '' GROUP BY event_type"
             ).fetchall()
             stats['cart_totals'] = {r['event_type']: r['cnt'] for r in cart_rows}
+            # 비로그인 이벤트 집계
+            cart_anon_rows = main_conn.execute(
+                "SELECT event_type, COUNT(*) as cnt FROM cart_logs "
+                "WHERE user_email IS NULL OR user_email = '' GROUP BY event_type"
+            ).fetchall()
+            stats['cart_anon_totals'] = {r['event_type']: r['cnt'] for r in cart_anon_rows}
 
             # 최근 장바구니/인쇄 이벤트 (50건)
             stats['recent_cart_logs'] = main_conn.execute('''

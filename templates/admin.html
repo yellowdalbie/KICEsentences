@@ -131,34 +131,42 @@ async function adminLogout() {
 
 <!-- ② 검색 + 장바구니/인쇄 -->
 <h2>기능 사용 현황 (누적)</h2>
-<div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));">
+<div style="font-size:0.75rem; color:var(--muted); margin-bottom:0.6rem;">로그인 사용자 / <span style="color:var(--amber);">비로그인</span></div>
+<div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">개념유사도</div>
     <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('개념유사도', 0) }}</div>
+    {% set av = stats.search_anon_totals.get('개념유사도', 0) %}{% if av %}<div style="font-size:0.75rem;color:var(--amber);margin-top:2px;">비로그인 +{{ av }}</div>{% endif %}
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">기출표현</div>
     <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('기출표현', 0) }}</div>
+    {% set av = stats.search_anon_totals.get('기출표현', 0) %}{% if av %}<div style="font-size:0.75rem;color:var(--amber);margin-top:2px;">비로그인 +{{ av }}</div>{% endif %}
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">문항번호</div>
     <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('문항번호', 0) }}</div>
+    {% set av = stats.search_anon_totals.get('문항번호', 0) %}{% if av %}<div style="font-size:0.75rem;color:var(--amber);margin-top:2px;">비로그인 +{{ av }}</div>{% endif %}
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">성취기준</div>
     <div class="stat-val" style="font-size:1.4rem;">{{ stats.search_totals.get('성취기준', 0) }}</div>
+    {% set av = stats.search_anon_totals.get('성취기준', 0) %}{% if av %}<div style="font-size:0.75rem;color:var(--amber);margin-top:2px;">비로그인 +{{ av }}</div>{% endif %}
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">인쇄 미리보기</div>
     <div class="stat-val" style="font-size:1.4rem; color:#818cf8;">{{ stats.cart_totals.get('open_preview', 0) }}</div>
+    {% set av = stats.cart_anon_totals.get('open_preview', 0) %}{% if av %}<div style="font-size:0.75rem;color:var(--amber);margin-top:2px;">비로그인 +{{ av }}</div>{% endif %}
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">PDF 저장</div>
     <div class="stat-val" style="font-size:1.4rem; color:var(--green);">{{ stats.cart_totals.get('save_pdf', 0) }}</div>
+    {% set av = stats.cart_anon_totals.get('save_pdf', 0) %}{% if av %}<div style="font-size:0.75rem;color:var(--amber);margin-top:2px;">비로그인 +{{ av }}</div>{% endif %}
   </div>
   <div class="stat-card" style="padding:0.8rem 1rem;">
     <div class="stat-label">더블 기능</div>
     <div class="stat-val" style="font-size:1.4rem; color:var(--amber);">{{ stats.cart_totals.get('double_cart', 0) }}</div>
+    {% set av = stats.cart_anon_totals.get('double_cart', 0) %}{% if av %}<div style="font-size:0.75rem;color:var(--amber);margin-top:2px;">비로그인 +{{ av }}</div>{% endif %}
   </div>
 </div>
 
