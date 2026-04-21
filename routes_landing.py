@@ -84,7 +84,8 @@ def init_db():
             user_agent  TEXT,
             referer     TEXT,
             is_new      INTEGER DEFAULT 1,
-            created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
+            created_at  TEXT DEFAULT (datetime('now', '+9 hours')),
+            user_email  TEXT
         );
         CREATE TABLE IF NOT EXISTS downloads (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -122,6 +123,12 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_dl_date       ON downloads(created_at);
     ''')
     db.commit()
+    # visits.user_email 컬럼 마이그레이션 (기존 DB 호환)
+    try:
+        db.execute('ALTER TABLE visits ADD COLUMN user_email TEXT')
+        db.commit()
+    except Exception:
+        pass
     db.close()
 
 init_db()
@@ -162,13 +169,14 @@ def landing_index():
         'SELECT id FROM visits WHERE visitor_id = ?', (g.visitor_id,)
     ).fetchone()
 
+    user_email = session.get('user_email') or session.get('email') or None
     db.execute(
-        '''INSERT INTO visits (visitor_id, ip, country, region, city, user_agent, referer, is_new, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '+9 hours'))''',
+        '''INSERT INTO visits (visitor_id, ip, country, region, city, user_agent, referer, is_new, created_at, user_email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '+9 hours'), ?)''',
         (g.visitor_id, ip,
          geo.get('country', ''), geo.get('regionName', ''), geo.get('city', ''),
          request.user_agent.string, request.referrer or '',
-         1 if existing is None else 0)
+         1 if existing is None else 0, user_email)
     )
     db.commit()
 
@@ -359,13 +367,19 @@ def admin():
     db = get_db()
 
     stats = {
-        'total_visits':    db.execute('SELECT COUNT(*) FROM visits').fetchone()[0],
-        'unique_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits').fetchone()[0],
-        'today_visits':    db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours')").fetchone()[0],
-        'today_unique':    db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours')").fetchone()[0],
-        'subscribers':     0,
-        'return_visitors': db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
-        'portal_visits':   db.execute('SELECT COUNT(*) FROM portal_logs').fetchone()[0],
+        'total_visits':         db.execute('SELECT COUNT(*) FROM visits').fetchone()[0],
+        'login_visits':         db.execute("SELECT COUNT(*) FROM visits WHERE user_email IS NOT NULL AND user_email != ''").fetchone()[0],
+        'anon_visits':          db.execute("SELECT COUNT(*) FROM visits WHERE user_email IS NULL OR user_email = ''").fetchone()[0],
+        'unique_visitors':      db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits').fetchone()[0],
+        'login_unique':         db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE user_email IS NOT NULL AND user_email != ''").fetchone()[0],
+        'anon_unique':          db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE user_email IS NULL OR user_email = ''").fetchone()[0],
+        'today_visits':         db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours')").fetchone()[0],
+        'today_login_visits':   db.execute("SELECT COUNT(*) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours') AND user_email IS NOT NULL AND user_email != ''").fetchone()[0],
+        'today_unique':         db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours')").fetchone()[0],
+        'today_login_unique':   db.execute("SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE date(created_at, '-6 hours')=date('now', '+3 hours') AND user_email IS NOT NULL AND user_email != ''").fetchone()[0],
+        'subscribers':          0,
+        'return_visitors':      db.execute('SELECT COUNT(DISTINCT visitor_id) FROM visits WHERE is_new=0').fetchone()[0],
+        'portal_visits':        db.execute('SELECT COUNT(*) FROM portal_logs').fetchone()[0],
         'search_totals':      {},
         'search_anon_totals': {},
         'top_concepts':    [],

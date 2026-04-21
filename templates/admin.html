@@ -98,22 +98,35 @@ async function adminLogout() {
 
 <!-- ① 핵심 지표 -->
 <h2>방문 현황</h2>
+<div style="font-size:0.75rem; color:var(--muted); margin-bottom:0.6rem;">전체 / <span style="color:var(--cyan);">로그인</span> / <span style="color:var(--amber);">비로그인</span></div>
 <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-label">누적 방문</div>
     <div class="stat-val cyan">{{ stats.total_visits }}</div>
+    <div style="font-size:0.75rem;margin-top:3px;">
+      <span style="color:var(--cyan);">로그인 {{ stats.login_visits }}</span>
+      <span style="color:var(--muted);margin:0 3px;">/</span>
+      <span style="color:var(--amber);">비로그인 {{ stats.anon_visits }}</span>
+    </div>
   </div>
   <div class="stat-card">
     <div class="stat-label">순방문자</div>
     <div class="stat-val cyan">{{ stats.unique_visitors }}</div>
+    <div style="font-size:0.75rem;margin-top:3px;">
+      <span style="color:var(--cyan);">로그인 {{ stats.login_unique }}</span>
+      <span style="color:var(--muted);margin:0 3px;">/</span>
+      <span style="color:var(--amber);">비로그인 {{ stats.anon_unique }}</span>
+    </div>
   </div>
   <div class="stat-card">
     <div class="stat-label">오늘 방문</div>
     <div class="stat-val">{{ stats.today_visits }}</div>
+    {% if stats.today_login_visits %}<div style="font-size:0.75rem;color:var(--cyan);margin-top:3px;">로그인 {{ stats.today_login_visits }}</div>{% endif %}
   </div>
   <div class="stat-card">
     <div class="stat-label">오늘 순방문</div>
     <div class="stat-val">{{ stats.today_unique }}</div>
+    {% if stats.today_login_unique %}<div style="font-size:0.75rem;color:var(--cyan);margin-top:3px;">로그인 {{ stats.today_login_unique }}</div>{% endif %}
   </div>
   <div class="stat-card">
     <div class="stat-label">재방문자</div>
