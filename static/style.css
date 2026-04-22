@@ -175,7 +175,7 @@ body {
 }
 
 .brand span {
-    color: var(--accent-cyan);
+    color: var(--accent-cyan) !important;
 }
 
 .brand-subtitle {
