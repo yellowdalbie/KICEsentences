@@ -236,11 +236,11 @@ def _send_email(to_email: str, subject: str, html_body: str) -> bool:
         return False
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
-    msg['From'] = f'THINK LYNX <{smtp_email}>'
+    msg['From'] = f'ThinkLynx <{smtp_email}>'
     msg['To'] = to_email
     msg.attach(MIMEText(html_body, 'html', 'utf-8'))
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
+        with smtplib.SMTP_SSL('smtp.zoho.com', 465, timeout=10) as server:
             server.login(smtp_email, smtp_password)
             server.sendmail(smtp_email, to_email, msg.as_string())
         print(f'[Email] 발송 완료: {to_email}')
