@@ -2053,6 +2053,8 @@ def sets_save_temp():
         return jsonify({'status': 'ok'})
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
+    if not session.get('is_verified'):
+        return jsonify({'error': '이메일 인증 필요'}), 403
     user_id = session['user_id']
     data = request.get_json(silent=True) or {}
     problem_ids = data.get('problem_ids', [])
@@ -2077,7 +2079,7 @@ def sets_save_temp():
 def sets_restore():
     if OFFLINE_MODE:
         return jsonify({'has_temp': False})
-    if 'user_id' not in session:
+    if 'user_id' not in session or not session.get('is_verified'):
         return jsonify({'has_temp': False})
     user_id = session['user_id']
     import json as json_module
@@ -2104,6 +2106,8 @@ def sets_delete_temp():
         return jsonify({'status': 'ok'})
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
+    if not session.get('is_verified'):
+        return jsonify({'error': '이메일 인증 필요'}), 403
     user_id = session['user_id']
     conn = get_user_db()
     conn.execute("DELETE FROM problem_sets WHERE user_id=? AND status='temp'", (user_id,))
@@ -2118,6 +2122,8 @@ def sets_save_final():
         return jsonify({'status': 'ok'})
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
+    if not session.get('is_verified'):
+        return jsonify({'error': '이메일 인증 필요'}), 403
     user_id = session['user_id']
     data = request.get_json(silent=True) or {}
     problem_ids = data.get('problem_ids', [])
@@ -2156,6 +2162,8 @@ def sets_my():
         return jsonify({'sets': []})
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
+    if not session.get('is_verified'):
+        return jsonify({'error': '이메일 인증 필요'}), 403
     user_id = session['user_id']
     import json as json_module
     conn = get_user_db()
@@ -2188,6 +2196,8 @@ def sets_get(set_id):
         return jsonify({'error': 'not available'}), 404
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
+    if not session.get('is_verified'):
+        return jsonify({'error': '이메일 인증 필요'}), 403
     user_id = session['user_id']
     import json as json_module
     conn = get_user_db()
@@ -2214,6 +2224,8 @@ def sets_delete(set_id):
         return jsonify({'status': 'ok'})
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
+    if not session.get('is_verified'):
+        return jsonify({'error': '이메일 인증 필요'}), 403
     user_id = session['user_id']
     conn = get_user_db()
     conn.execute("DELETE FROM problem_sets WHERE id=? AND user_id=?", (set_id, user_id))
@@ -2228,6 +2240,8 @@ def sets_toggle_favorite(set_id):
         return jsonify({'is_favorite': 0})
     if 'user_id' not in session:
         return jsonify({'error': '로그인 필요'}), 401
+    if not session.get('is_verified'):
+        return jsonify({'error': '이메일 인증 필요'}), 403
     user_id = session['user_id']
     conn = get_user_db()
     conn.execute(

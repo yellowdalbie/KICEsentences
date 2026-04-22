@@ -140,6 +140,26 @@ function toggleCartItem(problemId) {
     if (!problemId) return;
     const strId = String(problemId);
 
+    // 담기 전에만 인증 체크 (제거는 항상 허용)
+    if (!cartProblemIds.has(strId)) {
+        if (typeof KICE_OFFLINE === 'undefined' || !KICE_OFFLINE) {
+            if (!window.AUTH_STATE?.isLoggedIn) {
+                showCustomAlert(
+                    '문항을 담으려면 회원가입이 필요합니다.\n\n(이메일 인증 후 무료 이용 가능)',
+                    () => openAuthModal('register')
+                );
+                return;
+            }
+            if (!window.AUTH_STATE?.isVerified) {
+                showCustomAlert(
+                    '이메일 인증을 완료해야 문항을 담을 수 있습니다.\n\n스팸함도 확인해주세요.',
+                    () => resendVerifyEmail(window.AUTH_STATE.email)
+                );
+                return;
+            }
+        }
+    }
+
     if (cartProblemIds.has(strId)) {
         _setLoadedTitle = null;
         cartProblemIds.delete(strId);
@@ -1953,8 +1973,15 @@ window.checkAuthForPreview = function() {
     if (typeof KICE_OFFLINE !== 'undefined' && KICE_OFFLINE) return true;
     if (!window.AUTH_STATE.isLoggedIn) {
         showCustomAlert(
-            '해당 기능을 이용하시려면 로그인이 필요합니다.\n\n(로그인/가입 후 무료 이용 가능)',
-            () => openAuthModal('login')
+            '인쇄/PDF 저장은 이메일 인증 회원만 이용할 수 있습니다.\n\n(무료 회원가입 후 이메일 인증)',
+            () => openAuthModal('register')
+        );
+        return false;
+    }
+    if (!window.AUTH_STATE.isVerified) {
+        showCustomAlert(
+            '이메일 인증을 완료해야 인쇄/PDF 저장을 이용할 수 있습니다.\n\n스팸함도 확인해주세요.',
+            () => resendVerifyEmail(window.AUTH_STATE.email)
         );
         return false;
     }
