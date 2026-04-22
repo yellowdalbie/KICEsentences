@@ -1,4 +1,4 @@
-# KICE Lynx 학습지 생성 프롬프트
+# THINK LYNX 학습지 생성 프롬프트
 
 > 이 파일과 함께 아래 두 파일을 AI에게 첨부합니다:
 > 1. `ws_shared.css` — 공용 스타일 (변수 시스템 포함)
@@ -102,7 +102,7 @@
 
 ## content_package.json 형식 (내보내기 데이터 구조)
 
-KICE Lynx 앱에서 내보낸 JSON의 구조입니다.
+THINK LYNX 앱에서 내보낸 JSON의 구조입니다.
 AI는 이 데이터를 읽어 템플릿에 채워 넣습니다.
 
 ```json
@@ -189,7 +189,7 @@ AI에게 테마 변경을 요청할 때 아래 변수를 지정하세요.
 ## 개발 메모
 
 - **현재 구현 상태**: 템플릿 3종 + 프롬프트 초안 완성 (2026-03-25)
-- **미구현**: KICE Lynx 앱 내 "학습지 내보내기" 버튼 및 content_package.json 생성 로직
+- **미구현**: THINK LYNX 앱 내 "학습지 내보내기" 버튼 및 content_package.json 생성 로직
 - **다음 단계**:
   1. `dashboard.py`에 `/api/export-worksheet` 엔드포인트 추가
      → cart 아이템 + Step 데이터를 content_package.json 형식으로 반환

@@ -43,9 +43,9 @@ def _check_admin_session():
 
 VERSION = 'v2025.11'
 DOWNLOAD_URLS = {
-    'mac-arm64': f'https://github.com/yellowdalbie/KICEsentences/releases/download/{VERSION}/KICE_Lynx_{VERSION}_mac-arm64.zip',
-    'mac-x86':   f'https://github.com/yellowdalbie/KICEsentences/releases/download/{VERSION}/KICE_Lynx_{VERSION}_mac-x86.zip',
-    'windows':   f'https://github.com/yellowdalbie/KICEsentences/releases/download/{VERSION}/KICE_Lynx_{VERSION}_windows.zip',
+    'mac-arm64': f'https://github.com/yellowdalbie/KICEsentences/releases/download/{VERSION}/THINK_LYNX_{VERSION}_mac-arm64.zip',
+    'mac-x86':   f'https://github.com/yellowdalbie/KICEsentences/releases/download/{VERSION}/THINK_LYNX_{VERSION}_mac-x86.zip',
+    'windows':   f'https://github.com/yellowdalbie/KICEsentences/releases/download/{VERSION}/THINK_LYNX_{VERSION}_windows.zip',
 }
 FILE_SIZES = {
     'mac-arm64': '358.7 MB',
@@ -138,7 +138,7 @@ init_db()
 def get_geo(ip: str) -> dict:
     try:
         url = f'http://ip-api.com/json/{ip}?fields=country,regionName,city'
-        req = urllib.request.Request(url, headers={'User-Agent': 'KICE-Lynx-Landing/1.0'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'THINK-LYNX-Landing/1.0'})
         with urllib.request.urlopen(req, timeout=2) as r:
             return json.loads(r.read())
     except Exception:

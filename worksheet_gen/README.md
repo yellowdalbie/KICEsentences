@@ -1,4 +1,4 @@
-# worksheet_gen — KICE Lynx 학습지 생성 시스템
+# worksheet_gen — THINK LYNX 학습지 생성 시스템
 
 AI(Claude/Gemini)를 활용하여 장바구니 문항 데이터를 A4 인쇄용 학습지 HTML로 변환하는
 템플릿 및 프롬프트 시스템.
@@ -17,7 +17,7 @@ worksheet_gen/
 
 ## 사용 방법 (현재)
 
-1. KICE Lynx에서 장바구니 구성
+1. THINK LYNX에서 장바구니 구성
 2. (미구현) `/api/export-worksheet` → `content_package.json` 다운로드
 3. 필요한 템플릿 HTML + `ws_shared.css` + `content_package.json`을 Claude/Gemini에 업로드
 4. `prompt_worksheet.md`의 지시문을 복사해 요청 전송

@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'kice-dashboard',
+      name: 'think-lynx-dashboard',
       script: 'dashboard.py',
       interpreter: 'python3',
       env: {

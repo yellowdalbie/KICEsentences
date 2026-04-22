@@ -236,7 +236,7 @@ def _send_email(to_email: str, subject: str, html_body: str) -> bool:
         return False
     msg = MIMEMultipart('alternative')
     msg['Subject'] = subject
-    msg['From'] = f'KICE Lynx <{smtp_email}>'
+    msg['From'] = f'THINK LYNX <{smtp_email}>'
     msg['To'] = to_email
     msg.attach(MIMEText(html_body, 'html', 'utf-8'))
     try:
@@ -251,11 +251,11 @@ def _send_email(to_email: str, subject: str, html_body: str) -> bool:
 
 
 def send_verify_email(to_email: str, verify_url: str):
-    subject = '[KICE Lynx] 이메일 인증을 완료해주세요'
+    subject = '[THINK LYNX] 이메일 인증을 완료해주세요'
     html = f'''
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:2rem;
                 background:#0f172a;color:#e2e8f0;border-radius:12px;">
-      <h2 style="color:#06b6d4;margin-top:0;">KICE Lynx 이메일 인증</h2>
+      <h2 style="color:#06b6d4;margin-top:0;">THINK LYNX 이메일 인증</h2>
       <p>아래 버튼을 눌러 이메일 인증을 완료해주세요.<br>링크는 <strong>24시간</strong> 후 만료됩니다.</p>
       <a href="{verify_url}"
          style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;
@@ -267,18 +267,18 @@ def send_verify_email(to_email: str, verify_url: str):
       </p>
       <p style="font-size:0.75rem;color:#475569;border-top:1px solid #1e293b;
                 padding-top:1rem;margin-top:1.5rem;">
-        이 메일은 KICE Lynx 가입 시 자동 발송됩니다. 가입한 적이 없다면 무시하세요.
+        이 메일은 THINK LYNX 가입 시 자동 발송됩니다. 가입한 적이 없다면 무시하세요.
       </p>
     </div>'''
     _send_email(to_email, subject, html)
 
 
 def send_reset_email(to_email: str, reset_url: str):
-    subject = '[KICE Lynx] 비밀번호 재설정 안내'
+    subject = '[THINK LYNX] 비밀번호 재설정 안내'
     html = f'''
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:2rem;
                 background:#0f172a;color:#e2e8f0;border-radius:12px;">
-      <h2 style="color:#06b6d4;margin-top:0;">KICE Lynx 비밀번호 재설정</h2>
+      <h2 style="color:#06b6d4;margin-top:0;">THINK LYNX 비밀번호 재설정</h2>
       <p>아래 버튼을 눌러 새 비밀번호를 설정해주세요.<br>링크는 <strong>1시간</strong> 후 만료됩니다.</p>
       <a href="{reset_url}"
          style="display:inline-block;margin:1.5rem 0;padding:0.85rem 2rem;

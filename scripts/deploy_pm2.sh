@@ -1,7 +1,7 @@
 #!/bin/bash
-# KICE Lynx PM2 배포 스크립트 (Ubuntu)
+# THINK LYNX PM2 배포 스크립트 (Ubuntu)
 
-echo "--- [KICE Lynx 배포 시작] ---"
+echo "--- [THINK LYNX 배포 시작] ---"
 
 # 의존성 설치 (필요시)
 if [ -f "requirements_server.txt" ]; then

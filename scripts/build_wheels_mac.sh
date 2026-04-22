@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# KICE Lynx — Mac wheels 빌드 스크립트
+# THINK LYNX — Mac wheels 빌드 스크립트
 #
 # [실행 방법]
 #   Apple Silicon Mac: bash scripts/build_wheels_mac.sh
@@ -25,7 +25,7 @@ WHEELS_DIR="$SCRIPT_DIR/wheels_$PLATFORM"
 REQ_FILE="$SCRIPT_DIR/requirements_dist.txt"
 
 echo "================================================"
-echo " KICE Lynx wheels 빌드"
+echo " THINK LYNX wheels 빌드"
 echo " 플랫폼: $PLATFORM ($ARCH)"
 echo " 출력:   $WHEELS_DIR"
 echo "================================================"
