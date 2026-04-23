@@ -430,11 +430,10 @@ def auth_login():
     # 로그인 기록 저장
     try:
         login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
-        login_geo = get_geo(login_ip)
         log_conn = get_user_db()
         log_conn.execute(
             'INSERT INTO login_logs (user_id, email, ip, country, city, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
-            (user['id'], user['email'], login_ip, login_geo.get('country', ''), login_geo.get('city', ''), request.user_agent.string)
+            (user['id'], user['email'], login_ip, '', '', request.user_agent.string)
         )
         log_conn.commit()
         log_conn.close()
