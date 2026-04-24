@@ -7,6 +7,7 @@ __pycache__/
 
 # Environment and Secrets
 .env
+.env.*
 admin.key
 
 # Databases
