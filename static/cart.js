@@ -151,9 +151,10 @@ function toggleCartItem(problemId) {
                 return;
             }
             if (!window.AUTH_STATE?.isVerified) {
-                showCustomAlert(
-                    '이메일 인증을 완료해야 문항을 담을 수 있습니다.\n\n스팸함도 확인해주세요.',
-                    () => resendVerifyEmail(window.AUTH_STATE.email)
+                showCustomConfirm(
+                    '이메일 인증을 완료해야 문항을 담을 수 있습니다.\n\n인증 메일을 재발송할까요? (스팸함도 확인해주세요)',
+                    () => resendVerifyEmail(window.AUTH_STATE.email),
+                    { confirmText: '인증 메일 재발송', cancelText: '닫기', confirmStyle: 'safe' }
                 );
                 return;
             }
@@ -1979,9 +1980,10 @@ window.checkAuthForPreview = function() {
         return false;
     }
     if (!window.AUTH_STATE.isVerified) {
-        showCustomAlert(
-            '이메일 인증을 완료해야 인쇄/PDF 저장을 이용할 수 있습니다.\n\n스팸함도 확인해주세요.',
-            () => resendVerifyEmail(window.AUTH_STATE.email)
+        showCustomConfirm(
+            '이메일 인증을 완료해야 인쇄/PDF 저장을 이용할 수 있습니다.\n\n인증 메일을 재발송할까요? (스팸함도 확인해주세요)',
+            () => resendVerifyEmail(window.AUTH_STATE.email),
+            { confirmText: '인증 메일 재발송', cancelText: '닫기', confirmStyle: 'safe' }
         );
         return false;
     }

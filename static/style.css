@@ -3157,3 +3157,17 @@ body.preview-open #global-actions-left {
 .board-row-active td { background: rgba(6,182,212,0.06) !important; }
 #board-accordion-row td { cursor: default; }
 #board-accordion-inner { transition: max-height 0.3s ease; }
+
+/* 게시판 모바일 2행 레이아웃 */
+.board-row-meta { display: none; }
+
+@media (pointer: coarse) {
+  .board-col-author, .board-col-date, .board-col-view, .board-col-like { display: none !important; }
+  .board-row-meta {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  #board-table .board-col-title { font-size: 0.88rem; }
+}

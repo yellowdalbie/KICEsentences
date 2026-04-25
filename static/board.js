@@ -156,13 +156,16 @@ function _makeRow(post, isNotice, showCheck) {
   const pinIcon = post.pinned ? '📌 ' : '';
   tr.innerHTML = `
     ${checkCell}
-    <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.id}</td>
-    <td style="text-align:center;">${_typeBadge(post.type)}</td>
-    <td style="color:var(--text-color);">${pinIcon}${_escHtml(post.title)}</td>
-    <td style="text-align:center;color:var(--text-muted);font-size:0.8rem;">${_escHtml(post.author_name)}</td>
-    <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;white-space:nowrap;">${_shortDate(post.created_at)}</td>
-    <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.view_count||0}</td>
-    <td style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.like_count||0}</td>
+    <td class="board-col-id" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.id}</td>
+    <td class="board-col-type" style="text-align:center;">${_typeBadge(post.type)}</td>
+    <td class="board-col-title" style="color:var(--text-color);">
+      <div>${pinIcon}${_escHtml(post.title)}</div>
+      <div class="board-row-meta">${_escHtml(post.author_name)} · ${_shortDate(post.created_at)} · 읽음 ${post.view_count||0} · ♥ ${post.like_count||0}</div>
+    </td>
+    <td class="board-col-author" style="text-align:center;color:var(--text-muted);font-size:0.8rem;">${_escHtml(post.author_name)}</td>
+    <td class="board-col-date" style="text-align:center;color:var(--text-muted);font-size:0.78rem;white-space:nowrap;">${_shortDate(post.created_at)}</td>
+    <td class="board-col-view" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.view_count||0}</td>
+    <td class="board-col-like" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.like_count||0}</td>
   `;
 
   tr.addEventListener('click', (e) => {
