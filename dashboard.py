@@ -231,26 +231,35 @@ def _send_email(to_email: str, subject: str, html_body: str) -> bool:
     if not api_key:
         print(f'[Email] RESEND_API_KEY 없음 — 발송 건너뜀 ({to_email})')
         return False
-    try:
-        res = _requests.post(
-            'https://api.resend.com/emails',
-            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
-            json={
-                'from': 'THINK LYNX <noreply@thinklynx.xyz>',
-                'to': [to_email],
-                'subject': subject,
-                'html': html_body,
-            },
-            timeout=10
-        )
-        if res.status_code in (200, 201):
-            print(f'[Email] 발송 완료: {to_email}')
-            return True
-        print(f'[Email] 발송 실패 ({to_email}): {res.status_code} {res.text}')
-        return False
-    except Exception as e:
-        print(f'[Email] 발송 실패 ({to_email}): {e}')
-        return False
+    import time as _time_mod
+    for attempt in range(4):
+        try:
+            res = _requests.post(
+                'https://api.resend.com/emails',
+                headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+                json={
+                    'from': 'THINK LYNX <noreply@thinklynx.xyz>',
+                    'to': [to_email],
+                    'subject': subject,
+                    'html': html_body,
+                },
+                timeout=10
+            )
+            if res.status_code in (200, 201):
+                print(f'[Email] 발송 완료: {to_email}')
+                return True
+            if res.status_code == 429:
+                wait = 1 * (attempt + 1)
+                print(f'[Email] rate limit — {wait}초 후 재시도 ({to_email})')
+                _time_mod.sleep(wait)
+                continue
+            print(f'[Email] 발송 실패 ({to_email}): {res.status_code} {res.text}')
+            return False
+        except Exception as e:
+            print(f'[Email] 발송 실패 ({to_email}): {e}')
+            return False
+    print(f'[Email] 발송 실패 — 재시도 초과 ({to_email})')
+    return False
 
 
 def send_verify_email(to_email: str, verify_url: str):
