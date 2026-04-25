@@ -24,11 +24,9 @@ from flask import Flask, render_template, jsonify, request, send_from_directory,
 from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.security import generate_password_hash, check_password_hash
 import psutil
-import smtplib
 import secrets
 import threading
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests as _requests
 app = Flask(__name__)
 from routes_landing import landing_bp
 app.register_blueprint(landing_bp)
@@ -229,23 +227,27 @@ def get_user_db():
 
 # ── 이메일 발송 헬퍼 ──────────────────────────────────────────
 def _send_email(to_email: str, subject: str, html_body: str) -> bool:
-    smtp_email = os.environ.get('SMTP_EMAIL', '').strip()
-    smtp_password = os.environ.get('SMTP_PASSWORD', '').replace(' ', '')
-    if not smtp_email or not smtp_password:
-        print(f'[Email] SMTP 설정 없음 — 발송 건너뜀 ({to_email})')
+    api_key = os.environ.get('RESEND_API_KEY', '').strip()
+    if not api_key:
+        print(f'[Email] RESEND_API_KEY 없음 — 발송 건너뜀 ({to_email})')
         return False
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject
-    msg['From'] = f'ThinkLynx <{smtp_email}>'
-    msg['To'] = to_email
-    msg.attach(MIMEText(html_body, 'html', 'utf-8'))
     try:
-        with smtplib.SMTP('smtp.gmail.com', 587, timeout=10) as server:
-            server.starttls()
-            server.login(smtp_email, smtp_password)
-            server.sendmail(smtp_email, to_email, msg.as_string())
-        print(f'[Email] 발송 완료: {to_email}')
-        return True
+        res = _requests.post(
+            'https://api.resend.com/emails',
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            json={
+                'from': 'THINK LYNX <noreply@thinklynx.xyz>',
+                'to': [to_email],
+                'subject': subject,
+                'html': html_body,
+            },
+            timeout=10
+        )
+        if res.status_code in (200, 201):
+            print(f'[Email] 발송 완료: {to_email}')
+            return True
+        print(f'[Email] 발송 실패 ({to_email}): {res.status_code} {res.text}')
+        return False
     except Exception as e:
         print(f'[Email] 발송 실패 ({to_email}): {e}')
         return False
