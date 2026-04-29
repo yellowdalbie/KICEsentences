@@ -656,6 +656,10 @@ def auth_reset_password():
 def ping():
     return 'ok', 200
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 @app.route('/api/shutdown', methods=['POST'])
 def shutdown():
     if not OFFLINE_MODE:
