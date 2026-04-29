@@ -1434,6 +1434,14 @@ const AUTH_MODAL_HTML = `
       >
     </div>
 
+    <!-- 개인정보처리방침 동의 (회원가입 시에만 표시) -->
+    <div id="auth-privacy-wrap" style="display: none; margin-bottom: 1.2rem;">
+      <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-size: 0.82rem; color: #94a3b8; line-height: 1.5;">
+        <input type="checkbox" id="auth-privacy-check" style="margin-top: 2px; accent-color: #06b6d4; width: 15px; height: 15px; flex-shrink: 0;">
+        <span><a href="/privacy" target="_blank" style="color: #06b6d4; text-decoration: none;">개인정보처리방침</a>에 동의합니다 <span style="color: #f87171;">(필수)</span></span>
+      </label>
+    </div>
+
     <!-- Submit Button -->
     <button id="auth-submit-btn" onclick="submitAuth()"
       style="width: 100%; background: linear-gradient(135deg, #06b6d4, #0891b2); border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.95rem; font-weight: 700; color: #030712; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(6,182,212,0.3); margin-bottom: 0.7rem;"
@@ -1484,18 +1492,24 @@ window.openAuthModal = function(mode = 'login') {
 
     const forgotWrap = document.getElementById('auth-forgot-wrap');
 
+    const privacyWrap = document.getElementById('auth-privacy-wrap');
+    const privacyCheck = document.getElementById('auth-privacy-check');
+
     if (mode === 'login') {
         document.getElementById('auth-modal-title').innerText = '로그인';
         document.getElementById('auth-submit-btn').innerText = '로그인';
         document.getElementById('auth-toggle-text').innerText = '계정이 없으신가요?';
         document.getElementById('auth-toggle-link').innerText = '회원가입';
         if (forgotWrap) forgotWrap.style.display = 'block';
+        if (privacyWrap) privacyWrap.style.display = 'none';
     } else {
         document.getElementById('auth-modal-title').innerText = '회원가입';
         document.getElementById('auth-submit-btn').innerText = '가입하기';
         document.getElementById('auth-toggle-text').innerText = '이미 계정이 있으신가요?';
         document.getElementById('auth-toggle-link').innerText = '로그인';
         if (forgotWrap) forgotWrap.style.display = 'none';
+        if (privacyWrap) privacyWrap.style.display = 'block';
+        if (privacyCheck) privacyCheck.checked = false;
     }
     
     const modal = document.getElementById('auth-modal');
@@ -1526,6 +1540,15 @@ async function submitAuth() {
         errorMsg.innerText = '이메일과 비밀번호를 입력해주세요.';
         errorMsg.style.display = 'block';
         return;
+    }
+
+    if (authMode === 'register') {
+        const privacyCheck = document.getElementById('auth-privacy-check');
+        if (!privacyCheck || !privacyCheck.checked) {
+            errorMsg.innerText = '개인정보처리방침에 동의해주세요.';
+            errorMsg.style.display = 'block';
+            return;
+        }
     }
     
     const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
