@@ -639,3 +639,30 @@ def ping():
     return 'ok', 200
 
 
+# ── SEO: robots.txt ─────────────────────────────────────────
+@landing_bp.route('/robots.txt')
+def robots_txt():
+    content = (
+        'User-agent: *\n'
+        'Allow: /\n'
+        'Sitemap: https://www.thinklynx.xyz/sitemap.xml\n'
+    )
+    from flask import Response
+    return Response(content, mimetype='text/plain')
+
+
+# ── SEO: sitemap.xml ────────────────────────────────────────
+@landing_bp.route('/sitemap.xml')
+def sitemap_xml():
+    content = '''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.thinklynx.xyz/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>'''
+    from flask import Response
+    return Response(content, mimetype='application/xml')
+
+
