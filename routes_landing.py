@@ -556,6 +556,12 @@ def download_portal(token):
     )
 
 
+# ── 개인정보처리방침 ─────────────────────────────────────────
+@landing_bp.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+
 # ── ping ────────────────────────────────────────────────────
 @landing_bp.route('/ping')
 def ping():
