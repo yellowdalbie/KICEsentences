@@ -639,6 +639,13 @@ def ping():
     return 'ok', 200
 
 
+# ── SEO: Google Search Console 소유 확인 ────────────────────
+@landing_bp.route('/google94e999ee1d56a815.html')
+def google_site_verification():
+    from flask import Response
+    return Response('google-site-verification: google94e999ee1d56a815.html', mimetype='text/html')
+
+
 # ── SEO: robots.txt ─────────────────────────────────────────
 @landing_bp.route('/robots.txt')
 def robots_txt():
