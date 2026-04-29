@@ -562,6 +562,12 @@ def privacy():
     return render_template('privacy.html')
 
 
+# ── 이용약관 ─────────────────────────────────────────────────
+@landing_bp.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+
 # ── ping ────────────────────────────────────────────────────
 @landing_bp.route('/ping')
 def ping():
