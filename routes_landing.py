@@ -1,6 +1,6 @@
 """
 KICE Lynx 랜딩 서버
-- 방문자 추적 (UUID 쿠키 + GeoIP)
+- 방문자 추적 (방문 횟수 집계)
 - 다운로드 기록 + GitHub Releases 리다이렉트
 - 이메일 구독
 - 관리자 대시보드
@@ -15,8 +15,6 @@ KICE Lynx 랜딩 서버
 import json
 import os
 import sqlite3
-import urllib.request
-import uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -76,49 +74,29 @@ def init_db():
     db.executescript('''
         CREATE TABLE IF NOT EXISTS visits (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            visitor_id  TEXT,
-            ip          TEXT,
-            country     TEXT,
-            region      TEXT,
-            city        TEXT,
-            user_agent  TEXT,
-            referer     TEXT,
-            is_new      INTEGER DEFAULT 1,
-            created_at  TEXT DEFAULT (datetime('now', '+9 hours')),
-            user_email  TEXT
+            user_email  TEXT,
+            created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE TABLE IF NOT EXISTS downloads (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            visitor_id  TEXT,
             platform    TEXT,
-            ip          TEXT,
-            country     TEXT,
-            city        TEXT,
-            user_agent  TEXT,
             created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE TABLE IF NOT EXISTS subscribers (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             email       TEXT UNIQUE,
-            visitor_id  TEXT,
-            country     TEXT,
             created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE TABLE IF NOT EXISTS error_reports (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             problem_id  TEXT UNIQUE,
             status      TEXT DEFAULT 'reported',
-            visitor_id  TEXT,
             created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
         CREATE TABLE IF NOT EXISTS portal_logs (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            visitor_id  TEXT,
-            ip          TEXT,
-            country     TEXT,
             created_at  TEXT DEFAULT (datetime('now', '+9 hours'))
         );
-        CREATE INDEX IF NOT EXISTS idx_visits_vid    ON visits(visitor_id);
         CREATE INDEX IF NOT EXISTS idx_visits_date   ON visits(created_at);
         CREATE INDEX IF NOT EXISTS idx_dl_date       ON downloads(created_at);
     ''')
@@ -134,63 +112,25 @@ def init_db():
 init_db()
 
 
-# ── GeoIP (ip-api.com 무료, 등록 불필요) ────────────────────
-def get_geo(ip: str) -> dict:
-    try:
-        url = f'http://ip-api.com/json/{ip}?fields=country,regionName,city'
-        req = urllib.request.Request(url, headers={'User-Agent': 'THINK-LYNX-Landing/1.0'})
-        with urllib.request.urlopen(req, timeout=2) as r:
-            return json.loads(r.read())
-    except Exception:
-        return {}
-
-
-def get_ip() -> str:
-    return request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
-
-
-# ── 방문자 추적 훅 ───────────────────────────────────────────
-@landing_bp.before_app_request
-def attach_visitor():
-    vid = request.cookies.get('vid')
-    g.is_new_visitor = vid is None
-    g.visitor_id = vid or str(uuid.uuid4())
 
 
 # ── 메인 페이지 ──────────────────────────────────────────────
 @landing_bp.route('/')
 def landing_index():
     db = get_db()
-    ip = get_ip()
-    geo = get_geo(ip)
-
-    # 이전 방문 여부
-    existing = db.execute(
-        'SELECT id FROM visits WHERE visitor_id = ?', (g.visitor_id,)
-    ).fetchone()
-
     user_email = session.get('user_email') or session.get('email') or None
     db.execute(
-        '''INSERT INTO visits (visitor_id, ip, country, region, city, user_agent, referer, is_new, created_at, user_email)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now', '+9 hours'), ?)''',
-        (g.visitor_id, ip,
-         geo.get('country', ''), geo.get('regionName', ''), geo.get('city', ''),
-         request.user_agent.string, request.referrer or '',
-         1 if existing is None else 0, user_email)
+        "INSERT INTO visits (user_email, created_at) VALUES (?, datetime('now', '+9 hours'))",
+        (user_email,)
     )
     db.commit()
-
     db.close()
 
-    resp = make_response(render_template(
+    return render_template(
         'landing.html',
         version=VERSION,
         file_sizes=FILE_SIZES,
-    ))
-    if g.is_new_visitor:
-        resp.set_cookie('vid', g.visitor_id, max_age=60*60*24*365*2,
-                        samesite='Lax', httponly=True)
-    return resp
+    )
 
 
 # ── 다운로드 기록 + 리다이렉트 ──────────────────────────────
@@ -208,15 +148,9 @@ def download(platform):
             return f'Not found. (Invalid target: {orig_platform})', 404
 
     db = get_db()
-    ip = get_ip()
-    geo = get_geo(ip)
-
     db.execute(
-        '''INSERT INTO downloads (visitor_id, platform, ip, country, city, user_agent, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, datetime('now', '+9 hours'))''',
-        (g.visitor_id, platform, ip,
-         geo.get('country', ''), geo.get('city', ''),
-         request.user_agent.string)
+        "INSERT INTO downloads (platform, created_at) VALUES (?, datetime('now', '+9 hours'))",
+        (platform,)
     )
     db.commit()
     db.close()
@@ -251,8 +185,8 @@ def handle_errors():
             for pid in problem_ids:
                 try:
                     db.execute(
-                        'INSERT INTO error_reports (problem_id, visitor_id) VALUES (?, ?)',
-                        (str(pid).strip(), g.visitor_id)
+                        'INSERT INTO error_reports (problem_id) VALUES (?)',
+                        (str(pid).strip(),)
                     )
                 except sqlite3.IntegrityError:
                     pass # Skip duplicate records
@@ -448,7 +382,7 @@ def admin():
                 })
             
             login_logs = main_conn.execute(
-                'SELECT email, ip, country, city, user_agent, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
+                'SELECT email, created_at FROM login_logs ORDER BY id DESC LIMIT 50'
             ).fetchall()
             
             # 검색 통계 — 로그인 사용자만 (가입 사용자 합계와 일치)
@@ -591,20 +525,14 @@ def admin():
     # 오류 신고 내역 가져오기
     errors = db.execute('SELECT * FROM error_reports ORDER BY id DESC').fetchall()
 
-    country_stats = db.execute(
-        '''SELECT country, COUNT(*) as cnt FROM visits
-           WHERE country != "" GROUP BY country ORDER BY cnt DESC LIMIT 15'''
-    ).fetchall()
-
     daily_stats = db.execute(
-        '''SELECT date(created_at, '-6 hours') as day, COUNT(*) as visits,
-                  COUNT(DISTINCT visitor_id) as uniq
+        '''SELECT date(created_at, '-6 hours') as day, COUNT(*) as visits
            FROM visits GROUP BY day ORDER BY day DESC LIMIT 14'''
     ).fetchall()
 
     db.close()
 
-    return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=country_stats,
+    return render_template('admin.html', stats=stats, daily_stats=daily_stats, country_stats=[],
                            emails=users, login_logs=login_logs, errors=errors)
 
 
@@ -614,13 +542,8 @@ def download_portal(token):
     if token != DOWNLOAD_TOKEN:
         return '', 404
     try:
-        ip = get_ip()
-        geo = get_geo(ip)
         db = get_db()
-        db.execute(
-            "INSERT INTO portal_logs (visitor_id, ip, country, created_at) VALUES (?, ?, ?, datetime('now', '+9 hours'))",
-            (g.visitor_id, ip, geo.get('country', ''))
-        )
+        db.execute("INSERT INTO portal_logs (created_at) VALUES (datetime('now', '+9 hours'))")
         db.commit()
         db.close()
     except Exception:

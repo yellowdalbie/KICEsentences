@@ -444,8 +444,8 @@ def auth_login():
         login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
         log_conn = get_user_db()
         log_conn.execute(
-            'INSERT INTO login_logs (user_id, email, ip, country, city, user_agent, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now", "+9 hours"))',
-            (user['id'], user['email'], login_ip, '', '', request.user_agent.string)
+            'INSERT INTO login_logs (user_id, email, created_at) VALUES (?, ?, datetime("now", "+9 hours"))',
+            (user['id'], user['email'])
         )
         log_conn.commit()
         log_conn.close()
