@@ -257,7 +257,8 @@ def _send_email(to_email: str, subject: str, html_body: str) -> bool:
             return False
         except Exception as e:
             print(f'[Email] 발송 실패 ({to_email}): {e}')
-            return False
+            _time_mod.sleep(2)
+            continue
     print(f'[Email] 발송 실패 — 재시도 초과 ({to_email})')
     return False
 
