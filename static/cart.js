@@ -1732,7 +1732,7 @@ window.resendVerifyEmail = async function(email) {
             body: JSON.stringify({ email })
         });
         const data = await res.json();
-        showCustomAlert(res.ok ? '인증 메일을 재발송했습니다. 메일함을 확인해주세요.' : (data.error || '재발송 실패'));
+        showCustomAlert(res.ok ? '발송되었습니다. 메일함을 확인해주세요. 스팸메일함도 확인해주세요.' : (data.error || '재발송 실패'));
     } catch(e) {
         showCustomAlert('서버 통신 실패');
     }

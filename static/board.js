@@ -637,7 +637,7 @@ window.showBoardAuthModal = function(type) {
     title.textContent = '이메일 인증 필요';
     desc.textContent  = '이 게시글은 이메일 인증을 완료한 회원만 열람할 수 있습니다. 가입 시 발송된 인증 메일을 확인해주세요.';
     btns.innerHTML = `
-      <button ${btnStyle('var(--accent-cyan)','#030712')} onclick="resendVerifyEmail();closeBoardAuthModal()">인증 메일 재발송</button>
+      <button ${btnStyle('var(--accent-cyan)','#030712')} onclick="resendVerifyEmail(window.AUTH_STATE.email);closeBoardAuthModal()">인증 메일 재발송</button>
       <button ${btnStyle('rgba(255,255,255,0.06)','var(--text-muted)')} onclick="closeBoardAuthModal()">닫기</button>
     `;
   }
@@ -814,12 +814,7 @@ window.confirmBoardPublish = async function() {
   }
 };
 
-// ── 인증 메일 재발송 (index.html의 함수 호출) ─────────────
-window.resendVerifyEmail = async function() {
-  if (typeof sendVerificationEmail === 'function') {
-    sendVerificationEmail();
-  }
-};
+// (removed dead resendVerifyEmail wrapper)
 
 // ── 초기화 ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
