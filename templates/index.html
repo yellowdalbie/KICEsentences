@@ -2467,9 +2467,10 @@ function tmCopy() {
      질문/오류신고 작성 모달 (기존 오류신고 모달 흡수)
 ════════════════════════════════════════════ -->
 <div id="board-write-overlay" style="display:none; position:fixed; inset:0; z-index:8500; background:rgba(3,7,18,0.85); align-items:flex-start; justify-content:center; padding-top: 4vh;">
-  <button type="button" onclick="closeBoardWrite()" style="position:absolute; top:1.5rem; right:2rem; background:none; border:none; color:rgba(255,255,255,0.7); font-size:2.5rem; cursor:pointer; z-index:8600; padding:0; line-height:1;">×</button>
-  <div class="glass" style="max-width:620px; width:92%; border-radius:16px; padding:1.8rem; position:relative; max-height:85vh; overflow-y:auto;">
-    <div id="bw-title" style="font-weight:700; font-size:1rem; margin-bottom:0.3rem; color:var(--text-color);"></div>
+  <div style="position:relative; width:92%; max-width:620px;">
+    <button type="button" onclick="closeBoardWrite()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer; z-index:8600; padding:0; line-height:1;">×</button>
+    <div class="glass" style="width:100%; box-sizing:border-box; border-radius:16px; padding:1.8rem; max-height:85vh; overflow-y:auto;">
+      <div id="bw-title" style="font-weight:700; font-size:1rem; margin-bottom:0.3rem; color:var(--text-color); padding-right:2rem;"></div>
     <div id="bw-banner" style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem; line-height:1.5;"></div>
 
     <!-- 문항 선택 (기존 오류신고 모달 UI 이식) -->
@@ -2513,6 +2514,7 @@ function tmCopy() {
       <button id="bw-submit-btn" onclick="submitBoardWrite()" disabled
         style="background:var(--accent-cyan); border:none; color:#030712; padding:0.5rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700; opacity:0.5; transition:opacity 0.2s;">작성 완료</button>
     </div>
+  </div>
   </div>
 </div>
 
