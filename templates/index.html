@@ -92,10 +92,9 @@
 
             <!-- 2. Expression Search Input -->
             <div id="tab-expression" class="huge-search-wrapper">
-                <div style="position: relative;">
-                    <input type="text" id="expression-search-input" class="huge-search-input"
-                        placeholder="" autocomplete="off">
-                    <button id="expression-search-btn" class="search-icon-btn" aria-label="표현 검색">
+                <div style="position: relative; display: flex; align-items: center; min-height: 56px;">
+                    <math-field id="expression-search-input" class="huge-search-input" style="width: 100%; background: transparent; border: none; color: inherit; padding-right: 48px;" placeholder=""></math-field>
+                    <button id="expression-search-btn" class="search-icon-btn" aria-label="표현 검색" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10;">
                         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
                             fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -1916,8 +1915,11 @@
 
         // Bind Search Events
         expBtn.addEventListener('click', () => executeExpressionSearch(expInput.value));
-        expInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') executeExpressionSearch(expInput.value);
+        expInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                executeExpressionSearch(expInput.value);
+            }
         });
 
         // Quick Tag Clicks
@@ -2381,6 +2383,10 @@ function tmCopy() {
       <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.8rem; font-weight:600;">댓글</div>
       <div id="bd-comments-list" style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1rem;"></div>
       <div id="bd-comment-form" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <span style="font-size:0.8rem; color:var(--text-muted);">댓글 작성</span>
+          <button type="button" onclick="openMathKeyboard('bd-comment-input')" style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3); color:var(--accent-cyan); padding:0.25rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.75rem; font-weight:700;">𝝅 수식 입력</button>
+        </div>
         <textarea id="bd-comment-input" placeholder="댓글을 입력하세요..." rows="3"
           style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.7rem; color:var(--text-color); font-size:0.85rem; resize:vertical; font-family:inherit;"></textarea>
         <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.5rem;">
@@ -2472,8 +2478,9 @@ function tmCopy() {
     </div>
 
     <!-- 선택된 문항 표시 -->
-    <div style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px;">
+    <div style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
       <div id="bw-selected-problem" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">선택된 문항: <span id="bw-selected-label" style="color:var(--accent-cyan); font-weight:600;">없음</span></div>
+      <button type="button" onclick="openMathKeyboard('bw-content-input')" style="background:rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.3); color:var(--accent-cyan); padding:0.25rem 0.6rem; border-radius:5px; cursor:pointer; font-size:0.75rem; font-weight:700;">𝝅 수식 삽입</button>
     </div>
 
     <!-- 내용 입력 -->
@@ -2548,6 +2555,103 @@ function tmCopy() {
       document.getElementById('service-notice-modal').style.display = 'flex';
     }
   })();
+</script>
+
+<!-- ══════════════════════════════════════════
+     MathLive 수식 키보드 모달 & 스크립트
+════════════════════════════════════════════ -->
+<script defer src="https://unpkg.com/mathlive"></script>
+<style>
+  /* 모달 위에 가상키보드가 뜨도록 z-index 강제 조정 */
+  math-virtual-keyboard {
+    z-index: 12000 !important;
+  }
+  
+  /* math-field 기본 테두리 제거 및 높이/줄바꿈 방지 (검색창 스타일과 충돌 방지) */
+  #expression-search-input::part(container) {
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap !important;
+    min-height: 48px;
+  }
+
+  /* 가상키보드 토글 아이콘 위치 교정 (돋보기 버튼과 겹침 방지) */
+  #expression-search-input::part(virtual-keyboard-toggle) {
+    margin-right: 28px;
+    align-self: center;
+  }
+</style>
+<div id="math-keyboard-modal" style="display:none; position:fixed; inset:0; z-index:11000; background:rgba(3,7,18,0.85); align-items:center; justify-content:center;">
+  <div class="glass" style="width:95%; max-width:600px; border-radius:16px; padding:1.5rem; position:relative;">
+    <button onclick="closeMathKeyboard()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:var(--text-muted); font-size:1.3rem; cursor:pointer;">×</button>
+    <div style="font-weight:700; font-size:1rem; margin-bottom:1rem; color:var(--text-color);">𝝅 수식 에디터</div>
+    <math-field id="mathlive-field" style="width:100%; font-size:1.5rem; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:0.5rem;" virtual-keyboard-mode="manual"></math-field>
+    <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:1rem;">
+      <button onclick="closeMathKeyboard()" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.5rem 1rem; border-radius:8px; cursor:pointer; font-size:0.85rem;">취소</button>
+      <button onclick="insertMathLive()" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.5rem 1.4rem; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:700;">본문에 삽입</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMathTarget = null;
+
+function openMathKeyboard(targetId) {
+    currentMathTarget = document.getElementById(targetId);
+    if (!currentMathTarget) return;
+    
+    // 모달을 표시
+    document.getElementById('math-keyboard-modal').style.display = 'flex';
+    
+    const mf = document.getElementById('mathlive-field');
+    mf.value = ''; // 이전 입력 초기화
+    
+    // 약간의 딜레이 후 focus 주어 가상 키보드 띄우기
+    setTimeout(() => {
+        mf.focus();
+        if (window.mathVirtualKeyboard) {
+            window.mathVirtualKeyboard.show();
+        }
+    }, 150);
+}
+
+function closeMathKeyboard() {
+    document.getElementById('math-keyboard-modal').style.display = 'none';
+    if (window.mathVirtualKeyboard) {
+        window.mathVirtualKeyboard.hide();
+    }
+    if (currentMathTarget) {
+        currentMathTarget.focus();
+        currentMathTarget = null;
+    }
+}
+
+function insertMathLive() {
+    if (!currentMathTarget) return;
+    const mf = document.getElementById('mathlive-field');
+    let latex = mf.value;
+    
+    if (!latex) {
+        closeMathKeyboard();
+        return;
+    }
+    
+    // expression-search-input이 아닌 경우에는 수식 마크다운 $$ 추가
+    if (currentMathTarget.id !== 'expression-search-input') {
+        latex = '$$' + latex + '$$';
+    }
+
+    const startPos = currentMathTarget.selectionStart;
+    const endPos = currentMathTarget.selectionEnd;
+    const val = currentMathTarget.value;
+    
+    currentMathTarget.value = val.substring(0, startPos) + latex + val.substring(endPos);
+    currentMathTarget.selectionStart = currentMathTarget.selectionEnd = startPos + latex.length;
+    
+    closeMathKeyboard();
+}
 </script>
 
 </body>
