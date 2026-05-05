@@ -2650,7 +2650,13 @@ function openMyPage() {
     const emailEl = document.getElementById('mypage-email');
     if (emailEl) emailEl.textContent = email;
     const verifyStatusEl = document.getElementById('mypage-verify-status');
-    if (verifyStatusEl) verifyStatusEl.innerHTML = '';
+    if (verifyStatusEl) {
+        if (window.AUTH_STATE?.isVerified) {
+            verifyStatusEl.innerHTML = `<span style="font-size:0.75rem; color:#10b981; background:rgba(16,185,129,0.1); padding:0.15rem 0.5rem; border-radius:4px; font-weight:600;">인증됨</span>`;
+        } else {
+            verifyStatusEl.innerHTML = `<button onclick="resendVerifyEmail('${email}')" style="font-size:0.75rem; color:#f87171; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); padding:0.15rem 0.5rem; border-radius:4px; font-weight:600; cursor:pointer;">인증 받기</button>`;
+        }
+    }
     const nameInput = document.getElementById('display-name-input');
     if (nameInput) nameInput.value = displayName !== email.split('@')[0] ? displayName : '';
     const hintEl = document.getElementById('display-name-hint');
