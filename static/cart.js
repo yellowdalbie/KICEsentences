@@ -1170,15 +1170,49 @@ function loadAndMeasureImage(src) {
     });
 }
 
-function setPrintPill(btn) {
+async function setPrintPill(btn) {
     const target = btn.dataset.target;
     const val = btn.dataset.value;
-
 
     document.querySelectorAll(`.print-pill[data-target="${target}"]`).forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById(target).value = val;
-    openPrintPreview();
+
+    // 옵션만 업데이트하고 필요한 데이터만 보완한 뒤 재렌더
+    if (target === 'explanation-display-opt') {
+        _previewExpOpt = val;
+        // 'separate'로 전환됐는데 steps가 아직 없는 경우에만 API 호출
+        if (val === 'separate' && _previewLoadedItems.length > 0) {
+            const missingIds = _previewLoadedItems
+                .filter(item => !item.steps || item.steps.length === 0)
+                .map(item => item.pid);
+            if (missingIds.length > 0) {
+                try {
+                    const expRes = await fetch('/api/problem_steps_bulk', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ problem_ids: missingIds })
+                    });
+                    const expData = await expRes.json();
+                    const stepsData = expData.steps || {};
+                    // 기존 아이템에 steps 데이터 보완
+                    _previewLoadedItems.forEach(item => {
+                        if (stepsData[item.pid]) {
+                            item.steps = stepsData[item.pid];
+                        }
+                    });
+                } catch(e) {
+                    console.error('steps fetch error:', e);
+                }
+            }
+        }
+        await renderPreviewPages();
+    } else if (target === 'answer-display-opt') {
+        _previewAnswerOpt = val;
+        await renderPreviewPages();
+    } else {
+        openPrintPreview();
+    }
 }
 
 async function logAndPrint() {
