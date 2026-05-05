@@ -2494,6 +2494,7 @@ function tmCopy() {
     <!-- 선택된 문항 표시 -->
     <div style="margin-top:12px; border-top:1px solid rgba(255,255,255,0.1); padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
       <div id="bw-selected-problem" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">선택된 문항: <span id="bw-selected-label" style="color:var(--accent-cyan); font-weight:600;">없음</span></div>
+      <button id="bw-reselect-btn" onclick="document.getElementById('bw-prob-select-section').style.display='block'; this.style.display='none'; document.getElementById('bw-selected-label').textContent='없음'; window._bwSelectedProbId=null; document.getElementById('bw-submit-btn').disabled=true; document.getElementById('bw-submit-btn').style.opacity='0.5';" style="display:none; background:rgba(255,255,255,0.1); border:none; color:var(--text-main); padding:0.3rem 0.6rem; border-radius:4px; font-size:0.75rem; cursor:pointer;">다시 선택</button>
     </div>
 
     <!-- 내용 입력 및 수식 도구 통합 UI -->

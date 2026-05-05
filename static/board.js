@@ -730,6 +730,12 @@ window.openBoardWrite = function(type) {
   document.getElementById('bw-content-input').value = '';
   document.getElementById('bw-submit-btn').disabled = true;
   document.getElementById('bw-submit-btn').style.opacity = '0.5';
+  
+  // UI 초기화: 선택 영역 보이기, 다시 선택 버튼 숨기기
+  const selectSection = document.getElementById('bw-prob-select-section');
+  const reselectBtn = document.getElementById('bw-reselect-btn');
+  if (selectSection) selectSection.style.display = 'block';
+  if (reselectBtn) reselectBtn.style.display = 'none';
 
   const title  = document.getElementById('bw-title');
   const banner = document.getElementById('bw-banner');
@@ -765,6 +771,12 @@ function _initBwYearButtons() {
       const btn = document.getElementById('bw-submit-btn');
       btn.disabled = false;
       btn.style.opacity = '1';
+      
+      // 문항 선택 완료 시 거대한 선택 UI를 접고 다시 선택 버튼 표시
+      const selectSection = document.getElementById('bw-prob-select-section');
+      const reselectBtn = document.getElementById('bw-reselect-btn');
+      if (selectSection) selectSection.style.display = 'none';
+      if (reselectBtn) reselectBtn.style.display = 'block';
     });
   }
 }
