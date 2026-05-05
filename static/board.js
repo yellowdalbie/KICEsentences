@@ -752,6 +752,9 @@ window.closeBoardWrite = function() {
   document.getElementById('board-write-overlay').style.display = 'none';
   _bwType = null;
   _bwSelectedProbId = null;
+  if (window.mathVirtualKeyboard) {
+      window.mathVirtualKeyboard.hide();
+  }
 };
 
 function _initBwYearButtons() {
