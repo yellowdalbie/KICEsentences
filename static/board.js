@@ -361,18 +361,22 @@ function _fillAccordion(post, user) {
 
   // 댓글 영역 ID (아코디언 내부 전용)
   const commentInputHtml = (post.type !== 'notice' && user.loggedIn && user.verified) ? `
-    <div style="margin-top:0.8rem;">
-      <textarea id="bd-comment-input" rows="2" placeholder="댓글을 입력하세요..."
-        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);
-               border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.55rem;
-               color:var(--text-color);font-size:0.83rem;resize:none;font-family:inherit;"></textarea>
-      <div style="display:flex;justify-content:flex-end;gap:0.4rem;margin-top:0.3rem;">
-        <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">
-          <input type="checkbox" id="bd-comment-anon"> 익명
-        </label>
-        <button onclick="submitComment(null)"
-          style="background:var(--accent-cyan);border:none;color:#030712;
-                 padding:0.32rem 0.9rem;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:700;">등록</button>
+    <div style="border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:rgba(255,255,255,0.02); overflow:hidden; margin-top:0.8rem; display:flex; flex-direction:column;">
+      <textarea id="bd-comment-input" rows="2" placeholder="댓글을 입력하세요... (수식은 하단 도구 이용)"
+        style="width:100%; box-sizing:border-box; background:transparent; border:none; padding:0.6rem; color:var(--text-color); font-size:0.85rem; resize:none; font-family:inherit; outline:none; border-bottom:1px solid rgba(255,255,255,0.05);"></textarea>
+      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:0.4rem 0.6rem;">
+        <div style="display:flex; gap:0.4rem; align-items:center; flex:1;">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; white-space:nowrap;">∑ 수식</span>
+          <math-field id="comment-math-helper" style="flex:1; background:transparent; border:none; color:var(--text-color); font-size:0.9rem;" placeholder="터치하여 가상 키보드 호출"></math-field>
+          <button type="button" onclick="insertInlineMath('comment-math-helper', 'bd-comment-input')" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.7rem; font-weight:700; white-space:nowrap;">본문에 삽입</button>
+        </div>
+        <div style="display:flex; gap:0.6rem; align-items:center; margin-left:0.8rem;">
+          <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-muted); cursor:pointer;">
+            <input type="checkbox" id="bd-comment-anon"> 익명
+          </label>
+          <button onclick="submitComment(null)"
+            style="background:var(--accent-cyan); border:none; color:#030712; padding:0.32rem 0.9rem; border-radius:6px; cursor:pointer; font-size:0.8rem; font-weight:700;">등록</button>
+        </div>
       </div>
     </div>` : (post.type !== 'notice' ? `
     <div id="bd-comment-login-notice"
@@ -470,14 +474,23 @@ function _renderComments(comments) {
     replyArea.style.marginLeft = '1.5rem';
     replyArea.style.marginTop = '0.4rem';
     replyArea.innerHTML = `
-      <textarea id="reply-input-${c.id}" rows="2" placeholder="답글을 입력하세요..."
-        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:0.5rem;color:var(--text-color);font-size:0.82rem;resize:none;font-family:inherit;"></textarea>
-      <div style="display:flex;justify-content:flex-end;gap:0.4rem;margin-top:0.3rem;">
-        <label style="display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;color:var(--text-muted);cursor:pointer;">
-          <input type="checkbox" id="reply-anon-${c.id}"> 익명
-        </label>
-        <button onclick="submitComment(${c.id})" style="background:var(--accent-cyan);border:none;color:#030712;padding:0.3rem 0.8rem;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:700;">등록</button>
-        <button onclick="document.getElementById('reply-area-${c.id}').style.display='none'" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);padding:0.3rem 0.7rem;border-radius:6px;cursor:pointer;font-size:0.78rem;">취소</button>
+      <div style="border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:rgba(255,255,255,0.02); overflow:hidden; display:flex; flex-direction:column;">
+        <textarea id="reply-input-${c.id}" rows="2" placeholder="답글을 입력하세요... (수식은 하단 도구 이용)"
+          style="width:100%; box-sizing:border-box; background:transparent; border:none; padding:0.6rem; color:var(--text-color); font-size:0.82rem; resize:none; font-family:inherit; outline:none; border-bottom:1px solid rgba(255,255,255,0.05);"></textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:0.4rem 0.6rem;">
+          <div style="display:flex; gap:0.4rem; align-items:center; flex:1;">
+            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; white-space:nowrap;">∑ 수식</span>
+            <math-field id="reply-math-helper-${c.id}" style="flex:1; background:transparent; border:none; color:var(--text-color); font-size:0.9rem;" placeholder="터치하여 가상 키보드 호출"></math-field>
+            <button type="button" onclick="insertInlineMath('reply-math-helper-${c.id}', 'reply-input-${c.id}')" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.7rem; font-weight:700; white-space:nowrap;">본문에 삽입</button>
+          </div>
+          <div style="display:flex; gap:0.6rem; align-items:center; margin-left:0.8rem;">
+            <label style="display:flex; align-items:center; gap:0.3rem; font-size:0.75rem; color:var(--text-muted); cursor:pointer;">
+              <input type="checkbox" id="reply-anon-${c.id}"> 익명
+            </label>
+            <button onclick="submitComment(${c.id})" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.3rem 0.8rem; border-radius:6px; cursor:pointer; font-size:0.78rem; font-weight:700;">등록</button>
+            <button onclick="document.getElementById('reply-area-${c.id}').style.display='none'" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--text-muted); padding:0.3rem 0.7rem; border-radius:6px; cursor:pointer; font-size:0.78rem;">취소</button>
+          </div>
+        </div>
       </div>
     `;
     list.appendChild(replyArea);

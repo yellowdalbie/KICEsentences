@@ -90,17 +90,27 @@
                 </div>
             </div>
 
-            <!-- 2. Expression Search Input -->
             <div id="tab-expression" class="huge-search-wrapper">
-                <div class="huge-search-input" style="position: relative; display: flex; align-items: center; padding: 0;">
-                    <math-field id="expression-search-input" style="flex: 1; height: 100%; background: transparent; border: none; color: inherit; padding-left: 1.8rem; padding-right: 4.5rem; outline: none; font-size: 1.15rem; --math-field-padding: 0px;" placeholder=""></math-field>
-                    <button id="expression-search-btn" class="search-icon-btn" aria-label="표현 검색" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10;">
-                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
-                            fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
+                <div style="display:flex; flex-direction:column;">
+                    <div style="position: relative;">
+                        <input type="text" id="expression-search-input" class="huge-search-input" placeholder="" autocomplete="off" spellcheck="false" style="padding-right: 6rem;">
+                        <button type="button" onclick="document.getElementById('search-math-helper-container').style.display = document.getElementById('search-math-helper-container').style.display === 'none' ? 'flex' : 'none';" 
+                            style="position: absolute; right: 50px; top: 50%; transform: translateY(-50%); background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:var(--text-main); padding:0.2rem 0.5rem; border-radius:6px; font-size:0.75rem; cursor:pointer; z-index:10; font-weight:600;">
+                            ∑ 수식
+                        </button>
+                        <button id="expression-search-btn" class="search-icon-btn" aria-label="표현 검색">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="search-math-helper-container" style="display:none; gap:0.4rem; align-items:center; background:rgba(0,0,0,0.3); padding:0.5rem 0.8rem; border-radius:0 0 16px 16px; border:1px solid rgba(255,255,255,0.1); border-top:none; margin: 0 1rem;">
+                        <math-field id="search-math-helper" style="flex:1; background:transparent; border:none; color:var(--text-color); font-size:1rem; --math-field-padding: 0px;" placeholder="터치하여 가상 키보드 호출"></math-field>
+                        <button type="button" onclick="insertInlineMath('search-math-helper', 'expression-search-input')" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.3rem 0.7rem; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:700; white-space:nowrap;">검색어에 추가</button>
+                    </div>
                 </div>
                 <div class="search-helper-text" id="expression-search-guide">
                     <a href="/docs/search_rules" target="_blank"
@@ -2486,14 +2496,16 @@ function tmCopy() {
       <div id="bw-selected-problem" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;">선택된 문항: <span id="bw-selected-label" style="color:var(--accent-cyan); font-weight:600;">없음</span></div>
     </div>
 
-    <!-- 내용 입력 -->
-    <textarea id="bw-content-input" rows="4" placeholder="내용을 입력하세요..."
-      style="width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.7rem; color:var(--text-color); font-size:0.85rem; resize:vertical; font-family:inherit; margin-top:0.4rem; margin-bottom:0.4rem;"></textarea>
-
-    <!-- Inline Math Helper -->
-    <div style="display:flex; gap:0.4rem; align-items:center; margin-bottom:0.8rem; background:rgba(0,0,0,0.2); padding:0.4rem; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-        <math-field id="board-math-helper" style="flex:1; background:transparent; border:none; color:var(--text-color); font-size:0.95rem;" placeholder="수식 작성 후 우측 삽입 클릭"></math-field>
-        <button type="button" onclick="insertInlineMath('board-math-helper', 'bw-content-input')" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.4rem 0.8rem; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:700; white-space:nowrap;">본문에 삽입</button>
+    <!-- 내용 입력 및 수식 도구 통합 UI -->
+    <div style="border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:rgba(255,255,255,0.02); overflow:hidden; margin-top:0.4rem; margin-bottom:0.8rem; display:flex; flex-direction:column;">
+      <textarea id="bw-content-input" rows="4" placeholder="내용을 입력하세요... (수식은 하단 도구를 이용해 삽입)"
+        style="width:100%; box-sizing:border-box; background:transparent; border:none; padding:0.7rem; color:var(--text-color); font-size:0.85rem; resize:vertical; font-family:inherit; outline:none; border-bottom:1px solid rgba(255,255,255,0.05);"></textarea>
+      
+      <div style="display:flex; gap:0.4rem; align-items:center; background:rgba(0,0,0,0.2); padding:0.4rem 0.6rem;">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; white-space:nowrap;">∑ 수식 입력</span>
+          <math-field id="board-math-helper" style="flex:1; background:transparent; border:none; color:var(--text-color); font-size:0.95rem;" placeholder="터치하여 가상 키보드 호출"></math-field>
+          <button type="button" onclick="insertInlineMath('board-math-helper', 'bw-content-input')" style="background:var(--accent-cyan); border:none; color:#030712; padding:0.3rem 0.7rem; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:700; white-space:nowrap;">본문에 삽입</button>
+      </div>
     </div>
 
     <div style="display:flex; justify-content:flex-end; margin-top:0.8rem;">
@@ -2608,7 +2620,7 @@ function tmCopy() {
 </style>
 
 <script>
-// 인라인 수식 에디터 -> 텍스트에리어 삽입 함수
+// 인라인 수식 에디터 -> 텍스트에리어/인풋 삽입 함수
 function insertInlineMath(helperId, targetId) {
     const mf = document.getElementById(helperId);
     const target = document.getElementById(targetId);
@@ -2617,10 +2629,11 @@ function insertInlineMath(helperId, targetId) {
     const latex = mf.value;
     if (!latex) return;
     
-    const insertText = '$$' + latex + '$$';
+    // 기출표현 검색창의 경우 $$ 로 감싸지 않고 원시 LaTeX만 삽입
+    const insertText = (targetId === 'expression-search-input') ? latex : ('$$' + latex + '$$');
     
-    const startPos = target.selectionStart;
-    const endPos = target.selectionEnd;
+    const startPos = target.selectionStart || target.value.length;
+    const endPos = target.selectionEnd || target.value.length;
     const val = target.value;
     
     target.value = val.substring(0, startPos) + insertText + val.substring(endPos);
@@ -2629,23 +2642,6 @@ function insertInlineMath(helperId, targetId) {
     mf.value = ''; // 입력 후 에디터 초기화
     target.focus();
 }
-
-// 수식 검색창 폰트 자동 축소 (인테그럴, 분수 등 거대 기호 감지)
-document.addEventListener('DOMContentLoaded', () => {
-    const expInput = document.getElementById('expression-search-input');
-    if (expInput) {
-        expInput.addEventListener('input', () => {
-            const val = expInput.value || '';
-            const tallSymbols = ['\\frac', '\\int', '\\sum', '\\prod', '\\coprod', '^', '_', '\\lim'];
-            
-            if (tallSymbols.some(sym => val.includes(sym))) {
-                expInput.style.fontSize = '0.9rem';
-            } else {
-                expInput.style.fontSize = '1.15rem';
-            }
-        });
-    }
-});
 </script>
 
 </body>

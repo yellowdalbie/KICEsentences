@@ -81,6 +81,9 @@
     --active-bg: rgba(255, 255, 255, 0.10);
 
     --font-sans: 'Paperozi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    
+    /* MathLive Keyboard Z-Index Fix for Modals */
+    --keyboard-zindex: 99999 !important;
 }
 
 * {
