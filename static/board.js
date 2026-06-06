@@ -42,6 +42,22 @@ function _escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function _renderMd(s) {
+  if (!s) return '';
+  if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+    return DOMPurify.sanitize(marked.parse(s));
+  }
+  return _escHtml(s);
+}
+
+function _renderMdInline(s) {
+  if (!s) return '';
+  if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+    return DOMPurify.sanitize(marked.parseInline(s));
+  }
+  return _escHtml(s);
+}
+
 // ── 게시판 바로가기 스크롤 ─────────────────────────────────
 window.scrollToBoard = function() {
   // overview view 활성화
@@ -159,7 +175,7 @@ function _makeRow(post, isNotice, showCheck) {
     <td class="board-col-id" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.id}</td>
     <td class="board-col-type" style="text-align:center;">${_typeBadge(post.type)}</td>
     <td class="board-col-title" style="color:var(--text-color);">
-      <div>${pinIcon}${_escHtml(post.title)}</div>
+      <div>${pinIcon}${_renderMdInline(post.title)}</div>
       <div class="board-row-meta">${_escHtml(post.author_name)} · ${_shortDate(post.created_at)} · 읽음 ${post.view_count||0} · ♥ ${post.like_count||0}</div>
     </td>
     <td class="board-col-author" style="text-align:center;color:var(--text-muted);font-size:0.8rem;">${_escHtml(post.author_name)}</td>
@@ -397,7 +413,7 @@ function _fillAccordion(post, user) {
         ${cartBtnTopHtml}
       </div>
       <!-- 내용 -->
-      ${post.content ? `<div style="font-size:0.88rem;color:var(--text-color);line-height:1.7;white-space:pre-wrap;margin-bottom:0.5rem;">${_escHtml(post.content)}</div>` : ''}
+      ${post.content ? `<div class="markdown-body" style="font-size:0.88rem;color:var(--text-color);line-height:1.7;margin-bottom:0.5rem;">${_renderMd(post.content)}</div>` : ''}
       <!-- 문항 -->
       ${problemsHtml}
       <!-- 댓글 -->
@@ -508,7 +524,7 @@ function _makeCommentEl(c, isReply, user) {
       ${!isReply && user.loggedIn && user.verified ? `<button class="bd-reply-btn" onclick="toggleReplyArea(${c.id})">답글</button>` : ''}
       ${canDel ? `<button class="bd-del-btn" onclick="deleteComment(${c.id})">삭제</button>` : ''}
     </div>
-    <div class="bd-comment-content">${_escHtml(c.content)}</div>
+    <div class="bd-comment-content markdown-body" style="line-height:1.6;font-size:0.85rem;">${_renderMd(c.content)}</div>
   `;
   return div;
 }
