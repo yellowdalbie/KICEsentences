@@ -433,12 +433,25 @@ function _fillAccordion(post, user) {
           ${likeHtml}
           ${editDescHtml}
         </div>
-        ${cartBtnTopHtml}
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          ${cartBtnTopHtml}
+          <button onclick="_copyShareLink(${post.id})" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.75rem;white-space:nowrap;">공유하기 🔗</button>
+        </div>
       </div>
       <!-- 내용 -->
       ${post.content ? `<div class="markdown-body" style="font-size:0.88rem;color:var(--text-color);line-height:1.7;margin-bottom:0.5rem;">${_renderMd(post.content)}</div>` : ''}
       <!-- 문항 -->
       ${problemsHtml}
+      
+      ${post.type === 'edit' ? `
+      <div style="text-align:center; margin:1.5rem 0 0.5rem 0; padding:1.2rem 1rem; background:rgba(6,182,212,0.03); border:1px solid rgba(6,182,212,0.1); border-radius:8px;">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.8rem; line-height:1.4;">이 포스팅이 도움이 되셨다면 주변에 공유해주세요!<br>여러분의 공유가 큰 힘이 됩니다.</p>
+        <button onclick="_copyShareLink(${post.id})" style="background:var(--accent-cyan);border:none;color:#030712;padding:0.4rem 1.2rem;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.2s;">이 포스팅 공유하기 🔗</button>
+      </div>` : `
+      <div style="text-align:right; margin-top:0.5rem;">
+        <button onclick="_copyShareLink(${post.id})" style="background:none;border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.75rem;">공유하기 🔗</button>
+      </div>
+      `}
       <!-- 댓글 -->
       ${post.type !== 'notice' ? `
         <div style="margin-top:1.1rem;border-top:1px solid rgba(255,255,255,0.07);padding-top:0.9rem;">
