@@ -137,6 +137,16 @@ function _renderBoardTable(data) {
       data.others.forEach(p => tbody.appendChild(_makeRow(p, false, showCheck)));
     }
     pagination.innerHTML = '';
+    if (window.renderMathInElement) {
+      renderMathInElement(tbody, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      });
+    }
     return;
   }
 
@@ -157,6 +167,17 @@ function _renderBoardTable(data) {
       btn.onclick = () => { _boardPage = i; loadBoardList(); };
       pagination.appendChild(btn);
     }
+  }
+
+  if (window.renderMathInElement) {
+    renderMathInElement(tbody, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+      ]
+    });
   }
 }
 
@@ -435,6 +456,17 @@ function _fillAccordion(post, user) {
   if (post.type !== 'notice') {
     _renderComments(post.comments || []);
   }
+
+  if (window.renderMathInElement) {
+    renderMathInElement(inner, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+      ]
+    });
+  }
 }
 
 function _updateDetailLike(liked, count) {
@@ -511,6 +543,17 @@ function _renderComments(comments) {
     `;
     list.appendChild(replyArea);
   });
+
+  if (window.renderMathInElement) {
+    renderMathInElement(list, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false},
+        {left: '\\[', right: '\\]', display: true}
+      ]
+    });
+  }
 }
 
 function _makeCommentEl(c, isReply, user) {
