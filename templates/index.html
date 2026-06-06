@@ -636,6 +636,11 @@
                 if (sec.id === 'view-' + viewName) sec.classList.add('active');
             });
             if (viewName === 'concepts') initMobileSplitTabs();
+            
+            // 다른 뷰로 전환하거나 게시판으로 돌아올 때 열려있는 게시글 닫기
+            if (typeof window.closeBoardDetail === 'function') {
+                window.closeBoardDetail();
+            }
         }
 
         // ══════════════════════════════════════════════════════
