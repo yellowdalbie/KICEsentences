@@ -3176,3 +3176,10 @@ body.preview-open #global-actions-left {
   }
   #board-table .board-col-title { font-size: 0.88rem; }
 }
+
+/* Markdown Image Constraints */
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
