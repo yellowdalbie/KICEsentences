@@ -75,6 +75,12 @@
                 <button class="search-pill" data-tab="tab-unit">성취기준</button>
             </div>
 
+            <!-- Chrome Autofill 방지용 Honeypot (가짜 폼) -->
+            <div style="width: 0; height: 0; overflow: hidden; position: absolute; top: -9999px; left: -9999px;">
+                <input type="text" name="fake_username_autofill" tabindex="-1" aria-hidden="true">
+                <input type="password" name="fake_password_autofill" tabindex="-1" aria-hidden="true">
+            </div>
+
             <!-- 1. Keyword Search Input -->
             <div id="tab-keyword" class="huge-search-wrapper active">
                 <div style="position: relative;">
