@@ -3183,3 +3183,9 @@ body.preview-open #global-actions-left {
   height: auto;
   border-radius: 6px;
 }
+
+/* Markdown Bold Constraints */
+.markdown-body strong, .markdown-body b {
+  font-weight: 700 !important;
+  color: var(--text-color);
+}
