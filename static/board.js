@@ -435,7 +435,7 @@ function _fillAccordion(post, user) {
         </div>
         <div style="display:flex; gap:0.5rem; align-items:center;">
           ${cartBtnTopHtml}
-          <button onclick="_copyShareLink(${post.id})" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.75rem;white-space:nowrap;">공유하기 🔗</button>
+          <button onclick="_copyShareLink(${post.id})" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:0.3rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.75rem;white-space:nowrap;display:inline-flex;align-items:center;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;vertical-align:middle;margin-right:4px;margin-bottom:1px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>공유</button>
         </div>
       </div>
       <!-- 내용 -->
@@ -446,10 +446,10 @@ function _fillAccordion(post, user) {
       ${post.type === 'edit' ? `
       <div style="text-align:center; margin:1.5rem 0 0.5rem 0; padding:1.2rem 1rem; background:rgba(6,182,212,0.03); border:1px solid rgba(6,182,212,0.1); border-radius:8px;">
         <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.8rem; line-height:1.4;">이 포스팅이 도움이 되셨다면 주변에 공유해주세요!<br>여러분의 공유가 큰 힘이 됩니다.</p>
-        <button onclick="_copyShareLink(${post.id})" style="background:var(--accent-cyan);border:none;color:#030712;padding:0.4rem 1.2rem;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.2s;">이 포스팅 공유하기 🔗</button>
+        <button onclick="_copyShareLink(${post.id})" style="background:var(--accent-cyan);border:none;color:#030712;padding:0.4rem 1.2rem;border-radius:20px;cursor:pointer;font-size:0.82rem;font-weight:700;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:2px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;vertical-align:middle;margin-right:4px;margin-bottom:1px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>게시글 공유하기</button>
       </div>` : `
       <div style="text-align:right; margin-top:0.5rem;">
-        <button onclick="_copyShareLink(${post.id})" style="background:none;border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.75rem;">공유하기 🔗</button>
+        <button onclick="_copyShareLink(${post.id})" style="background:none;border:1px solid rgba(255,255,255,0.12);color:var(--text-muted);padding:0.25rem 0.6rem;border-radius:6px;cursor:pointer;font-size:0.75rem;display:inline-flex;align-items:center;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;vertical-align:middle;margin-right:4px;margin-bottom:1px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>공유</button>
       </div>
       `}
       <!-- 댓글 -->
