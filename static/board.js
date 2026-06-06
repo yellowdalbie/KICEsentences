@@ -248,7 +248,7 @@ window.bulkDeletePosts = async function() {
 };
 
 // ── 아코디언 토글 ─────────────────────────────────────────
-async function toggleAccordion(tr, postId, postType) {
+async function toggleAccordion(tr, postId, postType, forceOpen = false) {
   // 같은 행 재클릭 → 접기
   if (_expandedPostId === postId) {
     _collapseAccordion();
@@ -259,8 +259,10 @@ async function toggleAccordion(tr, postId, postType) {
 
   const user = _getUser();
   if (postType !== 'notice') {
-    if (!user.loggedIn)   { showBoardAuthModal('login');  return; }
-    if (!user.verified)   { showBoardAuthModal('verify'); return; }
+    if (!forceOpen) {
+      if (!user.loggedIn)   { showBoardAuthModal('login', postId);  return; }
+      if (!user.verified)   { showBoardAuthModal('verify', postId); return; }
+    }
   }
 
   _expandedPostId = postId;
@@ -689,7 +691,26 @@ window.printFromBoard = function() {
 };
 
 // ── 권한 안내 모달 ────────────────────────────────────────
-window.showBoardAuthModal = function(type) {
+
+window._copyShareLink = function(postId) {
+  const url = window.location.origin + window.location.pathname + '?postId=' + postId;
+  navigator.clipboard.writeText(url).then(() => {
+    window.showCustomAlert('게시글 공유 링크가 복사되었습니다.');
+  });
+};
+
+window._forceOpenPost = function(postId) {
+  let tr = document.querySelector(`tr[data-post-id="${postId}"]`);
+  if (!tr) {
+    const tbody = document.getElementById('board-tbody');
+    tr = document.createElement('tr');
+    tr.dataset.postId = postId;
+    tbody.insertBefore(tr, tbody.firstChild);
+  }
+  toggleAccordion(tr, postId, 'edit', true);
+};
+
+window.showBoardAuthModal = function(type, targetPostId = null) {
   const modal = document.getElementById('board-auth-modal');
   const title = document.getElementById('bam-title');
   const desc  = document.getElementById('bam-desc');
@@ -699,12 +720,17 @@ window.showBoardAuthModal = function(type) {
     `style="width:100%;padding:0.6rem;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;background:${bg};border:none;color:${color};"`;
 
   if (type === 'login') {
-    title.textContent = '회원 전용 콘텐츠';
-    desc.textContent  = '이 게시글은 회원만 열람할 수 있습니다. 회원가입 후 이메일 인증을 완료하면 모든 게시글을 읽을 수 있습니다.';
+    title.textContent = '회원 전용 게시글입니다';
+    desc.textContent  = '회원 가입은 이메일 인증으로 간편하게 하실 수 있습니다. 가입 후 모든 프리미엄 해설을 누려보세요!';
     btns.innerHTML = `
-      <button ${btnStyle('var(--accent-cyan)','#030712')} onclick="closeBoardAuthModal();openAuthModal('register')">회원가입</button>
+      <button ${btnStyle('var(--accent-cyan)','#030712')} onclick="closeBoardAuthModal();openAuthModal('register')">회원가입 하러가기</button>
       <button ${btnStyle('rgba(255,255,255,0.06)','var(--text-muted)')} onclick="closeBoardAuthModal();openAuthModal('login')">로그인</button>
     `;
+    if (targetPostId) {
+      btns.innerHTML += `
+        <button ${btnStyle('rgba(255,255,255,0.06)','#fff')} style="margin-top:0.5rem;" onclick="closeBoardAuthModal();_forceOpenPost(${targetPostId})">비회원으로 이 글만 읽기</button>
+      `;
+    }
   } else {
     title.textContent = '이메일 인증 필요';
     desc.textContent  = '이 게시글은 이메일 인증을 완료한 회원만 열람할 수 있습니다. 가입 시 발송된 인증 메일을 확인해주세요.';
@@ -904,7 +930,18 @@ window.confirmBoardPublish = async function() {
 // (removed dead resendVerifyEmail wrapper)
 
 // ── 초기화 ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  loadBoardList();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadBoardList();
   _renderBoardButtons();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetPostId = urlParams.get('postId');
+  if (targetPostId) {
+    const user = _getUser();
+    if (!user.loggedIn || !user.verified) {
+      showBoardAuthModal('login', targetPostId);
+    } else {
+      _forceOpenPost(targetPostId);
+    }
+  }
 });

@@ -301,12 +301,8 @@ def board_detail(post_id):
         if not row:
             return jsonify({'error': 'not_found'}), 404
 
-        # 공지는 누구나, 나머지는 인증 회원만
-        if row['type'] != 'notice':
-            if not user:
-                return jsonify({'error': 'login_required'}), 401
-            if not user['is_verified']:
-                return jsonify({'error': 'verify_required'}), 403
+        # 프론트엔드에서 비회원 읽기 옵션을 제공하므로 서버단 차단을 해제함
+        # (단, 댓글 쓰기 등 쓰기 동작은 기존처럼 모두 차단되어 있음)
 
         conn.execute('UPDATE posts SET view_count = view_count + 1 WHERE id=?', (post_id,))
         conn.commit()
