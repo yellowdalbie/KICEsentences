@@ -51,6 +51,10 @@ os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 # 오프라인 패키지 모드: 관리자 패널 및 오류 제보 기능 비활성화
 OFFLINE_MODE = os.environ.get('OFFLINE_MODE', '0') == '1'
 
+# 온라인 서비스(HTTPS 뒤)에서는 세션 쿠키를 HTTPS 전용으로 제한.
+# 오프라인 패키지는 http://localhost 로 동작하므로 Secure 를 끈다.
+app.config['SESSION_COOKIE_SECURE'] = not OFFLINE_MODE
+
 # 관리자 이메일 (이 이메일로 로그인 시 관리자 권한 부여)
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'yellowsouls@naver.com').strip().lower()
 BASE_URL = os.environ.get('BASE_URL', '').rstrip('/')
@@ -338,6 +342,25 @@ def _record_login_fail(ip):
     _login_fail_tracker.setdefault(ip, []).append(_time.time())
 
 
+# 이메일 발송 등 남용 방지용 범용 레이트리밋 (IP+행동별, 인메모리)
+_action_tracker = {}  # { (action, ip): [timestamp, ...] }
+
+def _client_ip():
+    return request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
+
+def _rate_limited(action, limit, window):
+    """해당 action 을 window(초) 내 limit 회 초과 호출했으면 True. 아니면 기록 후 False."""
+    now = _time.time()
+    key = (action, _client_ip())
+    timestamps = [t for t in _action_tracker.get(key, []) if now - t < window]
+    if len(timestamps) >= limit:
+        _action_tracker[key] = timestamps
+        return True
+    timestamps.append(now)
+    _action_tracker[key] = timestamps
+    return False
+
+
 @app.before_request
 def csrf_protect():
     """CSRF 방어: 상태 변경 API 요청(POST/DELETE/PATCH/PUT)의 Origin/Referer 검증"""
@@ -373,6 +396,8 @@ def log_search(search_type, query_text=None, result_count=None):
 
 @app.route('/api/auth/register', methods=['POST'])
 def auth_register():
+    if _rate_limited('register', 5, 3600):
+        return jsonify({'error': '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'}), 429
     data = request.get_json(silent=True) or {}
     email = data.get('email', '').strip().lower()
     pw = data.get('password', '')
@@ -560,7 +585,8 @@ def verify_email_route():
             conn.close()
             return redirect('/app?verify_error=expired')
     except Exception:
-        pass
+        conn.close()
+        return redirect('/app?verify_error=invalid')
     conn.execute('UPDATE users SET is_verified=1, verify_token=NULL, verify_token_exp=NULL WHERE id=?', (user['id'],))
     conn.commit()
     paid_row = conn.execute('SELECT is_paid FROM users WHERE id=?', (user['id'],)).fetchone()
@@ -575,6 +601,8 @@ def verify_email_route():
 
 @app.route('/api/auth/resend_verify', methods=['POST'])
 def auth_resend_verify():
+    if _rate_limited('resend_verify', 5, 3600):
+        return jsonify({'error': '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'}), 429
     data = request.get_json(silent=True) or {}
     email = data.get('email', '').strip().lower()
     if not email:
@@ -597,6 +625,8 @@ def auth_resend_verify():
 
 @app.route('/api/auth/forgot_password', methods=['POST'])
 def auth_forgot_password():
+    if _rate_limited('forgot_password', 5, 3600):
+        return jsonify({'error': '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'}), 429
     data = request.get_json(silent=True) or {}
     email = data.get('email', '').strip().lower()
     if not email:
@@ -643,7 +673,8 @@ def auth_reset_password():
             conn.close()
             return jsonify({'error': '재설정 링크가 만료되었습니다. 다시 요청해주세요.'}), 400
     except Exception:
-        pass
+        conn.close()
+        return jsonify({'error': '유효하지 않은 재설정 링크입니다.'}), 400
     hashed = generate_password_hash(new_password)
     conn.execute('UPDATE users SET password_hash=?, reset_token=NULL, reset_token_exp=NULL WHERE id=?',
                  (hashed, user['id']))

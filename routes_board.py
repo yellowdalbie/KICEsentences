@@ -10,6 +10,11 @@ ADMIN_EMAIL   = os.environ.get('ADMIN_EMAIL', 'yellowsouls@naver.com').strip().l
 
 board_bp = Blueprint('board', __name__)
 
+# 남용 방지용 길이 상한 (정상 사용에는 영향 없는 넉넉한 값)
+MAX_TITLE_LEN   = 300
+MAX_CONTENT_LEN = 100000
+MAX_COMMENT_LEN = 5000
+
 
 # ── DB 초기화 ──────────────────────────────────────────────────────
 def get_board_db():
@@ -259,8 +264,12 @@ def board_create():
     title = (data.get('title') or '').strip()
     if not title:
         return jsonify({'error': 'title_required'}), 400
+    if len(title) > MAX_TITLE_LEN:
+        return jsonify({'error': 'title_too_long'}), 400
 
     content = (data.get('content') or '').strip()
+    if len(content) > MAX_CONTENT_LEN:
+        return jsonify({'error': 'content_too_long'}), 400
     is_anonymous = 1 if (data.get('is_anonymous') and post_type == 'edit') else 0
     problem_ids = data.get('problem_ids', [])
     problem_id_ref = data.get('problem_id')  # 질문/오류신고 단일 문항
@@ -356,6 +365,8 @@ def board_update(post_id):
 
         data = request.get_json(force=True) or {}
         new_content = (data.get('content') or '').strip()
+        if len(new_content) > MAX_CONTENT_LEN:
+            return jsonify({'error': 'content_too_long'}), 400
         conn.execute(
             "UPDATE posts SET content=?, updated_at=datetime('now','+9 hours') WHERE id=?",
             (new_content or None, post_id)
@@ -416,6 +427,8 @@ def board_comment_create(post_id):
         content = (data.get('content') or '').strip()
         if not content:
             return jsonify({'error': 'content_required'}), 400
+        if len(content) > MAX_COMMENT_LEN:
+            return jsonify({'error': 'content_too_long'}), 400
         parent_id = data.get('parent_id')
         is_anonymous = 1 if data.get('is_anonymous') else 0
 
