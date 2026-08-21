@@ -478,7 +478,12 @@ def auth_login():
     except Exception as e:
         print(f"[LoginLog] Error: {e}")
 
-    return jsonify({'status': 'ok', 'email': user['email'], 'is_paid': bool(user['is_paid'])}), 200
+    return jsonify({
+        'status': 'ok',
+        'email': user['email'],
+        'is_paid': bool(user['is_paid']),
+        'isVerified': bool(user['is_verified']),
+    }), 200
 
 @app.route('/api/auth/logout', methods=['POST'])
 def auth_logout():

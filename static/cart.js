@@ -1483,8 +1483,12 @@ const AUTH_MODAL_HTML = `
       onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 16px rgba(6,182,212,0.3)'"
     >\ub85c\uadf8\uc778</button>
 
-    <!-- Forgot Password Link (로그인 모드에서만 표시) -->
-    <div id="auth-forgot-wrap" style="text-align:right; margin-bottom:0.8rem;">
+    <!-- Forgot Password / 인증 메일 재발송 (로그인 모드에서만 표시) -->
+    <div id="auth-forgot-wrap" style="display:flex; justify-content:space-between; gap:0.6rem; margin-bottom:0.8rem;">
+      <a href="javascript:void(0)" onclick="resendVerifyFromAuthModal()"
+        style="font-size:0.76rem;color:#64748b;text-decoration:none;transition:color 0.2s;"
+        onmouseover="this.style.color='#06b6d4'" onmouseout="this.style.color='#64748b'"
+      >인증 메일을 못 받으셨나요?</a>
       <a href="javascript:void(0)" onclick="openForgotPasswordModal()"
         style="font-size:0.76rem;color:#64748b;text-decoration:none;transition:color 0.2s;"
         onmouseover="this.style.color='#06b6d4'" onmouseout="this.style.color='#64748b'"
@@ -1534,7 +1538,7 @@ window.openAuthModal = function(mode = 'login') {
         document.getElementById('auth-submit-btn').innerText = '로그인';
         document.getElementById('auth-toggle-text').innerText = '계정이 없으신가요?';
         document.getElementById('auth-toggle-link').innerText = '회원가입';
-        if (forgotWrap) forgotWrap.style.display = 'block';
+        if (forgotWrap) forgotWrap.style.display = 'flex';
         if (privacyWrap) privacyWrap.style.display = 'none';
     } else {
         document.getElementById('auth-modal-title').innerText = '회원가입';
@@ -1585,7 +1589,8 @@ async function submitAuth() {
         }
     }
     
-    const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+    const isRegister = authMode === 'register';
+    const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
     
     try {
         const res = await fetch(endpoint, {
@@ -1602,6 +1607,11 @@ async function submitAuth() {
         } else {
             closeAuthModal();
             await initAuth();
+            // 이메일 인증 전 계정은 로그인에는 성공해도 기능이 잠겨 있으므로
+            // 다음에 무엇을 해야 하는지 즉시 안내한다.
+            if (data.isVerified === false) {
+                showVerifyGuide(data.email || email, isRegister);
+            }
         }
     } catch (e) {
         errorMsg.innerText = '서버 통신 실패';
@@ -1677,7 +1687,7 @@ function updateVerifyBanner() {
     } else if (!window.AUTH_STATE.isVerified) {
         const email = window.AUTH_STATE.email;
         banner.innerHTML = `
-          <span class="verify-banner-msg">이메일 인증을 완료하면 모든 기능을 사용할 수 있습니다. 메일이 오지 않았다면 스팸함을 확인해주세요.</span>
+          <span class="verify-banner-msg"><strong>${email}</strong> 주소의 이메일 인증을 완료하면 모든 기능을 사용할 수 있습니다. 메일이 오지 않았다면 스팸함을 확인해주세요.</span>
           <a href="javascript:void(0)" class="verify-banner-link" onclick="resendVerifyEmail('${email.replace(/'/g, "\\'")}')">인증 메일 재발송</a>
           <button class="verify-banner-close" onclick="closeVerifyBanner()" title="닫기">✕</button>
         `;
@@ -1756,6 +1766,34 @@ function updateAuthNavUI() {
         appSection.appendChild(registerBtn);
     }
 }
+
+// ── 로그인 모달에서 인증 메일 재발송 ──────────────────────────
+window.resendVerifyFromAuthModal = function() {
+    const emailInput = document.getElementById('auth-email');
+    const email = (emailInput ? emailInput.value : '').trim();
+    const errorMsg = document.getElementById('auth-error-msg');
+    if (!email) {
+        if (errorMsg) {
+            errorMsg.innerText = '가입한 이메일을 입력한 뒤 눌러주세요.';
+            errorMsg.style.display = 'block';
+        }
+        if (emailInput) emailInput.focus();
+        return;
+    }
+    resendVerifyEmail(email);
+};
+
+// ── 이메일 인증 안내 ──────────────────────────────────────────
+window.showVerifyGuide = function(email, isNewSignup) {
+    const head = isNewSignup
+        ? `가입이 완료되었습니다.\n\n${email} 주소로 인증 메일을 보냈습니다.`
+        : `로그인은 되었지만, ${email} 주소의 이메일 인증이 아직 완료되지 않았습니다.`;
+    showCustomConfirm(
+        head + '\n\n메일 속 [이메일 인증하기] 버튼을 누르면 문항 담기 · 인쇄 · 게시판 등 모든 기능이 열립니다.\n메일이 보이지 않으면 스팸함을 확인해주세요.',
+        () => resendVerifyEmail(email),
+        { confirmText: '인증 메일 재발송', cancelText: '나중에 하기', confirmStyle: 'safe' }
+    );
+};
 
 // ── 이메일 인증 재발송 ────────────────────────────────────────
 window.resendVerifyEmail = async function(email) {
