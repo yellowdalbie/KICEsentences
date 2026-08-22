@@ -27,8 +27,8 @@ module.exports = {
       interpreter: 'python3',
       env: {
         OFFLINE_MODE: '0',
-        KICE_PORT: '8181',
-        KICE_HOST: '0.0.0.0',
+        KICE_PORT: '8182',
+        KICE_HOST: '127.0.0.1',
         SMTP_EMAIL: secrets.SMTP_EMAIL || '',
         SMTP_PASSWORD: secrets.SMTP_PASSWORD || ''
       },
