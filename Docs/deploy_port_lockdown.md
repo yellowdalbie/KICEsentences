@@ -18,7 +18,7 @@ Secure 플래그를 끄면 도메인 쪽 세션까지 평문 전송이 가능해
 | | 변경 전 | 변경 후 |
 |---|---|---|
 | Flask 앱 | `0.0.0.0:8181` (공인 IP 직접 노출) | `127.0.0.1:8182` (루프백 전용) |
-| 공인 IP `:80` | 도메인 사이트 내용이 그대로 노출 | 301 → `https://www.thinklynx.xyz` |
+| 공인 IP `:80` | 같은 서버의 다른 서비스(DMGrade) | 변경 없음 |
 | 공인 IP `:8181` | Flask 앱 (로그인 실패, nginx 우회 가능) | nginx 301 → `https://www.thinklynx.xyz` |
 | 도메인 443 | nginx → `127.0.0.1:8181` | nginx → `127.0.0.1:8182` |
 
@@ -46,10 +46,6 @@ sudo cp -a /etc/nginx/sites-available /root/nginx-backup-$(date +%F)   # 백업
 sudo sed -i 's|proxy_pass http://127.0.0.1:8181|proxy_pass http://127.0.0.1:8182|g' \
   /etc/nginx/sites-available/<사이트파일>
 
-# default_server 중복 여부 확인 (충돌하면 nginx -t 실패)
-grep -rn "default_server" /etc/nginx/sites-enabled/ /etc/nginx/conf.d/
-sudo rm -f /etc/nginx/sites-enabled/default    # 위에서 충돌이 잡힐 때만
-
 sudo cp deploy/nginx/redirect-ip.conf /etc/nginx/sites-available/redirect-ip.conf
 sudo ln -sf /etc/nginx/sites-available/redirect-ip.conf /etc/nginx/sites-enabled/
 sudo nginx -t
@@ -69,7 +65,7 @@ ss -ltnp | grep -E "8181|8182"
 
 ```bash
 curl -sI https://www.thinklynx.xyz/app        | head -3   # 200
-curl -sI http://158.180.90.73/                | head -3   # 301 → https://www.thinklynx.xyz/
+curl -sI http://158.180.90.73/                | head -3   # 200 (DMGrade, 영향 없음)
 curl -sI http://158.180.90.73:8181/           | head -3   # 301 → https://www.thinklynx.xyz/
 curl -sI http://158.180.90.73:8181/app        | head -3   # 301 → https://www.thinklynx.xyz/app
 ```
@@ -97,3 +93,11 @@ pm2 restart think-lynx-dashboard --update-env && sudo systemctl reload nginx
 - 로컬 Mac 개발 환경은 pm2/ecosystem 을 쓰지 않고 `python3 dashboard.py` 로 실행하므로
   기존대로 `http://localhost:8181` 이다. 포트 8182 는 **서버 내부 전용**.
 - 오프라인 패키지(`OFFLINE_MODE=1`)는 `SESSION_COOKIE_SECURE` 가 꺼지므로 영향 없다.
+
+## 포트 80 을 건드리지 않는 이유
+
+`http://158.180.90.73/` 은 같은 서버의 다른 서비스(DMGrade)가
+`/etc/nginx/sites-available/grade-check.conf` 에서 `server_name 158.180.90.73` 으로
+점유하고 있다. nginx 는 `server_name` 정확 매칭을 `default_server` 보다 우선하므로
+80 catch-all 을 추가해도 효과가 없고, 잘못 건드리면 그 서비스가 중단된다.
+따라서 리다이렉트는 8181 포트에만 적용한다.
