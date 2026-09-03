@@ -72,7 +72,15 @@ def setup_database():
             PRIMARY KEY(step_id, trigger_id)
         )
     ''')
-    
+
+    # 조회 인덱스.
+    # steps 는 problem_id / action_concept_id 로 매 검색마다 조회되고,
+    # 검색 결과 쿼리에는 problem_id 로 되짚는 상관 서브쿼리가 있어
+    # 인덱스가 없으면 결과 행마다 전체 스캔이 한 번씩 더 돈다.
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_steps_problem ON steps(problem_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_steps_concept ON steps(action_concept_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_step_triggers_trigger ON step_triggers(trigger_id)')
+
     conn.commit()
     return conn
 

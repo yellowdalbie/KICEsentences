@@ -339,6 +339,13 @@ def _run_startup_migration():
 
 _run_startup_migration()
 
+# psutil.cpu_percent(interval=None) 의 첫 호출은 기준점이 없어 항상 0.0 이다.
+# 기동 시 한 번 불러 기준점을 만들어 둔다.
+try:
+    psutil.cpu_percent(interval=None)
+except Exception:
+    pass
+
 # (get_geo 기능이 제외되었습니다: 서버 부하 방지 및 접속 로그 간소화)
 
 # 로그인 실패 횟수 추적 (IP별, 인메모리)
@@ -362,8 +369,24 @@ def _record_login_fail(ip):
 # 이메일 발송 등 남용 방지용 범용 레이트리밋 (IP+행동별, 인메모리)
 _action_tracker = {}  # { (action, ip): [timestamp, ...] }
 
+# 앱 앞단의 신뢰 프록시 단수. nginx 한 대만 두므로 기본 1.
+_TRUSTED_PROXY_HOPS = int(os.environ.get('TRUSTED_PROXY_HOPS', '1'))
+
 def _client_ip():
-    return request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
+    """요청 제한에 쓸 클라이언트 IP.
+
+    nginx 는 proxy_add_x_forwarded_for 로 '클라이언트가 보낸 값, 실제 IP' 형태를
+    만든다. 맨 앞 값은 클라이언트가 임의로 넣을 수 있어 신뢰할 수 없고, 신뢰
+    프록시가 덧붙인 뒤쪽 값을 써야 한다. 앞 값을 쓰면 헤더를 바꿔가며 요청 제한을
+    얼마든지 우회할 수 있다.
+    """
+    xff = request.headers.get('X-Forwarded-For', '')
+    if xff and _TRUSTED_PROXY_HOPS > 0:
+        parts = [q.strip() for q in xff.split(',') if q.strip()]
+        if parts:
+            idx = max(0, len(parts) - _TRUSTED_PROXY_HOPS)
+            return parts[idx]
+    return request.remote_addr or ''
 
 def _rate_limited(action, limit, window):
     """해당 action 을 window(초) 내 limit 회 초과 호출했으면 True. 아니면 기록 후 False."""
@@ -458,7 +481,7 @@ def auth_register():
 
 @app.route('/api/auth/login', methods=['POST'])
 def auth_login():
-    login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+    login_ip = _client_ip()
     if _check_login_rate_limit(login_ip):
         return jsonify({'error': '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.'}), 429
 
@@ -482,9 +505,12 @@ def auth_login():
     session['is_verified'] = bool(user['is_verified'])
     session.permanent = True
 
+    # 성공했으므로 해당 IP 의 실패 기록을 비운다.
+    # (남겨두면 이전에 몇 번 틀린 사용자가 이후 한 번만 틀려도 잠긴다)
+    _login_fail_tracker.pop(login_ip, None)
+
     # 로그인 기록 저장
     try:
-        login_ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
         log_conn = get_user_db()
         log_conn.execute(
             'INSERT INTO login_logs (user_id, email, created_at) VALUES (?, ?, datetime("now", "+9 hours"))',
@@ -731,17 +757,33 @@ def shutdown():
     threading.Thread(target=_stop, daemon=True).start()
     return jsonify({'status': 'shutting down'})
 
+_overload_cache = {'at': 0.0, 'value': False}
+_OVERLOAD_TTL = 3.0  # 초
+
 def is_server_overloaded():
+    """과부하 여부 판정.
+
+    psutil.cpu_percent(interval=0.1) 은 0.1초 동안 스레드를 멈추므로 요청 경로에서
+    쓰면 모든 페이지 로드에 그만큼 지연이 붙는다. interval=None 은 직전 호출 이후의
+    평균을 즉시 돌려주므로 같은 정보를 지연 없이 얻는다.
+    첫 호출은 기준점이 없어 0.0 을 반환하므로 기동 시 한 번 예열해 둔다.
+    """
     if OFFLINE_MODE:
         return False
+    now = _time.time()
+    if now - _overload_cache['at'] < _OVERLOAD_TTL:
+        return _overload_cache['value']
+    result = False
     try:
-        if psutil.cpu_percent(interval=0.1) > 90.0:
-            return True
-        if psutil.virtual_memory().percent > 90.0:
-            return True
+        if psutil.cpu_percent(interval=None) > 90.0:
+            result = True
+        elif psutil.virtual_memory().percent > 90.0:
+            result = True
     except Exception as e:
         print(f"[Overload Check Error] {e}")
-    return False
+    _overload_cache['at'] = now
+    _overload_cache['value'] = result
+    return result
 
 @app.route('/app')
 def app_index():
