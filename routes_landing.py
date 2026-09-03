@@ -15,6 +15,7 @@ KICE Lynx 랜딩 서버
 import json
 import os
 import sqlite3
+import db_utils
 from datetime import datetime
 from pathlib import Path
 
@@ -71,7 +72,7 @@ def get_db():
     except sqlite3.Error:
         pass
     db.execute('PRAGMA busy_timeout=10000')
-    return db
+    return db_utils.track(db)
 
 
 def init_db():

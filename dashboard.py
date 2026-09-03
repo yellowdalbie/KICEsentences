@@ -55,6 +55,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import psutil
 import secrets
 from urllib.parse import urlparse
+import db_utils
 import threading
 import requests as _requests
 app = Flask(__name__)
@@ -63,6 +64,9 @@ app.register_blueprint(landing_bp)
 from routes_board import board_bp, get_board_db
 app.register_blueprint(board_bp)
 get_board_db().close()  # board.sqlite 초기화
+
+# 예외로 함수가 중간에 빠져나가도 커넥션이 남지 않도록 요청 종료 시 일괄 정리
+db_utils.register(app)
 
 # 빈 문자열이 들어오면 os.environ.get 의 기본값이 쓰이지 않아 secret_key 가
 # 빈 값이 되고, 세션을 쓰는 모든 라우트가 500 이 된다. 빈 값도 '없음' 으로 본다.
@@ -226,7 +230,7 @@ def get_db_connection():
     """콘텐츠 DB (problems, steps, concepts 등) - git으로 관리"""
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
-    return _tune_conn(conn, wal=False)
+    return db_utils.track(_tune_conn(conn, wal=False))
 
 
 def get_user_db():
@@ -303,7 +307,7 @@ def get_user_db():
         except Exception:
             pass
     conn.commit()
-    return conn
+    return db_utils.track(conn)
 
 # ── 이메일 발송 헬퍼 ──────────────────────────────────────────
 def _send_email(to_email: str, subject: str, html_body: str) -> bool:

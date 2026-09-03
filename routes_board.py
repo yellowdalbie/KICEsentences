@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import db_utils
 from datetime import datetime
 from flask import Blueprint, jsonify, request, session
 
@@ -82,7 +83,7 @@ def get_board_db():
         conn.commit()
     except Exception:
         pass
-    return conn
+    return db_utils.track(conn)
 
 
 # ── 헬퍼 ──────────────────────────────────────────────────────────
