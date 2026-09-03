@@ -1,14 +1,43 @@
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# .env 로드 (다른 모듈 임포트 전에 실행하여 환경 변수 전파)
-env_path = os.path.join(BASE_DIR, '.env')
-if os.path.exists(env_path):
-    with open(env_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            if '=' in line and not line.strip().startswith('#'):
-                k, v = line.strip().split('=', 1)
-                os.environ[k] = v.strip()
+# 설정 로드 (다른 모듈 임포트 전에 실행하여 환경 변수 전파)
+#
+# 우선순위: 실제 환경변수 > .env 파일
+# 예전에는 .env 가 환경변수를 무조건 덮어써서, PM2 나 셸에서 값을 지정해도
+# 조용히 무시됐다. 디버깅할 때 원인을 찾기 매우 어려우므로 채우기만 한다.
+_ENV_PATH = os.path.join(BASE_DIR, '.env')
+_ENV_KEYS_FROM_FILE = []
+
+
+def _load_env_file(path):
+    """.env 를 읽어 아직 정의되지 않은 키만 채운다. 채운 키 이름을 돌려준다."""
+    filled = []
+    if not os.path.exists(path):
+        return filled
+    with open(path, 'r', encoding='utf-8') as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            if line.startswith('export '):
+                line = line[len('export '):].lstrip()
+            k, v = line.split('=', 1)
+            k = k.strip()
+            v = v.strip()
+            # 따옴표로 감싼 값 처리
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in ('"', "'"):
+                v = v[1:-1]
+            if not k:
+                continue
+            if os.environ.get(k):          # 이미 값이 있으면 존중
+                continue
+            os.environ[k] = v
+            filled.append(k)
+    return filled
+
+
+_ENV_KEYS_FROM_FILE = _load_env_file(_ENV_PATH)
 
 import sqlite3
 import json
@@ -35,7 +64,15 @@ from routes_board import board_bp, get_board_db
 app.register_blueprint(board_bp)
 get_board_db().close()  # board.sqlite 초기화
 
-app.secret_key = os.environ.get('FLASK_SECRET_KEY', os.urandom(24))
+# 빈 문자열이 들어오면 os.environ.get 의 기본값이 쓰이지 않아 secret_key 가
+# 빈 값이 되고, 세션을 쓰는 모든 라우트가 500 이 된다. 빈 값도 '없음' 으로 본다.
+_secret = (os.environ.get('FLASK_SECRET_KEY') or '').strip()
+if _secret:
+    app.secret_key = _secret
+else:
+    app.secret_key = os.urandom(24)
+    print('[Config] 경고: FLASK_SECRET_KEY 가 없어 임시 키를 생성했습니다. '
+          '재시작하면 모든 로그인 세션이 풀립니다. .env 를 확인하세요.')
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
@@ -59,6 +96,27 @@ app.config['SESSION_COOKIE_SECURE'] = not OFFLINE_MODE
 # 관리자 이메일 (이 이메일로 로그인 시 관리자 권한 부여)
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', 'yellowsouls@naver.com').strip().lower()
 BASE_URL = os.environ.get('BASE_URL', '').rstrip('/')
+
+# 설정이 어디서 왔는지 기동 로그에 남긴다. 값은 절대 출력하지 않는다.
+# (환경변수가 실제로 전달됐는지 확인하려고 /proc 을 뒤지다 잘못 판단한 적이 있다)
+def _log_config_sources():
+    watched = ['FLASK_SECRET_KEY', 'RESEND_API_KEY', 'BASE_URL', 'ADMIN_KEY',
+               'ADMIN_EMAIL', 'KICE_PORT', 'KICE_HOST', 'OFFLINE_MODE']
+    from_file, from_env, missing = [], [], []
+    for k in watched:
+        if not (os.environ.get(k) or '').strip():
+            missing.append(k)
+        elif k in _ENV_KEYS_FROM_FILE:
+            from_file.append(k)
+        else:
+            from_env.append(k)
+    print(f"[Config] 환경변수에서: {', '.join(from_env) or '없음'}")
+    print(f"[Config] .env 에서: {', '.join(from_file) or '없음'}")
+    if missing:
+        print(f"[Config] 미설정: {', '.join(missing)}")
+
+
+_log_config_sources()
 
 # ── 벡터 인덱스 및 오프라인 쿼리 엔진 로드 ──────────────────────
 _vec_data = None
