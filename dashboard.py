@@ -407,11 +407,52 @@ except Exception:
 
 # (get_geo 기능이 제외되었습니다: 서버 부하 방지 및 접속 로그 간소화)
 
+# 계정 입력값 제한.
+# 상한이 없으면 아주 긴 비밀번호에 해시 계산 비용이 그대로 실리고,
+# 긴 이메일이 그대로 저장된다.
+MAX_EMAIL_LEN = 254      # RFC 5321 의 주소 최대 길이
+MAX_PASSWORD_LEN = 128
+MIN_PASSWORD_LEN = 6
+
+# '@' 와 '.' 포함 여부만 보면 'a@b.' 같은 값도 통과해 인증 메일이 나가지 않고,
+# 사용자는 원인을 모른 채 막힌다.
+_EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s.]+(\.[^@\s.]+)*\.[A-Za-z]{2,}$')
+
+
+def _clean_email(raw):
+    """이메일을 정규화하고 검증한다. (이메일, 오류메시지) 를 돌려준다."""
+    email = (raw or '').strip().lower()
+    if not email:
+        return '', '이메일을 입력해주세요.'
+    if len(email) > MAX_EMAIL_LEN:
+        return '', '이메일 주소가 너무 깁니다.'
+    if not _EMAIL_RE.match(email):
+        return '', '유효한 이메일 형식이 아닙니다.'
+    return email, None
+
+
 # 로그인 실패 횟수 추적 (IP별, 인메모리)
 import time as _time
 _login_fail_tracker = {}  # { ip: [timestamp, ...] }
 _LOGIN_FAIL_LIMIT = 10    # 최대 실패 횟수
 _LOGIN_FAIL_WINDOW = 600  # 10분 윈도우 (초)
+
+# 기록이 무한히 쌓이지 않도록 상한을 둔다. IP 를 바꿔 가며 요청하면 키가
+# 계속 늘어나는데, 만료 항목을 '조회할 때만' 지우면 다시 조회되지 않는 키가
+# 영원히 남는다. 서버 여유 메모리가 크지 않아 상한이 필요하다.
+_TRACKER_MAX_KEYS = 20000
+
+
+def _prune_tracker(tracker, window):
+    """만료된 키를 걷어내고, 그래도 넘치면 오래된 것부터 버린다."""
+    now = _time.time()
+    for k in [k for k, ts in tracker.items() if not ts or now - ts[-1] >= window]:
+        tracker.pop(k, None)
+    if len(tracker) > _TRACKER_MAX_KEYS:
+        oldest = sorted(tracker, key=lambda k: tracker[k][-1])
+        for k in oldest[:len(tracker) - _TRACKER_MAX_KEYS]:
+            tracker.pop(k, None)
+
 
 def _check_login_rate_limit(ip):
     now = _time.time()
@@ -422,6 +463,8 @@ def _check_login_rate_limit(ip):
     return len(timestamps) >= _LOGIN_FAIL_LIMIT
 
 def _record_login_fail(ip):
+    if len(_login_fail_tracker) > _TRACKER_MAX_KEYS:
+        _prune_tracker(_login_fail_tracker, _LOGIN_FAIL_WINDOW)
     _login_fail_tracker.setdefault(ip, []).append(_time.time())
 
 
@@ -450,6 +493,8 @@ def _client_ip():
 def _rate_limited(action, limit, window):
     """해당 action 을 window(초) 내 limit 회 초과 호출했으면 True. 아니면 기록 후 False."""
     now = _time.time()
+    if len(_action_tracker) > _TRACKER_MAX_KEYS:
+        _prune_tracker(_action_tracker, window)
     key = (action, _client_ip())
     timestamps = [t for t in _action_tracker.get(key, []) if now - t < window]
     if len(timestamps) >= limit:
@@ -540,15 +585,17 @@ def auth_register():
     if _rate_limited('register', 5, 3600):
         return jsonify({'error': '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'}), 429
     data = request.get_json(silent=True) or {}
-    email = data.get('email', '').strip().lower()
+    email, err = _clean_email(data.get('email'))
     pw = data.get('password', '')
-    if not email or not pw:
+    if err:
+        return jsonify({'error': err}), 400
+    if not pw:
         return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
-    if '@' not in email or '.' not in email:
-        return jsonify({'error': '유효한 이메일 형식이 아닙니다.'}), 400
-    if len(pw) < 6:
-        return jsonify({'error': '비밀번호는 최소 6자리 이상이어야 합니다.'}), 400
-        
+    if len(pw) < MIN_PASSWORD_LEN:
+        return jsonify({'error': f'비밀번호는 최소 {MIN_PASSWORD_LEN}자리 이상이어야 합니다.'}), 400
+    if len(pw) > MAX_PASSWORD_LEN:
+        return jsonify({'error': f'비밀번호는 {MAX_PASSWORD_LEN}자 이하여야 합니다.'}), 400
+
     conn = get_user_db()
     user = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()
     if user:
@@ -591,6 +638,8 @@ def auth_login():
     pw = data.get('password', '')
     if not email or not pw:
         return jsonify({'error': '이메일과 비밀번호를 입력해주세요.'}), 400
+    if len(email) > MAX_EMAIL_LEN or len(pw) > MAX_PASSWORD_LEN:
+        return jsonify({'error': '이메일 또는 비밀번호가 일치하지 않습니다.'}), 401
 
     conn = get_user_db()
     user = conn.execute('SELECT id, email, password_hash, is_paid, is_verified FROM users WHERE email=?', (email,)).fetchone()
@@ -761,6 +810,8 @@ def auth_resend_verify():
     email = data.get('email', '').strip().lower()
     if not email:
         return jsonify({'error': '이메일을 입력해주세요.'}), 400
+    if len(email) > MAX_EMAIL_LEN:
+        return jsonify({'error': '이메일 주소가 너무 깁니다.'}), 400
     conn = get_user_db()
     user = conn.execute('SELECT id FROM users WHERE email=? AND is_verified=0', (email,)).fetchone()
     if not user:
@@ -785,6 +836,8 @@ def auth_forgot_password():
     email = data.get('email', '').strip().lower()
     if not email:
         return jsonify({'error': '이메일을 입력해주세요.'}), 400
+    if len(email) > MAX_EMAIL_LEN:
+        return jsonify({'error': '이메일 주소가 너무 깁니다.'}), 400
     conn = get_user_db()
     user = conn.execute('SELECT id FROM users WHERE email=?', (email,)).fetchone()
     if not user:

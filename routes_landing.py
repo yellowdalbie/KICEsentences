@@ -265,8 +265,15 @@ def admin_user_cart_logs():
 def admin_visit_stats():
     if not _check_admin_session():
         return jsonify({'error': 'Unauthorized'}), 401
-    period = int(request.args.get('period', 14))
-    gran = request.args.get('gran', 'day')  # hour | day | month
+    # 숫자가 아니면 int() 가 ValueError 를 던져 500 이 된다.
+    try:
+        period = int(request.args.get('period', 14))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'period 는 정수여야 합니다.'}), 400
+    period = max(1, min(period, 3650))   # SQL 에 넣기 전 범위 고정
+    gran = request.args.get('gran', 'day')
+    if gran not in ('hour', 'day', 'month'):
+        return jsonify({'error': 'gran 은 hour, day, month 중 하나여야 합니다.'}), 400
 
     if gran == 'hour':
         label_expr = "strftime('%Y-%m-%d %H:00', created_at)"
