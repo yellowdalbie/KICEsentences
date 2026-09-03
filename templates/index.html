@@ -11,8 +11,8 @@
     <script defer src="{{ url_for('static', filename='katex/katex.min.js') }}"></script>
     <script defer src="{{ url_for('static', filename='katex/auto-render.min.js') }}"
         onload="renderMathInElement(document.body, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\(', right: '\\)', display: false}, {left: '\\[', right: '\\]', display: true}] });"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js" integrity="sha384-948ahk4ZmxYVYOc+rxN1H2gM1EJ2Duhp7uHtZ4WSLkV4Vtx5MUqnV+l7u9B+jFv+" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
@@ -2597,7 +2597,7 @@ function tmCopy() {
 <!-- ══════════════════════════════════════════
      MathLive 수식 키보드 모달 & 스크립트
 ════════════════════════════════════════════ -->
-<script defer src="https://unpkg.com/mathlive"></script>
+<script defer src="https://unpkg.com/mathlive@0.110.0/mathlive.min.js" integrity="sha384-5IN6K0kiaz8MufrTGBvPCP3oDeMjmwe+DDTvuyQLNv6gc634FpKbQfllonjHJPmy" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
   /* 모달 위에 가상키보드가 뜨도록 z-index 강제 조정 */
   math-virtual-keyboard {

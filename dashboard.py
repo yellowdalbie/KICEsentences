@@ -25,6 +25,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from werkzeug.security import generate_password_hash, check_password_hash
 import psutil
 import secrets
+from urllib.parse import urlparse
 import threading
 import requests as _requests
 app = Flask(__name__)
@@ -401,6 +402,43 @@ def _rate_limited(action, limit, window):
     return False
 
 
+# 허용 오리진을 직접 지정하고 싶을 때 (쉼표 구분). 비우면 BASE_URL 을 쓴다.
+_EXTRA_ORIGINS = {o.strip().rstrip('/') for o in os.environ.get('ALLOWED_ORIGINS', '').split(',') if o.strip()}
+_LOCAL_HOSTS = ('127.0.0.1', 'localhost', '::1')
+
+
+def _origin_of(url):
+    """URL 에서 scheme://host:port 부분만 떼어낸다. 판별 불가면 빈 문자열."""
+    try:
+        u = urlparse(url)
+        if u.scheme and u.netloc:
+            return f'{u.scheme}://{u.netloc}'
+    except Exception:
+        pass
+    return ''
+
+
+def _csrf_allowed_origins():
+    """상태 변경 요청을 허용할 오리진 집합.
+
+    이전 구현은 origin.endswith(host) 로 접미사만 비교해서, 서비스가
+    thinklynx.xyz 로도 응답하는 이상 evilthinklynx.xyz 같은 도메인이 그대로
+    통과했다. 정확히 일치시키는 것으로 바꾼다.
+
+    운영에서는 BASE_URL 이 설정되어 있으므로 그 값만 허용한다.
+    오프라인 패키지·로컬 개발은 BASE_URL 이 비어 있어 request.host 로 대체하며,
+    이 경우 앞단 프록시가 없어 Host 헤더를 신뢰해도 무방하다.
+    """
+    allowed = set(_EXTRA_ORIGINS)
+    if BASE_URL:
+        allowed.add(BASE_URL.rstrip('/'))
+    if not allowed:
+        host = request.host
+        allowed.add(f'https://{host}')
+        allowed.add(f'http://{host}')
+    return allowed
+
+
 @app.before_request
 def csrf_protect():
     """CSRF 방어: 상태 변경 API 요청(POST/DELETE/PATCH/PUT)의 Origin/Referer 검증"""
@@ -408,14 +446,19 @@ def csrf_protect():
         return
     if not request.path.startswith('/api/'):
         return
-    origin = request.headers.get('Origin', '')
-    referer = request.headers.get('Referer', '')
-    host = request.host  # e.g. "158.180.90.73:8181" or "localhost:8181"
-    # Origin 또는 Referer 중 하나가 같은 호스트여야 함
-    allowed = origin.endswith(host) or referer.startswith(f'http://{host}') or referer.startswith(f'https://{host}')
-    # 로컬호스트는 항상 허용 (오프라인 패키지 등)
-    if not allowed and host.split(':')[0] not in ('127.0.0.1', 'localhost'):
+
+    origin = _origin_of(request.headers.get('Origin', '')) or _origin_of(request.headers.get('Referer', ''))
+    if not origin:
         return jsonify({'error': '잘못된 요청입니다.'}), 403
+
+    if origin in _csrf_allowed_origins():
+        return
+
+    # 로컬호스트는 포트가 유동적이므로 호스트명만 확인해 허용 (오프라인 패키지 등)
+    if (urlparse(origin).hostname or '') in _LOCAL_HOSTS:
+        return
+
+    return jsonify({'error': '잘못된 요청입니다.'}), 403
 
 
 # (log_access 기능이 제외되었습니다: 서버 부하 발생 요인 제거)
