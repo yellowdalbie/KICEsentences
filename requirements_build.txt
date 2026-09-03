@@ -1,0 +1,17 @@
+# 로컬 빌드 전용 의존성 (서버에는 설치하지 않는다)
+#
+# DB/벡터/썸네일은 로컬에서 만들어 git 으로 배포한다.
+# 서버에는 sentence-transformers 를 설치하지 않으므로 여기서 분리한다.
+# 실행 순서는 .agents/workflows/deploy_remote.md 참고.
+
+-r requirements_server.txt
+
+# 벡터 인덱스 및 Vocab 생성 (build_vectors.py, build_query_vocab.py)
+sentence-transformers==5.2.3
+
+# 문항 썸네일 생성 (generate_thumbnails_v4.py, scripts/rebuild_thumbnail.py)
+pypdfium2==5.5.0
+
+# 문항 PDF 분할 (scripts/extract_2027_9mo.py)
+PyMuPDF
+Pillow
