@@ -65,6 +65,12 @@ def is_server_overloaded():
 def get_db():
     db = sqlite3.connect(DB_PATH)
     db.row_factory = sqlite3.Row
+    # 랜딩은 방문마다 쓰기가 발생하므로 WAL 로 읽기·쓰기 경합을 없앤다
+    try:
+        db.execute('PRAGMA journal_mode=WAL')
+    except sqlite3.Error:
+        pass
+    db.execute('PRAGMA busy_timeout=10000')
     return db
 
 

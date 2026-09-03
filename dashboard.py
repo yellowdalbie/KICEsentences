@@ -147,17 +147,34 @@ def load_search_engine():
 load_search_engine()
 
 
+def _tune_conn(conn, wal=True):
+    """동시 요청에서의 잠금 경합 완화.
+
+    WAL은 읽기가 쓰기에 막히지 않게 하며 DB 파일에 한 번만 기록되면 유지된다.
+    단, git으로 배포되는 콘텐츠 DB는 pull 시 파일이 교체되어 -wal 이 어긋날 수
+    있으므로 wal=False 로 두고 busy_timeout 만 늘린다.
+    """
+    if wal:
+        try:
+            conn.execute('PRAGMA journal_mode=WAL')
+        except sqlite3.Error:
+            pass
+    conn.execute('PRAGMA busy_timeout=10000')
+    return conn
+
+
 def get_db_connection():
     """콘텐츠 DB (problems, steps, concepts 등) - git으로 관리"""
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
-    return conn
+    return _tune_conn(conn, wal=False)
 
 
 def get_user_db():
     """유저 데이터 DB (users, logs, sets 등) - 서버 전용, git 미추적"""
     conn = sqlite3.connect(USER_DB_FILE)
     conn.row_factory = sqlite3.Row
+    _tune_conn(conn)
     conn.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   email TEXT UNIQUE NOT NULL,
@@ -592,9 +609,14 @@ def verify_email_route():
     except Exception:
         conn.close()
         return redirect('/app?verify_error=invalid')
-    conn.execute('UPDATE users SET is_verified=1, verify_token=NULL, verify_token_exp=NULL WHERE id=?', (user['id'],))
-    conn.commit()
-    paid_row = conn.execute('SELECT is_paid FROM users WHERE id=?', (user['id'],)).fetchone()
+    try:
+        conn.execute('UPDATE users SET is_verified=1, verify_token=NULL, verify_token_exp=NULL WHERE id=?', (user['id'],))
+        conn.commit()
+        paid_row = conn.execute('SELECT is_paid FROM users WHERE id=?', (user['id'],)).fetchone()
+    except sqlite3.OperationalError as e:
+        conn.close()
+        print(f'[verify_email] DB 오류로 인증 처리 실패: {e}')
+        return redirect('/app?verify_error=retry')
     conn.close()
     session['user_id'] = user['id']
     session['email'] = user['email']

@@ -20,6 +20,11 @@ MAX_COMMENT_LEN = 5000
 def get_board_db():
     conn = sqlite3.connect(BOARD_DB_FILE)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute('PRAGMA journal_mode=WAL')
+    except sqlite3.Error:
+        pass
+    conn.execute('PRAGMA busy_timeout=10000')
     conn.execute('PRAGMA foreign_keys = ON')
     conn.executescript('''
         CREATE TABLE IF NOT EXISTS posts (
@@ -112,6 +117,7 @@ def _display_name(author_id, author_email, is_anonymous):
         try:
             uconn = sqlite3.connect(USER_DB_FILE)
             uconn.row_factory = sqlite3.Row
+            uconn.execute('PRAGMA busy_timeout=10000')
             row = uconn.execute('SELECT display_name FROM users WHERE id=?', (author_id,)).fetchone()
             uconn.close()
             if row and row['display_name']:
