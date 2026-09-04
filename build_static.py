@@ -163,6 +163,10 @@ def strip_board(html):
     # 남은 주석까지 지운다 (파일을 열어 보는 사람에게도 흔적이 없도록)
     html = _re.sub(r'[ \t]*<!--[^>]*게시판[^>]*-->\n?', '', html)
     html = _re.sub(r'[ \t]*//[^\n]*게시판[^\n]*\n', '', html)
+    # board.js 가 없으니 절대 참이 될 수 없는 가드 블록도 지운다
+    html = _re.sub(
+        r"[ \t]*if \(typeof window\.closeBoardDetail === 'function'\) \{[^}]*\}\n?",
+        '', html)
     print(f'  게시판 제거: {", ".join(removed)}')
 
     left = len(_re.findall(r'id="board-[\w-]+"', html))
