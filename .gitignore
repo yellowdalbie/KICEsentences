@@ -48,6 +48,11 @@ fix_*.py
 build_*.py
 !build_db.py
 !build_vectors.py
+!build_query_vocab.py
+# 정적 오프라인 패키지 빌드 (서버에는 불필요하나 버전 관리는 필요)
+!build_static.py
+!build_static_data.py
+!build_static_similar.py
 get_targets*.py
 filter_*.py
 gen_trigger_review.py
@@ -84,3 +89,6 @@ loading.html
 AI_Instruction_KICE_System.md
 AI_Sol_Instructions.md
 AI_Template_Commentary.md
+
+# 정적 오프라인 패키지 빌드 산출물 (용량이 커 git 미추적)
+dist_static/
