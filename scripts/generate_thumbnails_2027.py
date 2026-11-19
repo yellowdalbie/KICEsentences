@@ -1,3 +1,11 @@
+"""문항 PDF → 썸네일 PNG 생성.
+
+사용법:
+    venv/bin/python scripts/generate_thumbnails_2027.py <파일명접두어> [PDF폴더=PDF_Ref] [출력폴더=scratch/<접두어>_thumbnails]
+예:
+    venv/bin/python scripts/generate_thumbnails_2027.py 2027수능
+    → 검수 후 static/thumbnails/ 로 복사
+"""
 import os
 import re
 import unicodedata
@@ -8,7 +16,7 @@ import numpy as np
 # --- CONFIGURATION ---
 PDF_DIR = 'PDF_Ref'
 # 임시 썸네일 출력 폴더
-THUMBNAIL_DIR = os.path.join('scratch', '2027_6mo_thumbnails')
+THUMBNAIL_DIR = os.path.join('scratch', '2027_6mo_thumbnails')  # __main__에서 인자로 덮어씀
 SCALE = 4.2
 CANVAS_WIDTH = 1400
 ANCHOR_X_1DIGIT  = 2    # 1자리 번호(1~9)의 마침표 오른쪽 끝 x (canvas px)
@@ -20,9 +28,6 @@ WHITE_THRESHOLD  = 250
 
 # --- INDIVIDUAL COACHING OVERRIDES ---
 CROP_OVERRIDES = {}
-
-os.makedirs(THUMBNAIL_DIR, exist_ok=True)
-
 
 def get_problem_number(problem_id):
     match = re.search(r'_\D*(\d+)$', problem_id)
@@ -182,11 +187,11 @@ def process_thumbnail(filename, verbose=False):
         return False
 
 
-def main():
-    # 2027.6모 관련 파일만 필터링
-    pdf_files = sorted([f for f in os.listdir(PDF_DIR) if f.startswith('2027.6모') and f.endswith('.pdf')])
+def main(prefix='2027.6모'):
+    pdf_files = sorted([f for f in os.listdir(PDF_DIR)
+                        if unicodedata.normalize('NFC', f).startswith(prefix) and f.endswith('.pdf')])
     total = len(pdf_files)
-    print(f"=== 2027학년도 6월 모의평가 썸네일 생성 ({total}개) ===")
+    print(f"=== {prefix} 썸네일 생성 ({total}개) ===")
 
     count = 0
     for i, f in enumerate(pdf_files):
@@ -203,4 +208,9 @@ if __name__ == "__main__":
     import sys
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     os.chdir(project_root)
-    main()
+    prefix = unicodedata.normalize('NFC', sys.argv[1]) if len(sys.argv) > 1 else '2027.6모'
+    if len(sys.argv) > 2:
+        PDF_DIR = sys.argv[2]
+    THUMBNAIL_DIR = sys.argv[3] if len(sys.argv) > 3 else os.path.join('scratch', f'{prefix}_thumbnails')
+    os.makedirs(THUMBNAIL_DIR, exist_ok=True)
+    main(prefix)

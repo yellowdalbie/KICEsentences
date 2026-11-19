@@ -1,7 +1,9 @@
 # 해설 추가 후 DB/벡터 업데이트 절차서
 
 > **대상 경로**: `/Users/home/vaults/projects/KICEsentences/`  
-> **최종 수정**: 2026-02-23
+> **최종 수정**: 2026-11-19
+>
+> ⚠ **신규 시험지(문항 분할·썸네일·원문·해설) 반영은 [`Docs/new_exam_procedure.md`](Docs/new_exam_procedure.md) 를 따를 것.** 이 문서는 해설만 고친 뒤의 재빌드 요약이다.
 
 ---
 
@@ -32,7 +34,7 @@
 
 ```bash
 cd /Users/home/vaults/projects/KICEsentences
-python3 build_db.py
+venv/bin/python build_db.py
 ```
 
 - 기존 `kice_database.sqlite` 삭제 후 전체 재생성
@@ -43,10 +45,12 @@ python3 build_db.py
 ## 3단계: 벡터 인덱스 재생성
 
 ```bash
-python3 build_vectors.py
+/usr/bin/python3 build_vectors.py
+/usr/bin/python3 build_query_vocab.py
 ```
 
-- 모든 `step_title` 재임베딩 (BGE-m3-ko 모델, 로컬 캐시 사용 → 빠름)
+- 모든 `step_title` 재임베딩 (BGE-m3-ko 모델, 로컬 캐시 사용 → 빠름). venv 의 torch 는 깨져 있어 시스템 Python 사용
+- 이어서 검색 어휘(`kice_query_vocab.npz`)도 반드시 재빌드
 - 완료 메시지: `완료! 저장된 벡터 수: N, 차원: 1024`
 - `kice_step_vectors.npz` 파일 업데이트됨
 
@@ -54,30 +58,25 @@ python3 build_vectors.py
 
 ## 4단계: PDF 썸네일 생성 (신규 문항인 경우만)
 
-새 문항의 PDF가 `PDF_Ref/` 폴더에 없을 경우:
-
-```bash
-# PDF_Ref/ 에 해당 PDF 파일 복사
-cp <원본 경로>/<문항명>.pdf PDF_Ref/
-```
-
-기존 썸네일은 `static/thumbnails/` 에 캐시되어 있으므로 새 문항만 첫 마우스오버 시 자동 생성됨.
+썸네일은 자동 생성되지 않는다. `scripts/generate_thumbnails_2027.py <접두어> [PDF폴더] [출력폴더]` 로 미리 만들어 `static/thumbnails/` 에 둔다 (상세: `Docs/new_exam_procedure.md` 2단계). 한 문항만 다시 만들 때는 `scripts/rebuild_thumbnail.py <문항ID>`.
 
 ---
 
 ## 5단계: 서버 재시작
 
 ```bash
-pkill -f dashboard.py
-nohup python3 dashboard.py < /dev/null > dashboard.log 2>&1 &
+kill $(lsof -ti :8181) 2>/dev/null || true
+nohup venv/bin/python dashboard.py >> nohup.out 2>&1 &
 ```
 
 시작 로그 확인:
 
 ```bash
-grep "벡터" dashboard.log
-# → [벡터 인덱스 로드됨] N개 스텝
+grep "OfflineQueryEngine" nohup.out | tail -1
+# → [OfflineQueryEngine] 로드 완료: 어휘 N개 / Step N개
 ```
+
+원격 배포는 `.agents/workflows/deploy_remote.md` (운영 서버 `ubuntu@146.56.118.155`).
 
 ---
 
@@ -85,7 +84,7 @@ grep "벡터" dashboard.log
 
 ```bash
 cd /Users/home/vaults/projects/KICEsentences
-python3 build_db.py && python3 build_vectors.py && pkill -f dashboard.py; nohup python3 dashboard.py < /dev/null > dashboard.log 2>&1 &
+venv/bin/python build_db.py && /usr/bin/python3 build_vectors.py && /usr/bin/python3 build_query_vocab.py
 ```
 
 ---
