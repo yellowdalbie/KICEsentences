@@ -177,6 +177,10 @@ def _serialize_post(conn, row, user_id=None, include_problems=False):
 
 
 # ── 게시글 목록 ────────────────────────────────────────────────────
+# 상단 고정이 아닌 일반 글의 조건 (공지는 항상 고정)
+_UNPINNED = "pinned=0 AND type!='notice'"
+
+
 @board_bp.route('/api/board/posts', methods=['GET'])
 def board_list():
     user = _current_user()
@@ -189,9 +193,10 @@ def board_list():
 
     conn = get_board_db()
     try:
-        # 공지 목록 (항상 포함, pinned=1)
+        # 상단 고정 목록: 공지(type='notice')는 pinned 값과 무관하게 항상 고정,
+        # 그 밖의 글은 관리자가 pinned=1 로 고정한 경우만. 최신 글이 위.
         notices = conn.execute(
-            'SELECT * FROM posts WHERE pinned=1 ORDER BY created_at DESC'
+            f'SELECT * FROM posts WHERE NOT ({_UNPINNED}) ORDER BY created_at DESC'
         ).fetchall()
 
         if filter_type == 'liked':
@@ -205,7 +210,7 @@ def board_list():
                 if liked_ids:
                     ph = ','.join('?' * len(liked_ids))
                     liked_posts = conn.execute(
-                        f'SELECT * FROM posts WHERE id IN ({ph}) AND pinned=0 ORDER BY created_at DESC',
+                        f'SELECT * FROM posts WHERE id IN ({ph}) AND {_UNPINNED} ORDER BY created_at DESC',
                         liked_ids
                     ).fetchall()
                 else:
@@ -213,7 +218,8 @@ def board_list():
                 others = conn.execute(
                     'SELECT p.* FROM posts p '
                     'JOIN (SELECT post_id, COUNT(*) as cnt FROM post_likes GROUP BY post_id) lc '
-                    'ON p.id=lc.post_id WHERE p.pinned=0 ORDER BY lc.cnt DESC, p.created_at DESC '
+                    "ON p.id=lc.post_id WHERE p.pinned=0 AND p.type!='notice' "
+                    'ORDER BY lc.cnt DESC, p.created_at DESC '
                     'LIMIT ? OFFSET ?', (per_page, offset)
                 ).fetchall()
             posts_section = {
@@ -224,10 +230,10 @@ def board_list():
             }
         else:
             if filter_type in ('edit', 'question', 'error'):
-                where = 'WHERE pinned=0 AND type=?'
+                where = f'WHERE {_UNPINNED} AND type=?'
                 params = (filter_type, per_page, offset)
             else:
-                where = 'WHERE pinned=0'
+                where = f'WHERE {_UNPINNED}'
                 params = (per_page, offset)
             rows = conn.execute(
                 f'SELECT * FROM posts {where} ORDER BY created_at DESC LIMIT ? OFFSET ?',
@@ -284,8 +290,9 @@ def board_create():
     conn = get_board_db()
     try:
         cur = conn.execute(
-            'INSERT INTO posts (type, title, content, author_id, author_email, is_anonymous) VALUES (?,?,?,?,?,?)',
-            (post_type, title, content or None, user['id'], user['email'], is_anonymous)
+            'INSERT INTO posts (type, title, content, author_id, author_email, is_anonymous, pinned) VALUES (?,?,?,?,?,?,?)',
+            (post_type, title, content or None, user['id'], user['email'], is_anonymous,
+             1 if post_type == 'notice' else 0)
         )
         post_id = cur.lastrowid
 

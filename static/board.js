@@ -190,7 +190,7 @@ function _makeRow(post, isNotice, showCheck) {
     ? `<td style="text-align:center;"><input type="checkbox" onchange="togglePostSelect(${post.id},this)" ${_boardSelected.has(post.id)?'checked':''}></td>`
     : `<td style="display:none;"></td>`;
 
-  const pinIcon = post.pinned ? '📌 ' : '';
+  const pinIcon = (post.pinned || post.type === 'notice') ? '📌 ' : '';
   tr.innerHTML = `
     ${checkCell}
     <td class="board-col-id" style="text-align:center;color:var(--text-muted);font-size:0.78rem;">${post.id}</td>
@@ -439,7 +439,7 @@ function _fillAccordion(post, user) {
         </div>
       </div>
       <!-- 내용 -->
-      ${post.content ? `<div class="markdown-body" style="font-size:0.88rem;color:var(--text-color);line-height:1.7;margin-bottom:0.5rem;">${_renderMd(post.content)}</div>` : ''}
+      ${post.content ? `<div class="markdown-body${post.type === 'notice' ? ' notice-body' : ''}" style="font-size:0.88rem;color:var(--text-color);line-height:1.7;margin-bottom:0.5rem;">${_renderMd(post.content)}</div>` : ''}
       <!-- 문항 -->
       ${problemsHtml}
       
